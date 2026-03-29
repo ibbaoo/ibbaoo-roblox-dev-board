@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0c13">
@@ -11,323 +11,374 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg-root: #0a0c13;
-  --bg-sidebar: #10121a;
-  --bg-surface: #141620;
-  --bg-card: #191c28;
-  --bg-input: #0d0f17;
-  --border: #ffffff08;
-  --border-light: #ffffff12;
-  --text-primary: #e2e4ec;
-  --text-secondary: #888da0;
-  --text-muted: #555a6e;
-  --accent: #7c5cfc;
-  --accent-glow: #7c5cfc40;
-  --accent-light: #a78bfa;
-  --green: #10b981;
-  --amber: #f59e0b;
-  --red: #ef4444;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --font: 'DM Sans', system-ui, sans-serif;
+  --bg-root:#0a0c13; --bg-sidebar:#10121a; --bg-surface:#141620; --bg-card:#191c28; --bg-input:#0d0f17;
+  --border:#ffffff08; --border-light:#ffffff12;
+  --text-primary:#e2e4ec; --text-secondary:#888da0; --text-muted:#555a6e;
+  --accent:#7c5cfc; --accent-glow:#7c5cfc40; --accent-light:#a78bfa;
+  --green:#10b981; --amber:#f59e0b; --red:#ef4444;
+  --radius:12px; --radius-sm:8px;
+  --font:'DM Sans',system-ui,sans-serif;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; overflow: hidden; }
-body { font-family: var(--font); background: var(--bg-root); color: var(--text-primary); -webkit-font-smoothing: antialiased; }
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-thumb { background: #ffffff15; border-radius: 10px; }
-::-webkit-scrollbar-track { background: transparent; }
-button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
-input, textarea { font-family: inherit; color: var(--text-primary); background: var(--bg-input); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px 12px; font-size: 14px; outline: none; width: 100%; }
-input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
-textarea { resize: vertical; min-height: 72px; }
-input[type="date"] { color-scheme: dark; }
-input[type="file"] { display: none; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:var(--font);background:var(--bg-root);color:var(--text-primary);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:#ffffff15;border-radius:10px}
+::-webkit-scrollbar-track{background:transparent}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea{font-family:inherit;color:var(--text-primary);background:var(--bg-input);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:10px 12px;font-size:16px;outline:none;width:100%;-webkit-appearance:none}
+input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow)}
+textarea{resize:vertical;min-height:72px}
+input[type="date"]{color-scheme:dark}
+input[type="file"]{display:none}
 
-@keyframes pulse { 0%,100% { transform: scale(1); opacity:.6 } 50% { transform: scale(1.15); opacity:1 } }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
-@keyframes slideIn { from { transform: translateX(-100%) } to { transform: none } }
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:1}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes slideIn{from{transform:translateX(-100%)}to{transform:none}}
 
-.loading { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; gap:16px }
-.loading-dot { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-light)); animation:pulse 1.2s ease-in-out infinite }
-.loading-text { color:var(--text-muted); font-size:14px; letter-spacing:1px }
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px}
+.loading-dot{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-light));animation:pulse 1.2s ease-in-out infinite}
+.loading-text{color:var(--text-muted);font-size:14px;letter-spacing:1px}
 
-/* ── Setup ── */
-.setup { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:16px }
-.setup-card { background:var(--bg-sidebar); border:1px solid var(--border); border-radius:20px; max-width:520px; width:100%; padding:32px 28px; box-shadow:0 24px 80px #00000060; animation:fadeIn .4s ease }
-.setup-logo { text-align:center; margin-bottom:28px }
-.setup-logo h1 { font-size:24px; font-weight:700; margin:8px 0 4px; background:linear-gradient(135deg,var(--accent-light),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent }
-.setup-logo p { font-size:13px; color:var(--text-muted) }
-.progress-bar { display:flex; gap:6px; margin-bottom:24px }
-.progress-seg { flex:1; height:4px; border-radius:2px; background:var(--border-light); transition:background .3s }
-.progress-seg.active { background:var(--accent) }
-.step-card { background:var(--bg-root); border:1px solid var(--border); border-radius:14px; padding:16px 20px; margin-bottom:16px }
-.step-num { font-size:10px; font-weight:700; color:var(--accent); letter-spacing:1.5px; text-transform:uppercase }
-.step-title { font-size:16px; font-weight:700; margin:4px 0 12px }
-.step-content { font-size:13px; color:#bbb; line-height:1.7 }
-.step-content p { margin:4px 0 }
-.step-content strong { color:var(--text-primary) }
-.step-hint { font-size:12px; color:var(--text-muted); margin-top:4px }
-.warn-box { margin-top:10px; padding:8px 12px; background:#fa8c1610; border:1px solid #fa8c1630; border-radius:8px; font-size:12px; color:#ffa940 }
-.code-block { background:var(--bg-card); border:1px solid var(--border-light); border-radius:8px; padding:12px; font-size:12px; color:var(--accent-light); overflow:auto; margin-top:8px; font-family:'SF Mono','Fira Code',monospace; white-space:pre; line-height:1.5 }
-.error-box { background:#ff4d4f12; border:1px solid #ff4d4f30; border-radius:10px; padding:10px 14px; font-size:13px; color:#ff6b6b; margin-bottom:8px }
-.field-label { display:block; font-size:11px; font-weight:700; color:var(--text-muted); letter-spacing:1px; text-transform:uppercase; margin:12px 0 6px }
-.step-nav { display:flex; gap:8px; margin-top:8px }
+/* Setup */
+.setup{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
+.setup-card{background:var(--bg-sidebar);border:1px solid var(--border);border-radius:20px;max-width:520px;width:100%;padding:32px 24px;box-shadow:0 24px 80px #00000060;animation:fadeIn .4s ease}
+.setup-logo{text-align:center;margin-bottom:28px}
+.setup-logo h1{font-size:24px;font-weight:700;margin:8px 0 4px;background:linear-gradient(135deg,var(--accent-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.setup-logo p{font-size:13px;color:var(--text-muted)}
+.progress-bar{display:flex;gap:6px;margin-bottom:24px}
+.progress-seg{flex:1;height:4px;border-radius:2px;background:var(--border-light);transition:background .3s}
+.progress-seg.active{background:var(--accent)}
+.step-card{background:var(--bg-root);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+.step-num{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase}
+.step-title{font-size:16px;font-weight:700;margin:4px 0 12px}
+.step-content{font-size:13px;color:#bbb;line-height:1.7}
+.step-content p{margin:4px 0}
+.step-content strong{color:var(--text-primary)}
+.step-hint{font-size:12px;color:var(--text-muted);margin-top:4px}
+.warn-box{margin-top:10px;padding:8px 12px;background:#fa8c1610;border:1px solid #fa8c1630;border-radius:8px;font-size:12px;color:#ffa940}
+.code-block{background:var(--bg-card);border:1px solid var(--border-light);border-radius:8px;padding:12px;font-size:11px;color:var(--accent-light);overflow:auto;margin-top:8px;font-family:'SF Mono','Fira Code',monospace;white-space:pre;line-height:1.5}
+.error-box{background:#ff4d4f12;border:1px solid #ff4d4f30;border-radius:10px;padding:10px 14px;font-size:13px;color:#ff6b6b;margin-bottom:8px}
+.field-label{display:block;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px}
+.step-nav{display:flex;gap:8px;margin-top:8px}
 
-/* ── Buttons ── */
-.btn-primary { background:linear-gradient(135deg,var(--accent),var(--accent-light)); color:#fff; padding:8px 20px; border-radius:var(--radius-sm); font-size:13px; font-weight:700; box-shadow:0 2px 12px var(--accent-glow); transition:opacity .15s }
-.btn-primary:disabled { opacity:.4; cursor:default }
-.btn-secondary { background:transparent; border:1px solid var(--border-light); color:var(--text-secondary); padding:8px 16px; border-radius:var(--radius-sm); font-size:13px; transition:border-color .15s }
-.btn-secondary:hover { border-color:var(--accent) }
-.btn-danger { background:#ff4d4f15; border:1px solid #ff4d4f30; color:#ff6b6b; padding:8px 16px; border-radius:var(--radius-sm); font-size:13px; font-weight:600 }
+/* Buttons */
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-light));color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:14px;font-weight:700;box-shadow:0 2px 12px var(--accent-glow);transition:opacity .15s}
+.btn-primary:disabled{opacity:.4;cursor:default}
+.btn-secondary{background:transparent;border:1px solid var(--border-light);color:var(--text-secondary);padding:10px 16px;border-radius:var(--radius-sm);font-size:14px;transition:border-color .15s}
+.btn-secondary:hover{border-color:var(--accent)}
+.btn-danger{background:#ff4d4f15;border:1px solid #ff4d4f30;color:#ff6b6b;padding:10px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600}
 
-/* ── App Layout ── */
-.app { display:flex; height:100vh; overflow:hidden }
-.overlay { position:fixed; inset:0; background:#00000088; z-index:90; backdrop-filter:blur(2px) }
+/* App */
+.app{display:flex;height:100vh;overflow:hidden}
+.overlay{position:fixed;inset:0;background:#00000088;z-index:90;backdrop-filter:blur(2px)}
 
-/* ── Sidebar ── */
-.sidebar { width:260px; background:var(--bg-sidebar); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:20px 12px; gap:4px; flex-shrink:0; z-index:100; position:relative }
-.sidebar-header { display:flex; align-items:center; gap:10px; padding:4px 8px; margin-bottom:20px; cursor:pointer; border-radius:10px; transition:background .15s }
-.sidebar-header:hover { background:#ffffff06 }
-.app-icon { width:28px; height:28px; border-radius:8px; object-fit:cover; flex-shrink:0 }
-.app-icon-default { width:28px; height:28px; border-radius:8px; background:linear-gradient(135deg,var(--accent),var(--accent-light)); display:flex; align-items:center; justify-content:center; font-size:14px; color:#fff; font-weight:700; flex-shrink:0 }
-.logo-text { font-size:16px; font-weight:700; letter-spacing:-.5px; background:linear-gradient(135deg,var(--accent-light),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.sync-dot { width:8px; height:8px; border-radius:50%; margin-left:auto; transition:background .3s; flex-shrink:0 }
-.sidebar-label { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--text-muted); padding:12px 8px 6px; text-transform:uppercase }
-.sidebar-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:background .15s; border:1px solid transparent }
-.sidebar-item:hover { background:#ffffff06 }
-.sidebar-item.active { background:#ffffff08; border-color:#ffffff10 }
-.sidebar-item .proj-icon { width:24px; height:24px; border-radius:6px; object-fit:cover; flex-shrink:0 }
-.sidebar-item .proj-icon-emoji { font-size:18px; width:24px; text-align:center; flex-shrink:0 }
-.sidebar-item .name { flex:1; font-size:14px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.sidebar-item .count { font-size:11px; color:var(--text-muted); background:#ffffff08; padding:2px 8px; border-radius:10px }
-.new-project-btn { margin-top:8px; padding:10px 12px; border:1px dashed #ffffff15; border-radius:10px; color:var(--text-muted); font-size:13px; text-align:left; transition:border-color .15s }
-.new-project-btn:hover { border-color:var(--accent) }
-.settings-btn { padding:10px 12px; border:1px solid var(--border); border-radius:10px; color:var(--text-muted); font-size:13px; text-align:left }
+/* Sidebar */
+.sidebar{width:260px;background:var(--bg-sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 12px;gap:4px;flex-shrink:0;z-index:100;position:relative;overflow-y:auto}
+.sidebar-header{display:flex;align-items:center;gap:10px;padding:4px 8px;margin-bottom:20px;cursor:pointer;border-radius:10px;transition:background .15s;-webkit-tap-highlight-color:transparent}
+.sidebar-header:hover{background:#ffffff06}
+.app-icon{width:28px;height:28px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.app-icon-default{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-light));display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700;flex-shrink:0}
+.logo-text{font-size:16px;font-weight:700;letter-spacing:-.5px;background:linear-gradient(135deg,var(--accent-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sync-dot{width:8px;height:8px;border-radius:50%;margin-left:auto;transition:background .3s;flex-shrink:0}
+.sidebar-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--text-muted);padding:12px 8px 6px;text-transform:uppercase}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background .15s;border:1px solid transparent;-webkit-tap-highlight-color:transparent}
+.sidebar-item:hover{background:#ffffff06}
+.sidebar-item.active{background:#ffffff08;border-color:#ffffff10}
+.sidebar-item .proj-icon{width:24px;height:24px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.sidebar-item .proj-icon-emoji{font-size:18px;width:24px;text-align:center;flex-shrink:0}
+.sidebar-item .name{flex:1;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sidebar-item .count{font-size:11px;color:var(--text-muted);background:#ffffff08;padding:2px 8px;border-radius:10px}
+.new-project-btn{margin-top:8px;padding:12px;border:1px dashed #ffffff15;border-radius:10px;color:var(--text-muted);font-size:13px;text-align:left;transition:border-color .15s}
+.new-project-btn:hover{border-color:var(--accent)}
+.settings-btn{padding:12px;border:1px solid var(--border);border-radius:10px;color:var(--text-muted);font-size:13px;text-align:left}
 
-@media(max-width:768px) {
-  .sidebar { position:fixed; top:0; left:0; bottom:0; transform:translateX(-100%); transition:transform .25s ease }
-  .sidebar.open { transform:translateX(0); animation:slideIn .25s ease }
-  .menu-btn { display:block !important }
-  .mobile-move { display:block !important }
-  .top-stats { display:none !important }
+/* Mobile */
+@media(max-width:768px){
+  .sidebar{position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%);transition:transform .25s ease;width:280px}
+  .sidebar.open{transform:translateX(0)}
+  .menu-btn{display:flex!important}
+  .mobile-move{display:flex!important}
+  .top-stats{display:none!important}
+  .columns{padding:12px!important;gap:0!important;flex-direction:column!important;align-items:stretch!important}
+  .column{min-width:unset!important;max-width:unset!important;margin-bottom:12px}
+  .project-banner{height:100px!important}
+  .top-bar{padding:10px 14px!important}
 }
 
-.touch-move { margin-top:16px; padding:12px; background:#ffffff06; border-radius:10px; display:flex; flex-direction:column; gap:6px }
-.touch-move-title { font-size:12px; color:var(--text-secondary); margin-bottom:4px }
-.touch-move-btn { padding:8px 12px; background:#7c5cfc20; border:1px solid #7c5cfc40; border-radius:8px; color:var(--accent-light); font-size:13px; text-align:left }
+.touch-move{margin-top:16px;padding:12px;background:#ffffff06;border-radius:10px;display:flex;flex-direction:column;gap:6px}
+.touch-move-title{font-size:12px;color:var(--text-secondary);margin-bottom:4px}
+.touch-move-btn{padding:10px 12px;background:#7c5cfc20;border:1px solid #7c5cfc40;border-radius:8px;color:var(--accent-light);font-size:13px;text-align:left}
 
-/* ── Main ── */
-.main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0 }
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 
-/* ── Banner ── */
-.project-banner { width:100%; height:140px; background:var(--bg-surface); border-bottom:1px solid var(--border); position:relative; overflow:hidden; flex-shrink:0; cursor:pointer; transition:opacity .15s }
-.project-banner:hover .banner-overlay { opacity:1 }
-.banner-img { width:100%; height:100%; object-fit:cover }
-.banner-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; gap:8px; color:var(--text-muted); font-size:13px; background:linear-gradient(135deg, #141620 0%, #1a1d2a 50%, #141620 100%) }
-.banner-overlay { position:absolute; inset:0; background:#00000060; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; color:#fff; font-size:13px; font-weight:600; gap:6px }
+/* Banner */
+.project-banner{width:100%;height:140px;background:var(--bg-surface);border-bottom:1px solid var(--border);position:relative;overflow:hidden;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.project-banner:hover .banner-overlay{opacity:1}
+.banner-img{width:100%;height:100%;object-fit:cover}
+.banner-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text-muted);font-size:13px;background:linear-gradient(135deg,#141620 0%,#1a1d2a 50%,#141620 100%)}
+.banner-overlay{position:absolute;inset:0;background:#00000060;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;color:#fff;font-size:13px;font-weight:600;gap:6px}
 
-.top-bar { display:flex; align-items:center; padding:14px 20px; gap:12px; border-bottom:1px solid var(--border); flex-shrink:0; flex-wrap:wrap }
-.menu-btn { display:none; background:none; border:none; color:var(--text-secondary); font-size:20px; padding:4px }
-.top-center { display:flex; align-items:center; gap:8px; flex:1; min-width:0 }
-.top-center .proj-icon { width:28px; height:28px; border-radius:8px; object-fit:cover }
-.top-center .proj-icon-emoji { font-size:22px }
-.top-center h1 { font-size:18px; font-weight:700; letter-spacing:-.3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.edit-project-btn { color:var(--text-muted); font-size:16px; padding:2px 6px; border-radius:6px }
-.top-stats { display:flex; gap:8px }
-.stat-badge { font-size:12px; color:var(--text-secondary); background:#ffffff06; padding:4px 10px; border-radius:8px }
+.top-bar{display:flex;align-items:center;padding:14px 20px;gap:12px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.menu-btn{display:none;align-items:center;justify-content:center;background:none;border:none;color:var(--text-secondary);font-size:22px;padding:4px;-webkit-tap-highlight-color:transparent}
+.top-center{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.top-center .proj-icon{width:28px;height:28px;border-radius:8px;object-fit:cover}
+.top-center .proj-icon-emoji{font-size:22px}
+.top-center h1{font-size:18px;font-weight:700;letter-spacing:-.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.edit-project-btn{color:var(--text-muted);font-size:16px;padding:4px 8px;border-radius:6px;-webkit-tap-highlight-color:transparent}
+.top-stats{display:flex;gap:8px}
+.stat-badge{font-size:12px;color:var(--text-secondary);background:#ffffff06;padding:4px 10px;border-radius:8px}
 
-/* ── Columns ── */
-.columns { display:flex; flex:1; gap:16px; padding:16px 20px 20px; overflow:auto; align-items:flex-start }
-.column { flex:1; min-width:260px; max-width:380px; background:var(--bg-surface); border-radius:14px; border:1px solid var(--border); display:flex; flex-direction:column; max-height:100%; transition:border-color .2s, box-shadow .2s }
-.column.drag-over { border-color:#7c5cfc50; box-shadow:0 0 24px #7c5cfc15 }
-.col-header { display:flex; align-items:center; gap:8px; padding:14px 16px 10px }
-.col-dot { width:8px; height:8px; border-radius:50% }
-.col-dot.todo { background:#7c5cfc; box-shadow:0 0 8px #7c5cfc60 }
-.col-dot.progress { background:#f59e0b; box-shadow:0 0 8px #f59e0b60 }
-.col-dot.done { background:#10b981; box-shadow:0 0 8px #10b98160 }
-.col-title { font-size:13px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:var(--text-secondary) }
-.col-count { font-size:11px; color:var(--text-muted); margin-left:auto; background:#ffffff08; padding:2px 8px; border-radius:10px }
-.col-body { padding:6px 10px 12px; display:flex; flex-direction:column; gap:8px; overflow-y:auto; flex:1 }
-.add-card-btn { padding:10px; border:1px dashed #ffffff10; border-radius:8px; color:var(--text-muted); font-size:13px; text-align:center; transition:border-color .15s }
-.add-card-btn:hover { border-color:var(--accent); color:var(--accent-light) }
+/* Columns */
+.columns{display:flex;flex:1;gap:16px;padding:16px 20px 20px;overflow:auto;align-items:flex-start}
+.column{flex:1;min-width:260px;max-width:380px;background:var(--bg-surface);border-radius:14px;border:1px solid var(--border);display:flex;flex-direction:column;max-height:100%;transition:border-color .2s,box-shadow .2s}
+.column.drag-over{border-color:#7c5cfc50;box-shadow:0 0 24px #7c5cfc15}
+.col-header{display:flex;align-items:center;gap:8px;padding:14px 16px 10px}
+.col-dot{width:8px;height:8px;border-radius:50%}
+.col-dot.todo{background:#7c5cfc;box-shadow:0 0 8px #7c5cfc60}
+.col-dot.progress{background:#f59e0b;box-shadow:0 0 8px #f59e0b60}
+.col-dot.done{background:#10b981;box-shadow:0 0 8px #10b98160}
+.col-title{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-secondary)}
+.col-count{font-size:11px;color:var(--text-muted);margin-left:auto;background:#ffffff08;padding:2px 8px;border-radius:10px}
+.col-body{padding:6px 10px 12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1}
+.add-card-btn{padding:12px;border:1px dashed #ffffff10;border-radius:8px;color:var(--text-muted);font-size:13px;text-align:center;transition:border-color .15s;-webkit-tap-highlight-color:transparent}
+.add-card-btn:hover{border-color:var(--accent);color:var(--accent-light)}
 
-/* ── Card ── */
-.card { background:var(--bg-card); border:1px solid #ffffff0a; border-radius:10px; padding:12px 14px; cursor:grab; user-select:none; transition:transform .15s, box-shadow .15s, border-color .15s; animation:fadeIn .25s ease }
-.card:hover { border-color:#ffffff15; box-shadow:0 4px 16px #00000030 }
-.card.dragging { opacity:.4 }
-.card-labels { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px }
-.label-pill { font-size:10px; font-weight:600; padding:2px 8px; border-radius:6px; border:1px solid; letter-spacing:.3px }
-.card-title { font-size:14px; font-weight:600; line-height:1.4 }
-.card-desc { font-size:12px; color:var(--text-secondary); line-height:1.4; margin-top:4px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical }
-.card-meta { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; align-items:center }
-.priority-badge { font-size:10px; font-weight:600; padding:2px 8px; border-radius:6px; letter-spacing:.3px }
-.due-badge { font-size:10px; color:var(--text-secondary); background:#ffffff08; padding:2px 8px; border-radius:6px }
-.due-badge.overdue { color:#ff6b6b; background:#ff4d4f15 }
-.mobile-move { display:none; margin-left:auto; background:#ffffff08; color:var(--text-muted); font-size:14px; border-radius:6px; padding:2px 8px }
+/* Card */
+.card{background:var(--bg-card);border:1px solid #ffffff0a;border-radius:10px;padding:12px 14px;cursor:grab;user-select:none;transition:transform .15s,box-shadow .15s,border-color .15s;animation:fadeIn .25s ease;-webkit-tap-highlight-color:transparent}
+.card:hover{border-color:#ffffff15;box-shadow:0 4px 16px #00000030}
+.card.dragging{opacity:.4}
+.card-labels{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.label-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;border:1px solid;letter-spacing:.3px}
+.card-title{font-size:14px;font-weight:600;line-height:1.4}
+.card-desc{font-size:12px;color:var(--text-secondary);line-height:1.4;margin-top:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+.priority-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;letter-spacing:.3px}
+.due-badge{font-size:10px;color:var(--text-secondary);background:#ffffff08;padding:2px 8px;border-radius:6px}
+.due-badge.overdue{color:#ff6b6b;background:#ff4d4f15}
+.mobile-move{display:none;align-items:center;justify-content:center;margin-left:auto;background:#ffffff08;color:var(--text-muted);font-size:14px;border-radius:6px;padding:4px 10px;-webkit-tap-highlight-color:transparent}
 
-/* ── Modal ── */
-.modal-overlay { position:fixed; inset:0; background:#000000aa; backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:200; padding:16px }
-.modal { background:var(--bg-card); border:1px solid var(--border-light); border-radius:16px; width:100%; max-width:480px; max-height:90vh; overflow:auto; box-shadow:0 24px 80px #00000080; animation:fadeIn .2s ease }
-.modal-header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 8px }
-.modal-header h2 { font-size:16px; font-weight:700 }
-.modal-close { color:var(--text-muted); font-size:18px; padding:4px }
-.modal-body { padding:8px 20px 16px; display:flex; flex-direction:column; gap:10px }
-.modal-footer { display:flex; align-items:center; gap:8px; padding:12px 20px 16px }
-.labels-grid { display:flex; flex-wrap:wrap; gap:6px }
-.label-opt { font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; border:1px solid #ffffff18; cursor:pointer; transition:all .15s }
-.priority-row { display:flex; gap:6px; flex-wrap:wrap }
-.priority-opt { font-size:12px; font-weight:600; padding:6px 12px; border-radius:8px; border:1px solid #ffffff18; cursor:pointer; transition:all .15s }
-.move-btn { font-size:12px; padding:6px 12px; border-radius:8px; border:1px solid #ffffff15; background:#ffffff06; color:var(--accent-light); cursor:pointer }
-.emoji-grid { display:flex; flex-wrap:wrap; gap:6px }
-.emoji-btn { font-size:20px; padding:6px 8px; border-radius:8px; border:1px solid var(--border-light); cursor:pointer; transition:all .15s }
-.emoji-btn.active { background:#7c5cfc20; border-color:#7c5cfc60 }
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:#000000aa;backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.modal{background:var(--bg-card);border:1px solid var(--border-light);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow:auto;box-shadow:0 24px 80px #00000080;animation:fadeIn .2s ease}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px}
+.modal-header h2{font-size:16px;font-weight:700}
+.modal-close{color:var(--text-muted);font-size:20px;padding:6px;-webkit-tap-highlight-color:transparent}
+.modal-body{padding:8px 20px 16px;display:flex;flex-direction:column;gap:10px}
+.modal-footer{display:flex;align-items:center;gap:8px;padding:12px 20px 16px}
+.labels-grid{display:flex;flex-wrap:wrap;gap:6px}
+.label-opt{font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;border:1px solid #ffffff18;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.priority-row{display:flex;gap:6px;flex-wrap:wrap}
+.priority-opt{font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid #ffffff18;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.move-btn{font-size:12px;padding:8px 14px;border-radius:8px;border:1px solid #ffffff15;background:#ffffff06;color:var(--accent-light);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.emoji-grid{display:flex;flex-wrap:wrap;gap:6px}
+.emoji-btn{font-size:20px;padding:8px 10px;border-radius:8px;border:1px solid var(--border-light);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.emoji-btn.active{background:#7c5cfc20;border-color:#7c5cfc60}
 
-/* ── Image Upload ── */
-.img-upload-area { display:flex; align-items:center; gap:12px }
-.img-preview { width:48px; height:48px; border-radius:10px; object-fit:cover; border:1px solid var(--border-light) }
-.img-preview-placeholder { width:48px; height:48px; border-radius:10px; background:var(--bg-input); border:1px dashed var(--border-light); display:flex; align-items:center; justify-content:center; font-size:20px; color:var(--text-muted) }
-.img-upload-btn { padding:6px 14px; border:1px solid var(--border-light); border-radius:var(--radius-sm); color:var(--text-secondary); font-size:12px; font-weight:600; cursor:pointer; transition:border-color .15s }
-.img-upload-btn:hover { border-color:var(--accent); color:var(--accent-light) }
-.img-remove-btn { padding:6px 10px; color:var(--text-muted); font-size:12px; cursor:pointer }
-.img-remove-btn:hover { color:var(--red) }
-
-.banner-upload-area { width:100%; height:100px; border:1px dashed var(--border-light); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer; transition:border-color .15s; overflow:hidden; position:relative }
-.banner-upload-area:hover { border-color:var(--accent) }
-.banner-upload-area img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0 }
-.banner-upload-area .banner-upload-text { position:relative; z-index:1; font-size:12px; color:var(--text-muted); text-align:center }
-.banner-upload-area.has-img .banner-upload-text { color:#fff; background:#00000080; padding:4px 12px; border-radius:6px }
+/* Image upload */
+.img-upload-area{display:flex;align-items:center;gap:12px}
+.img-preview{width:48px;height:48px;border-radius:10px;object-fit:cover;border:1px solid var(--border-light)}
+.img-preview-placeholder{width:48px;height:48px;border-radius:10px;background:var(--bg-input);border:1px dashed var(--border-light);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-muted)}
+.img-upload-btn{padding:8px 14px;border:1px solid var(--border-light);border-radius:var(--radius-sm);color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;transition:border-color .15s;-webkit-tap-highlight-color:transparent}
+.img-upload-btn:hover{border-color:var(--accent);color:var(--accent-light)}
+.img-remove-btn{padding:8px 10px;color:var(--text-muted);font-size:12px;cursor:pointer}
+.img-remove-btn:hover{color:var(--red)}
+.banner-upload-area{width:100%;height:100px;border:1px dashed var(--border-light);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:border-color .15s;overflow:hidden;position:relative;-webkit-tap-highlight-color:transparent}
+.banner-upload-area:hover{border-color:var(--accent)}
+.banner-upload-area img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.banner-upload-area .bup-text{position:relative;z-index:1;font-size:12px;color:var(--text-muted);text-align:center}
+.banner-upload-area.has-img .bup-text{color:#fff;background:#00000080;padding:4px 12px;border-radius:6px}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-const COLUMNS = ["To Do", "In Progress", "Done"];
-const PRIORITIES = { high:"High", medium:"Medium", low:"Low" };
-const LABEL_COLORS = [
-  { name:"Red", bg:"#ff4d4f22", border:"#ff4d4f", text:"#ff4d4f" },
-  { name:"Orange", bg:"#fa8c1622", border:"#fa8c16", text:"#fa8c16" },
-  { name:"Gold", bg:"#fadb1422", border:"#fadb14", text:"#d4b106" },
-  { name:"Green", bg:"#52c41a22", border:"#52c41a", text:"#52c41a" },
-  { name:"Cyan", bg:"#13c2c222", border:"#13c2c2", text:"#13c2c2" },
-  { name:"Blue", bg:"#1890ff22", border:"#1890ff", text:"#1890ff" },
-  { name:"Purple", bg:"#722ed122", border:"#722ed1", text:"#722ed1" },
-  { name:"Pink", bg:"#eb2f9622", border:"#eb2f96", text:"#eb2f96" },
+const COLUMNS=["To Do","In Progress","Done"];
+const PRIORITIES={high:"High",medium:"Medium",low:"Low"};
+const LABEL_COLORS=[
+  {name:"Red",bg:"#ff4d4f22",border:"#ff4d4f",text:"#ff4d4f"},
+  {name:"Orange",bg:"#fa8c1622",border:"#fa8c16",text:"#fa8c16"},
+  {name:"Gold",bg:"#fadb1422",border:"#fadb14",text:"#d4b106"},
+  {name:"Green",bg:"#52c41a22",border:"#52c41a",text:"#52c41a"},
+  {name:"Cyan",bg:"#13c2c222",border:"#13c2c2",text:"#13c2c2"},
+  {name:"Blue",bg:"#1890ff22",border:"#1890ff",text:"#1890ff"},
+  {name:"Purple",bg:"#722ed122",border:"#722ed1",text:"#722ed1"},
+  {name:"Pink",bg:"#eb2f9622",border:"#eb2f96",text:"#eb2f96"},
 ];
-const PRIORITY_COLORS = {
-  high:{ bg:"#ff4d4f20", text:"#ff6b6b", icon:"▲" },
-  medium:{ bg:"#fa8c1620", text:"#ffa940", icon:"◆" },
-  low:{ bg:"#52c41a20", text:"#73d13d", icon:"▼" },
+const PRIORITY_COLORS={
+  high:{bg:"#ff4d4f20",text:"#ff6b6b",icon:"▲"},
+  medium:{bg:"#fa8c1620",text:"#ffa940",icon:"◆"},
+  low:{bg:"#52c41a20",text:"#73d13d",icon:"▼"},
 };
-const EMOJIS = ["🚀","📋","💡","🎮","🎨","🔧","📱","🌟","⚡","🏠","📚","🎯"];
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const EMOJIS=["🚀","📋","💡","🎮","🎨","🔧","📱","🌟","⚡","🏠","📚","🎯"];
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
-let state = {
-  appName: "Kanban Flow",
-  appIcon: null,
-  projects: [{ id:"default", name:"My Project", emoji:"🚀", icon:null, banner:null, tasks:[] }],
-  activeProjectId: "default",
+let state={
+  appName:"Kanban Flow",
+  appIcon:null,
+  projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,tasks:[]}],
+  activeProjectId:"default",
 };
-let firebase = null;
-let syncStatus = "synced";
-let saveTimer = null;
+let firebase=null;
+let syncStatus="synced";
+let saveTimer=null;
 
-// ─── Image helpers ───────────────────────────────────
-function resizeImage(file, maxW, maxH) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        let w = img.width, h = img.height;
-        if(w > maxW || h > maxH) {
-          const ratio = Math.min(maxW/w, maxH/h);
-          w = Math.round(w*ratio);
-          h = Math.round(h*ratio);
-        }
-        canvas.width = w; canvas.height = h;
-        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", 0.8));
+/* ── Image helpers ── */
+function resizeImage(file,maxW,maxH){
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement("canvas");
+        let w=img.width,h=img.height;
+        if(w>maxW||h>maxH){const r=Math.min(maxW/w,maxH/h);w=Math.round(w*r);h=Math.round(h*r);}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext("2d").drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL("image/jpeg",0.75));
       };
-      img.src = e.target.result;
+      img.src=e.target.result;
     };
     reader.readAsDataURL(file);
   });
 }
-
-function triggerFileInput(accept, callback) {
-  const inp = document.createElement("input");
-  inp.type = "file"; inp.accept = accept;
-  inp.onchange = () => { if(inp.files[0]) callback(inp.files[0]); };
+function pickFile(accept,cb){
+  const inp=document.createElement("input");
+  inp.type="file";inp.accept=accept;
+  inp.onchange=()=>{if(inp.files[0])cb(inp.files[0]);};
   inp.click();
 }
 
-// ─── Firebase REST ───────────────────────────────────
+/* ── Firebase REST — persists credentials per DB URL ── */
 class FirebaseSync {
-  constructor(k, u) { this.apiKey=k; this.dbUrl=u.replace(/\/$/,""); this.idToken=null; this.localId=null; this.refreshToken=null; }
-  async signInAnonymous() {
-    const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.apiKey}`,
-      { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({returnSecureToken:true}) });
-    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e?.error?.message||"Auth failed"); }
-    const d=await r.json(); this.idToken=d.idToken; this.localId=d.localId; this.refreshToken=d.refreshToken; return d;
+  constructor(apiKey,dbUrl){
+    this.apiKey=apiKey;
+    this.dbUrl=dbUrl.replace(/\/$/,"");
+    this.idToken=null;
+    this.localId=null;
+    this.refreshToken=null;
+    // Storage key unique to this database URL
+    this.storageKey="kanban-auth-"+this._hash(this.dbUrl);
   }
-  async refreshIdToken() {
-    const r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${this.apiKey}`,
-      { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({grant_type:"refresh_token",refresh_token:this.refreshToken}) });
-    if(!r.ok) throw new Error("Token refresh failed");
-    const d=await r.json(); this.idToken=d.id_token; this.refreshToken=d.refresh_token;
+
+  _hash(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h).toString(36);}
+
+  // Save auth credentials to localStorage
+  _saveAuth(){
+    localStorage.setItem(this.storageKey,JSON.stringify({
+      localId:this.localId,
+      refreshToken:this.refreshToken,
+      idToken:this.idToken
+    }));
   }
-  async req(path, method="GET", body=null) {
+
+  // Load saved auth credentials
+  _loadAuth(){
+    try{
+      const saved=JSON.parse(localStorage.getItem(this.storageKey));
+      if(saved&&saved.localId&&saved.refreshToken){
+        this.localId=saved.localId;
+        this.refreshToken=saved.refreshToken;
+        this.idToken=saved.idToken;
+        return true;
+      }
+    }catch(e){}
+    return false;
+  }
+
+  // Try to restore existing session, or create new one
+  async connect(){
+    if(this._loadAuth()){
+      try{
+        await this._refreshIdToken();
+        this._saveAuth();
+        return;
+      }catch(e){
+        // Refresh failed, fall through to create new anonymous user
+        console.warn("Token refresh failed, creating new session");
+      }
+    }
+    // No saved session or refresh failed — sign up new anonymous user
+    await this._signUpAnonymous();
+    this._saveAuth();
+  }
+
+  async _signUpAnonymous(){
+    const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.apiKey}`,
+      {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({returnSecureToken:true})});
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||"Auth failed");}
+    const d=await r.json();
+    this.idToken=d.idToken;this.localId=d.localId;this.refreshToken=d.refreshToken;
+  }
+
+  async _refreshIdToken(){
+    if(!this.refreshToken)throw new Error("No refresh token");
+    const r=await fetch(`https://securetoken.googleapis.com/v1/token?key=${this.apiKey}`,
+      {method:"POST",headers:{"Content-Type":"application/json"},
+       body:JSON.stringify({grant_type:"refresh_token",refresh_token:this.refreshToken})});
+    if(!r.ok)throw new Error("Token refresh failed");
+    const d=await r.json();
+    this.idToken=d.id_token;this.refreshToken=d.refresh_token;
+    // localId stays the same
+  }
+
+  async req(path,method="GET",body=null){
     let url=`${this.dbUrl}/users/${this.localId}/${path}.json?auth=${this.idToken}`;
-    const opts={method, headers:{"Content-Type":"application/json"}};
-    if(body!==null) opts.body=JSON.stringify(body);
-    let r=await fetch(url, opts);
-    if(r.status===401){ await this.refreshIdToken(); r=await fetch(`${this.dbUrl}/users/${this.localId}/${path}.json?auth=${this.idToken}`, opts); }
-    if(!r.ok) throw new Error(`Firebase ${method}: ${r.status}`);
+    const opts={method,headers:{"Content-Type":"application/json"}};
+    if(body!==null)opts.body=JSON.stringify(body);
+    let r=await fetch(url,opts);
+    if(r.status===401){
+      await this._refreshIdToken();
+      this._saveAuth();
+      r=await fetch(`${this.dbUrl}/users/${this.localId}/${path}.json?auth=${this.idToken}`,opts);
+    }
+    if(!r.ok)throw new Error(`Firebase ${method}: ${r.status}`);
     return r.json();
   }
-  getData(){ return this.req("kanban"); }
-  setData(d){ return this.req("kanban","PUT",d); }
+
+  getData(){return this.req("kanban");}
+  setData(d){return this.req("kanban","PUT",d);}
+
+  clearAuth(){localStorage.removeItem(this.storageKey);}
 }
 
-// ─── Helpers ─────────────────────────────────────────
+/* ── Helpers ── */
 const $=(s,p)=>(p||document).querySelector(s);
 const $$=(s,p)=>[...(p||document).querySelectorAll(s)];
-const el=(tag,cls,html)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(html) e.innerHTML=html; return e; };
-const activeProject=()=>state.projects.find(p=>p.id===state.activeProjectId)||state.projects[0];
-const tasksInCol=col=>(activeProject()?.tasks||[]).filter(t=>t.column===col).sort((a,b)=>(a.order??0)-(b.order??0));
-function formatDate(d){ if(!d)return""; const date=new Date(d),now=new Date(),diff=Math.ceil((date-now)/864e5); if(diff<0)return"Overdue"; if(diff===0)return"Today"; if(diff===1)return"Tomorrow"; return date.toLocaleDateString("en-US",{month:"short",day:"numeric"}); }
-function isOverdue(d){ return d&&new Date(d)<new Date(); }
-function colDotClass(c){ return c==="To Do"?"todo":c==="In Progress"?"progress":"done"; }
-function esc(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html)e.innerHTML=html;return e;};
+const proj=()=>state.projects.find(p=>p.id===state.activeProjectId)||state.projects[0];
+const tasksIn=col=>(proj()?.tasks||[]).filter(t=>t.column===col).sort((a,b)=>(a.order??0)-(b.order??0));
+function fmtDate(d){if(!d)return"";const dt=new Date(d),n=new Date(),df=Math.ceil((dt-n)/864e5);if(df<0)return"Overdue";if(df===0)return"Today";if(df===1)return"Tomorrow";return dt.toLocaleDateString("en-US",{month:"short",day:"numeric"});}
+function isOverdue(d){return d&&new Date(d)<new Date();}
+function dotCls(c){return c==="To Do"?"todo":c==="In Progress"?"progress":"done";}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
+function projIcon(p,sz){
+  if(p.icon)return`<img class="proj-icon" src="${p.icon}" style="width:${sz}px;height:${sz}px;border-radius:${Math.round(sz*.25)}px">`;
+  return`<span class="proj-icon-emoji" style="font-size:${Math.round(sz*.75)}px;width:${sz}px;text-align:center">${p.emoji||"📋"}</span>`;
+}
 
-function saveToFirebase() {
-  if(!firebase) return;
-  syncStatus="saving"; updateSyncDot();
+function save(){
+  if(!firebase)return;
+  syncStatus="saving";updateDot();
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async()=>{
-    try{ await firebase.setData({appName:state.appName, appIcon:state.appIcon, projects:state.projects, activeProjectId:state.activeProjectId}); syncStatus="synced"; }
-    catch(e){ console.error("Save:",e); syncStatus="error"; }
-    updateSyncDot();
+    try{await firebase.setData({appName:state.appName,appIcon:state.appIcon,projects:state.projects,activeProjectId:state.activeProjectId});syncStatus="synced";}
+    catch(e){console.error("Save:",e);syncStatus="error";}
+    updateDot();
   },800);
 }
-function updateSyncDot(){ const d=$(".sync-dot"); if(d) d.style.background=syncStatus==="synced"?"var(--green)":syncStatus==="saving"?"var(--amber)":"var(--red)"; }
+function updateDot(){const d=$(".sync-dot");if(d)d.style.background=syncStatus==="synced"?"var(--green)":syncStatus==="saving"?"var(--amber)":"var(--red)";}
 
-function renderProjectIcon(proj, size) {
-  if(proj.icon) return `<img class="proj-icon" src="${proj.icon}" style="width:${size}px;height:${size}px;border-radius:${Math.round(size*.25)}px">`;
-  return `<span class="proj-icon-emoji" style="font-size:${Math.round(size*.75)}px;width:${size}px;text-align:center">${proj.emoji||"📋"}</span>`;
-}
-
-// ─── Render: Setup ───────────────────────────────────
-function renderSetup(error) {
+/* ── Setup ── */
+function renderSetup(error){
   const saved=JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
   let step=0;
   function draw(){
     const steps=[
       {title:"Create Firebase Project",html:`<p>1. Go to <strong>console.firebase.google.com</strong></p><p>2. Click <strong>"Add project"</strong></p><p>3. Name it something like <strong>"kanban-board"</strong></p><p>4. Disable Google Analytics (optional) → Create</p>`},
       {title:"Enable Anonymous Auth",html:`<p>1. Go to <strong>Build → Authentication</strong></p><p>2. Click <strong>"Get started"</strong></p><p>3. Under Sign-in providers, click <strong>"Anonymous"</strong></p><p>4. Toggle <strong>Enable</strong> → Save</p>`},
-      {title:"Create Realtime Database",html:`<p>1. Go to <strong>Build → Realtime Database</strong></p><p>2. Click <strong>"Create Database"</strong></p><p>3. Choose your region → Next</p><p>4. Select <strong>"Start in test mode"</strong> → Enable</p><div class="warn-box">⚠️ <strong>Immediately</strong> go to the <strong>Rules</strong> tab and replace with the rules below. This prevents the 30-day test mode expiry.</div><pre class="code-block">{
+      {title:"Create Realtime Database",html:`<p>1. Go to <strong>Build → Realtime Database</strong></p><p>2. Click <strong>"Create Database"</strong></p><p>3. Choose your region → Next</p><p>4. Select <strong>"Start in test mode"</strong> → Enable</p><div class="warn-box">⚠️ <strong>Immediately</strong> go to the <strong>Rules</strong> tab and replace with:</div><pre class="code-block">{
   "rules": {
     "users": {
       "$uid": {
@@ -336,8 +387,8 @@ function renderSetup(error) {
       }
     }
   }
-}</pre><p class="step-hint">This locks each user's data to their own UID — permanent, no expiry.</p>`},
-      {title:"Enter Your Credentials",html:`<p>1. Click <strong>⚙️ gear → Project settings</strong></p><p>2. Copy your <strong>Web API Key</strong></p><p>3. Go to Realtime Database and copy the <strong>URL</strong></p><p class="step-hint">Looks like: https://your-project-default-rtdb.firebaseio.com</p><label class="field-label">Web API Key</label><input id="inp-key" placeholder="AIzaSy..." value="${saved?.apiKey||""}"><label class="field-label">Database URL</label><input id="inp-url" placeholder="https://your-project-default-rtdb.firebaseio.com" value="${saved?.dbUrl||""}">`},
+}</pre><p class="step-hint">Permanent rules — no 30-day expiry. Click Publish.</p>`},
+      {title:"Enter Your Credentials",html:`<p>1. Click <strong>⚙️ gear → Project settings</strong></p><p>2. Copy your <strong>Web API Key</strong></p><p>3. Go to Realtime Database and copy the <strong>URL</strong> from the top</p><p class="step-hint">Looks like: https://your-project-default-rtdb.firebaseio.com</p><label class="field-label">Web API Key</label><input id="inp-key" placeholder="AIzaSy..." value="${saved?.apiKey||""}"><label class="field-label">Database URL</label><input id="inp-url" placeholder="https://your-project-default-rtdb.firebaseio.com" value="${saved?.dbUrl||""}">`},
     ];
     const s=steps[step];
     $("#app").innerHTML=`<div class="setup"><div class="setup-card">
@@ -345,338 +396,300 @@ function renderSetup(error) {
       <div class="progress-bar">${steps.map((_,i)=>`<div class="progress-seg ${i<=step?"active":""}"></div>`).join("")}</div>
       <div class="step-card"><div class="step-num">Step ${step+1} of ${steps.length}</div><div class="step-title">${s.title}</div><div class="step-content">${s.html}</div></div>
       ${error?`<div class="error-box">⚠️ ${error}</div>`:""}
-      <div class="step-nav">${step>0?`<button class="btn-secondary" id="btn-back">← Back</button>`:""}<div style="flex:1"></div>${step<steps.length-1?`<button class="btn-primary" id="btn-next">Next →</button>`:`<button class="btn-primary" id="btn-connect">Connect & Start →</button>`}</div>
+      <div class="step-nav">${step>0?`<button class="btn-secondary" id="bb">← Back</button>`:""}<div style="flex:1"></div>${step<steps.length-1?`<button class="btn-primary" id="bn">Next →</button>`:`<button class="btn-primary" id="bc">Connect & Start →</button>`}</div>
     </div></div>`;
-    if($("#btn-back")) $("#btn-back").onclick=()=>{ step--; draw(); };
-    if($("#btn-next")) $("#btn-next").onclick=()=>{ step++; draw(); };
-    if($("#btn-connect")) $("#btn-connect").onclick=async()=>{
-      const apiKey=$("#inp-key").value.trim(), dbUrl=$("#inp-url").value.trim();
-      if(!apiKey||!dbUrl) return;
-      $("#btn-connect").textContent="Connecting..."; $("#btn-connect").disabled=true;
+    if($("#bb"))$("#bb").onclick=()=>{step--;draw();};
+    if($("#bn"))$("#bn").onclick=()=>{step++;draw();};
+    if($("#bc"))$("#bc").onclick=async()=>{
+      const apiKey=$("#inp-key").value.trim(),dbUrl=$("#inp-url").value.trim();
+      if(!apiKey||!dbUrl)return;
+      $("#bc").textContent="Connecting...";$("#bc").disabled=true;
       try{
-        const fb=new FirebaseSync(apiKey,dbUrl); await fb.signInAnonymous(); firebase=fb;
+        const fb=new FirebaseSync(apiKey,dbUrl);
+        await fb.connect();
+        firebase=fb;
         localStorage.setItem("kanban-fb-config",JSON.stringify({apiKey,dbUrl}));
         const data=await fb.getData();
-        if(data){ state.appName=data.appName||state.appName; state.appIcon=data.appIcon||null; state.projects=data.projects||state.projects; state.activeProjectId=data.activeProjectId||state.projects[0].id; }
+        if(data){state.appName=data.appName||state.appName;state.appIcon=data.appIcon||null;state.projects=data.projects||state.projects;state.activeProjectId=data.activeProjectId||state.projects[0].id;}
+        document.title=state.appName;
         renderBoard();
-      }catch(e){ error=e.message; draw(); }
+      }catch(e){error=e.message;draw();}
     };
   }
   draw();
 }
 
-// ─── Render: Board ───────────────────────────────────
-let draggedTaskId=null;
+/* ── Board ── */
+let dragId=null;
 
 function renderBoard(){
-  const proj=activeProject();
+  const p=proj();
+  document.title=state.appName;
   $("#app").innerHTML=`<div class="app">
-    <div class="overlay" id="overlay" style="display:none"></div>
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header" id="app-header">
+    <div class="overlay" id="ov" style="display:none"></div>
+    <aside class="sidebar" id="sb">
+      <div class="sidebar-header" id="app-hdr">
         ${state.appIcon?`<img class="app-icon" src="${state.appIcon}">`:`<div class="app-icon-default">⬡</div>`}
         <span class="logo-text">${esc(state.appName)}</span>
         <span class="sync-dot" style="background:var(--green)"></span>
       </div>
       <div class="sidebar-label">PROJECTS</div>
-      <div id="project-list"></div>
-      <button class="new-project-btn" id="btn-new-project">+ New Project</button>
-      <div id="touch-move-area"></div>
+      <div id="plist"></div>
+      <button class="new-project-btn" id="np">+ New Project</button>
+      <div id="tma"></div>
       <div style="flex:1"></div>
-      <button class="settings-btn" id="btn-settings">⚙ Settings</button>
+      <button class="settings-btn" id="bs">⚙ Settings</button>
     </aside>
     <main class="main">
-      <div class="project-banner" id="proj-banner">
-        ${proj.banner?`<img class="banner-img" src="${proj.banner}"><div class="banner-overlay">📷 Change banner</div>`:`<div class="banner-placeholder">📷 Click to add a banner</div>`}
+      <div class="project-banner" id="pban">
+        ${p.banner?`<img class="banner-img" src="${p.banner}"><div class="banner-overlay">📷 Change banner</div>`:`<div class="banner-placeholder">📷 Click to add a banner</div>`}
       </div>
       <header class="top-bar">
-        <button class="menu-btn" id="btn-menu">☰</button>
-        <div class="top-center">
-          ${renderProjectIcon(proj, 28)}
-          <h1>${esc(proj.name)}</h1>
-          <button class="edit-project-btn" id="btn-edit-project">✎</button>
-        </div>
-        <div class="top-stats">${COLUMNS.map(c=>`<span class="stat-badge">${tasksInCol(c).length} ${c==="To Do"?"📝":c==="In Progress"?"⚡":"✅"}</span>`).join("")}</div>
+        <button class="menu-btn" id="bm">☰</button>
+        <div class="top-center">${projIcon(p,28)}<h1>${esc(p.name)}</h1><button class="edit-project-btn" id="be">✎</button></div>
+        <div class="top-stats">${COLUMNS.map(c=>`<span class="stat-badge">${tasksIn(c).length} ${c==="To Do"?"📝":c==="In Progress"?"⚡":"✅"}</span>`).join("")}</div>
       </header>
-      <div class="columns" id="columns"></div>
+      <div class="columns" id="cols"></div>
     </main>
   </div>`;
-  renderProjects(); renderColumns(); updateSyncDot();
-  $("#app-header").onclick=()=>showAppModal();
-  $("#btn-menu").onclick=()=>toggleSidebar(true);
-  $("#overlay").onclick=()=>toggleSidebar(false);
-  $("#btn-new-project").onclick=()=>showProjectModal();
-  $("#btn-edit-project").onclick=()=>showProjectModal(proj);
-  $("#btn-settings").onclick=showSettingsModal;
-  $("#proj-banner").onclick=()=>{
-    triggerFileInput("image/*", async(file)=>{
-      const data=await resizeImage(file,1200,400);
-      const p=activeProject(); p.banner=data; saveToFirebase(); renderBoard();
-    });
-  };
+  renderProjects();renderCols();updateDot();
+  $("#app-hdr").onclick=()=>showAppModal();
+  $("#bm").onclick=()=>togSb(true);
+  $("#ov").onclick=()=>togSb(false);
+  $("#np").onclick=()=>showProjModal();
+  $("#be").onclick=()=>showProjModal(p);
+  $("#bs").onclick=showSettings;
+  $("#pban").onclick=()=>pickFile("image/*",async f=>{const d=await resizeImage(f,1200,400);proj().banner=d;save();renderBoard();});
 }
 
-function toggleSidebar(open){ const sb=$("#sidebar"),ov=$("#overlay"); if(open){sb.classList.add("open");ov.style.display="block";}else{sb.classList.remove("open");ov.style.display="none";} }
+function togSb(open){const sb=$("#sb"),ov=$("#ov");if(open){sb.classList.add("open");ov.style.display="block";}else{sb.classList.remove("open");ov.style.display="none";}}
 
 function renderProjects(){
-  const list=$("#project-list"); if(!list) return; list.innerHTML="";
+  const list=$("#plist");if(!list)return;list.innerHTML="";
   state.projects.forEach(p=>{
     const d=el("div","sidebar-item"+(p.id===state.activeProjectId?" active":""));
-    d.innerHTML=`${renderProjectIcon(p,24)}<span class="name">${esc(p.name)}</span><span class="count">${(p.tasks||[]).length}</span>`;
-    d.onclick=()=>{ state.activeProjectId=p.id; saveToFirebase(); renderBoard(); };
+    d.innerHTML=`${projIcon(p,24)}<span class="name">${esc(p.name)}</span><span class="count">${(p.tasks||[]).length}</span>`;
+    d.onclick=()=>{state.activeProjectId=p.id;save();renderBoard();};
     list.appendChild(d);
   });
 }
 
-function renderColumns(){
-  const wrap=$("#columns"); if(!wrap) return; wrap.innerHTML="";
+function renderCols(){
+  const wrap=$("#cols");if(!wrap)return;wrap.innerHTML="";
   COLUMNS.forEach(col=>{
-    const tasks=tasksInCol(col);
+    const tasks=tasksIn(col);
     const div=el("div","column");
-    div.innerHTML=`<div class="col-header"><span class="col-dot ${colDotClass(col)}"></span><span class="col-title">${col}</span><span class="col-count">${tasks.length}</span></div><div class="col-body" data-col="${col}"></div>`;
+    div.innerHTML=`<div class="col-header"><span class="col-dot ${dotCls(col)}"></span><span class="col-title">${col}</span><span class="col-count">${tasks.length}</span></div><div class="col-body"></div>`;
     const body=$(".col-body",div);
-    tasks.forEach(t=>body.appendChild(createCard(t)));
-    const addBtn=el("button","add-card-btn","+ Add card"); addBtn.onclick=()=>showTaskModal(null,col); body.appendChild(addBtn);
+    tasks.forEach(t=>body.appendChild(mkCard(t)));
+    const ab=el("button","add-card-btn","+ Add card");ab.onclick=()=>showTaskModal(null,col);body.appendChild(ab);
     div.addEventListener("dragover",e=>{e.preventDefault();div.classList.add("drag-over");});
     div.addEventListener("dragleave",()=>div.classList.remove("drag-over"));
-    div.addEventListener("drop",e=>{e.preventDefault();div.classList.remove("drag-over");if(draggedTaskId)moveTask(draggedTaskId,col);});
+    div.addEventListener("drop",e=>{e.preventDefault();div.classList.remove("drag-over");if(dragId)moveTask(dragId,col);});
     wrap.appendChild(div);
   });
 }
 
-function createCard(task){
-  const card=el("div","card"); card.draggable=true; card.dataset.id=task.id;
-  let html="";
-  if(task.labels?.length) html+=`<div class="card-labels">${task.labels.map(l=>{const lc=LABEL_COLORS.find(c=>c.name===l);return lc?`<span class="label-pill" style="background:${lc.bg};border-color:${lc.border};color:${lc.text}">${l}</span>`:""}).join("")}</div>`;
-  html+=`<div class="card-title">${esc(task.title)}</div>`;
-  if(task.description) html+=`<div class="card-desc">${esc(task.description)}</div>`;
-  let meta="";
-  if(task.priority){const pc=PRIORITY_COLORS[task.priority]; meta+=`<span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${pc.icon} ${PRIORITIES[task.priority]}</span>`;}
-  if(task.dueDate){const od=isOverdue(task.dueDate)&&task.column!=="Done"; meta+=`<span class="due-badge ${od?"overdue":""}">📅 ${formatDate(task.dueDate)}</span>`;}
-  meta+=`<button class="mobile-move" data-move="${task.id}">⇄</button>`;
-  if(meta) html+=`<div class="card-meta">${meta}</div>`;
-  card.innerHTML=html;
-  card.onclick=e=>{if(e.target.dataset.move)return; showTaskModal(task);};
-  const moveBtn=$("[data-move]",card); if(moveBtn) moveBtn.onclick=e=>{e.stopPropagation();showTouchMove(task);};
-  card.addEventListener("dragstart",e=>{draggedTaskId=task.id;card.classList.add("dragging");e.dataTransfer.effectAllowed="move";});
-  card.addEventListener("dragend",()=>{draggedTaskId=null;card.classList.remove("dragging");});
-  return card;
+function mkCard(t){
+  const c=el("div","card");c.draggable=true;
+  let h="";
+  if(t.labels?.length)h+=`<div class="card-labels">${t.labels.map(l=>{const lc=LABEL_COLORS.find(c=>c.name===l);return lc?`<span class="label-pill" style="background:${lc.bg};border-color:${lc.border};color:${lc.text}">${l}</span>`:""}).join("")}</div>`;
+  h+=`<div class="card-title">${esc(t.title)}</div>`;
+  if(t.description)h+=`<div class="card-desc">${esc(t.description)}</div>`;
+  let m="";
+  if(t.priority){const pc=PRIORITY_COLORS[t.priority];m+=`<span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${pc.icon} ${PRIORITIES[t.priority]}</span>`;}
+  if(t.dueDate){const od=isOverdue(t.dueDate)&&t.column!=="Done";m+=`<span class="due-badge ${od?"overdue":""}">📅 ${fmtDate(t.dueDate)}</span>`;}
+  m+=`<button class="mobile-move" data-mv="1">⇄</button>`;
+  if(m)h+=`<div class="card-meta">${m}</div>`;
+  c.innerHTML=h;
+  c.onclick=e=>{if(e.target.closest("[data-mv]"))return;showTaskModal(t);};
+  const mb=$("[data-mv]",c);if(mb)mb.onclick=e=>{e.stopPropagation();showTouchMove(t);};
+  c.addEventListener("dragstart",e=>{dragId=t.id;c.classList.add("dragging");e.dataTransfer.effectAllowed="move";});
+  c.addEventListener("dragend",()=>{dragId=null;c.classList.remove("dragging");});
+  return c;
 }
 
-function showTouchMove(task){
-  toggleSidebar(true);
-  const area=$("#touch-move-area");
-  area.innerHTML=`<div class="touch-move"><div class="touch-move-title">Move "${esc(task.title)}" to:</div>${COLUMNS.filter(c=>c!==task.column).map(c=>`<button class="touch-move-btn" data-to="${c}">${c}</button>`).join("")}<button class="touch-move-btn" style="background:#ffffff10" id="touch-cancel">Cancel</button></div>`;
-  $$("[data-to]",area).forEach(b=>b.onclick=()=>{moveTask(task.id,b.dataset.to);area.innerHTML="";toggleSidebar(false);});
-  $("#touch-cancel",area).onclick=()=>{area.innerHTML="";};
+function showTouchMove(t){
+  togSb(true);
+  const a=$("#tma");
+  a.innerHTML=`<div class="touch-move"><div class="touch-move-title">Move "${esc(t.title)}" to:</div>${COLUMNS.filter(c=>c!==t.column).map(c=>`<button class="touch-move-btn" data-to="${c}">${c}</button>`).join("")}<button class="touch-move-btn" style="background:#ffffff10" id="tc">Cancel</button></div>`;
+  $$("[data-to]",a).forEach(b=>b.onclick=()=>{moveTask(t.id,b.dataset.to);a.innerHTML="";togSb(false);});
+  $("#tc",a).onclick=()=>{a.innerHTML="";};
 }
 
-// ─── Data mutations ──────────────────────────────────
-function addTask(col,data){ const task={id:uid(),column:col,order:tasksInCol(col).length,title:data.title,description:data.description||"",labels:data.labels||[],priority:data.priority||null,dueDate:data.dueDate||null,createdAt:Date.now()}; activeProject().tasks.push(task); saveToFirebase(); renderBoard(); }
-function updateTask(id,data){ const t=activeProject().tasks.find(t=>t.id===id); if(t)Object.assign(t,data); saveToFirebase(); renderBoard(); }
-function deleteTask(id){ activeProject().tasks=activeProject().tasks.filter(t=>t.id!==id); saveToFirebase(); renderBoard(); }
-function moveTask(id,toCol){ const t=activeProject().tasks.find(t=>t.id===id); if(t){t.column=toCol;t.order=tasksInCol(toCol).length;} draggedTaskId=null; saveToFirebase(); renderBoard(); }
-function addProject(name,emoji,icon){ const p={id:uid(),name,emoji:emoji||"📋",icon:icon||null,banner:null,tasks:[]}; state.projects.push(p); state.activeProjectId=p.id; saveToFirebase(); renderBoard(); }
-function updateProjectData(id,name,emoji,icon){ const p=state.projects.find(p=>p.id===id); if(p){p.name=name;p.emoji=emoji;p.icon=icon!==undefined?icon:p.icon;} saveToFirebase(); renderBoard(); }
-function deleteProject(id){ if(state.projects.length<=1)return; state.projects=state.projects.filter(p=>p.id!==id); state.activeProjectId=state.projects[0].id; saveToFirebase(); renderBoard(); }
+/* ── Data ops ── */
+function addTask(col,d){proj().tasks.push({id:uid(),column:col,order:tasksIn(col).length,title:d.title,description:d.description||"",labels:d.labels||[],priority:d.priority||null,dueDate:d.dueDate||null,createdAt:Date.now()});save();renderBoard();}
+function updTask(id,d){const t=proj().tasks.find(t=>t.id===id);if(t)Object.assign(t,d);save();renderBoard();}
+function delTask(id){proj().tasks=proj().tasks.filter(t=>t.id!==id);save();renderBoard();}
+function moveTask(id,to){const t=proj().tasks.find(t=>t.id===id);if(t){t.column=to;t.order=tasksIn(to).length;}dragId=null;save();renderBoard();}
+function addProj(name,emoji,icon,banner){state.projects.push({id:uid(),name,emoji:emoji||"📋",icon:icon||null,banner:banner||null,tasks:[]});state.activeProjectId=state.projects[state.projects.length-1].id;save();renderBoard();}
+function updProj(id,d){const p=state.projects.find(p=>p.id===id);if(p)Object.assign(p,d);save();renderBoard();}
+function delProj(id){if(state.projects.length<=1)return;state.projects=state.projects.filter(p=>p.id!==id);state.activeProjectId=state.projects[0].id;save();renderBoard();}
 
-// ─── App Branding Modal ──────────────────────────────
+/* ── App Branding Modal ── */
 function showAppModal(){
-  const overlay=el("div","modal-overlay");
-  const modal=el("div","modal"); modal.style.maxWidth="400px";
+  const ov=el("div","modal-overlay"),md=el("div","modal");md.style.maxWidth="400px";
   let icon=state.appIcon;
-
   function render(){
-    modal.innerHTML=`
+    md.innerHTML=`
       <div class="modal-header"><h2>Customize App</h2><button class="modal-close" id="mc">✕</button></div>
       <div class="modal-body">
         <label class="field-label">App Icon</label>
         <div class="img-upload-area">
           ${icon?`<img class="img-preview" src="${icon}">`:`<div class="img-preview-placeholder">⬡</div>`}
-          <button class="img-upload-btn" id="m-upload-icon">Upload Image</button>
-          ${icon?`<button class="img-remove-btn" id="m-remove-icon">✕ Remove</button>`:""}
+          <button class="img-upload-btn" id="ui">Upload Image</button>
+          ${icon?`<button class="img-remove-btn" id="ri">✕ Remove</button>`:""}
         </div>
         <label class="field-label">App Name</label>
-        <input id="m-appname" value="${esc(state.appName)}" placeholder="My Kanban">
+        <input id="an" value="${esc(state.appName)}" placeholder="My Kanban">
       </div>
-      <div class="modal-footer"><div style="flex:1"></div><button class="btn-secondary" id="m-cancel">Cancel</button><button class="btn-primary" id="m-save">Save</button></div>`;
-    $("#mc",modal).onclick=close;
-    $("#m-cancel",modal).onclick=close;
-    $("#m-upload-icon",modal).onclick=()=>triggerFileInput("image/*",async f=>{icon=await resizeImage(f,128,128);render();});
-    if($("#m-remove-icon",modal)) $("#m-remove-icon",modal).onclick=()=>{icon=null;render();};
-    $("#m-save",modal).onclick=()=>{
-      const name=$("#m-appname",modal).value.trim();
-      if(!name)return;
-      state.appName=name; state.appIcon=icon;
-      document.title=name;
-      saveToFirebase(); close(); renderBoard();
-    };
+      <div class="modal-footer"><div style="flex:1"></div><button class="btn-secondary" id="cc">Cancel</button><button class="btn-primary" id="sv">Save</button></div>`;
+    $("#mc",md).onclick=close;$("#cc",md).onclick=close;
+    $("#ui",md).onclick=()=>pickFile("image/*",async f=>{icon=await resizeImage(f,128,128);render();});
+    if($("#ri",md))$("#ri",md).onclick=()=>{icon=null;render();};
+    $("#sv",md).onclick=()=>{const n=$("#an",md).value.trim();if(!n)return;state.appName=n;state.appIcon=icon;save();close();renderBoard();};
   }
-
-  const close=()=>overlay.remove();
-  overlay.onclick=e=>{if(e.target===overlay)close();};
-  render();
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
+  const close=()=>ov.remove();
+  ov.onclick=e=>{if(e.target===ov)close();};
+  render();ov.appendChild(md);document.body.appendChild(ov);
 }
 
-// ─── Task Modal ──────────────────────────────────────
+/* ── Task Modal ── */
 function showTaskModal(task,col){
-  const overlay=el("div","modal-overlay");
-  const modal=el("div","modal");
-  const isEdit=!!task; if(task)col=task.column;
-  let labels=task?.labels?.slice()||[]; let priority=task?.priority||null;
-
-  modal.innerHTML=`
-    <div class="modal-header"><h2>${isEdit?"Edit Card":`New Card — ${col}`}</h2><button class="modal-close" id="mc">✕</button></div>
+  const ov=el("div","modal-overlay"),md=el("div","modal");
+  const isE=!!task;if(task)col=task.column;
+  let labels=task?.labels?.slice()||[],priority=task?.priority||null;
+  md.innerHTML=`
+    <div class="modal-header"><h2>${isE?"Edit Card":`New Card — ${col}`}</h2><button class="modal-close" id="mc">✕</button></div>
     <div class="modal-body">
-      <label class="field-label">Title *</label><input id="m-title" placeholder="What needs to be done?" value="${esc(task?.title||"")}">
-      <label class="field-label">Description</label><textarea id="m-desc" placeholder="Add details...">${esc(task?.description||"")}</textarea>
-      <label class="field-label">Labels</label><div class="labels-grid" id="m-labels"></div>
-      <label class="field-label">Priority</label><div class="priority-row" id="m-priority"></div>
-      <label class="field-label">Due Date</label><input type="date" id="m-due" value="${task?.dueDate||""}">
-      ${isEdit?`<label class="field-label">Move to</label><div class="priority-row" id="m-move"></div>`:""}
+      <label class="field-label">Title *</label><input id="mt" placeholder="What needs to be done?" value="${esc(task?.title||"")}">
+      <label class="field-label">Description</label><textarea id="md" placeholder="Add details...">${esc(task?.description||"")}</textarea>
+      <label class="field-label">Labels</label><div class="labels-grid" id="ml"></div>
+      <label class="field-label">Priority</label><div class="priority-row" id="mp"></div>
+      <label class="field-label">Due Date</label><input type="date" id="mdu" value="${task?.dueDate||""}">
+      ${isE?`<label class="field-label">Move to</label><div class="priority-row" id="mm"></div>`:""}
     </div>
-    <div class="modal-footer">${isEdit?`<button class="btn-danger" id="m-del">Delete</button>`:""}<div style="flex:1"></div><button class="btn-secondary" id="m-cancel">Cancel</button><button class="btn-primary" id="m-save">${isEdit?"Save":"Create"}</button></div>`;
-
-  function renderLabels(){
-    const g=$("#m-labels",modal);
-    g.innerHTML=LABEL_COLORS.map(lc=>{const on=labels.includes(lc.name);return`<button class="label-opt" data-label="${lc.name}" style="background:${on?lc.bg:"transparent"};border-color:${on?lc.border:"#ffffff18"};color:${on?lc.text:"#888"}">${lc.name}</button>`;}).join("");
-    $$("[data-label]",g).forEach(b=>b.onclick=()=>{const n=b.dataset.label;labels=labels.includes(n)?labels.filter(l=>l!==n):[...labels,n];renderLabels();});
+    <div class="modal-footer">${isE?`<button class="btn-danger" id="mdl">Delete</button>`:""}<div style="flex:1"></div><button class="btn-secondary" id="cc">Cancel</button><button class="btn-primary" id="sv">${isE?"Save":"Create"}</button></div>`;
+  function rL(){
+    const g=$("#ml",md);
+    g.innerHTML=LABEL_COLORS.map(lc=>{const on=labels.includes(lc.name);return`<button class="label-opt" data-l="${lc.name}" style="background:${on?lc.bg:"transparent"};border-color:${on?lc.border:"#ffffff18"};color:${on?lc.text:"#888"}">${lc.name}</button>`;}).join("");
+    $$("[data-l]",g).forEach(b=>b.onclick=()=>{const n=b.dataset.l;labels=labels.includes(n)?labels.filter(l=>l!==n):[...labels,n];rL();});
   }
-  function renderPriority(){
-    const g=$("#m-priority",modal);
-    g.innerHTML=Object.entries(PRIORITIES).map(([k,v])=>{const pc=PRIORITY_COLORS[k];const on=priority===k;return`<button class="priority-opt" data-pri="${k}" style="background:${on?pc.bg:"transparent"};border-color:${on?pc.text:"#ffffff18"};color:${on?pc.text:"#888"}">${pc.icon} ${v}</button>`;}).join("");
-    $$("[data-pri]",g).forEach(b=>b.onclick=()=>{priority=priority===b.dataset.pri?null:b.dataset.pri;renderPriority();});
+  function rP(){
+    const g=$("#mp",md);
+    g.innerHTML=Object.entries(PRIORITIES).map(([k,v])=>{const pc=PRIORITY_COLORS[k],on=priority===k;return`<button class="priority-opt" data-p="${k}" style="background:${on?pc.bg:"transparent"};border-color:${on?pc.text:"#ffffff18"};color:${on?pc.text:"#888"}">${pc.icon} ${v}</button>`;}).join("");
+    $$("[data-p]",g).forEach(b=>b.onclick=()=>{priority=priority===b.dataset.p?null:b.dataset.p;rP();});
   }
-  renderLabels(); renderPriority();
-  if(isEdit){ const mv=$("#m-move",modal); mv.innerHTML=COLUMNS.filter(c=>c!==task.column).map(c=>`<button class="move-btn" data-movecol="${c}">→ ${c}</button>`).join(""); $$("[data-movecol]",mv).forEach(b=>b.onclick=()=>{moveTask(task.id,b.dataset.movecol);overlay.remove();}); }
-  const close=()=>overlay.remove();
-  overlay.onclick=e=>{if(e.target===overlay)close();};
-  $("#mc",modal).onclick=close; $("#m-cancel",modal).onclick=close;
-  if($("#m-del",modal)) $("#m-del",modal).onclick=()=>{deleteTask(task.id);close();};
-  $("#m-save",modal).onclick=()=>{
-    const title=$("#m-title",modal).value.trim(); if(!title)return;
-    const data={title,description:$("#m-desc",modal).value,labels,priority,dueDate:$("#m-due",modal).value};
-    if(isEdit)updateTask(task.id,data); else addTask(col,data); close();
-  };
-  overlay.appendChild(modal); document.body.appendChild(overlay); $("#m-title",modal).focus();
+  rL();rP();
+  if(isE){const mv=$("#mm",md);mv.innerHTML=COLUMNS.filter(c=>c!==task.column).map(c=>`<button class="move-btn" data-mc="${c}">→ ${c}</button>`).join("");$$("[data-mc]",mv).forEach(b=>b.onclick=()=>{moveTask(task.id,b.dataset.mc);ov.remove();});}
+  const close=()=>ov.remove();
+  ov.onclick=e=>{if(e.target===ov)close();};
+  $("#mc",md).onclick=close;$("#cc",md).onclick=close;
+  if($("#mdl",md))$("#mdl",md).onclick=()=>{delTask(task.id);close();};
+  $("#sv",md).onclick=()=>{const t=$("#mt",md).value.trim();if(!t)return;const d={title:t,description:$("#md",md).value,labels,priority,dueDate:$("#mdu",md).value};if(isE)updTask(task.id,d);else addTask(col,d);close();};
+  ov.appendChild(md);document.body.appendChild(ov);$("#mt",md).focus();
 }
 
-// ─── Project Modal ───────────────────────────────────
-function showProjectModal(project){
-  const overlay=el("div","modal-overlay");
-  const modal=el("div","modal"); modal.style.maxWidth="440px";
-  let emoji=project?.emoji||"📋";
-  let icon=project?.icon||null;
-  let banner=project?.banner||null;
-
+/* ── Project Modal ── */
+function showProjModal(project){
+  const ov=el("div","modal-overlay"),md=el("div","modal");md.style.maxWidth="440px";
+  let emoji=project?.emoji||"📋",icon=project?.icon||null,banner=project?.banner||null;
   function render(){
-    modal.innerHTML=`
+    md.innerHTML=`
       <div class="modal-header"><h2>${project?"Edit Project":"New Project"}</h2><button class="modal-close" id="mc">✕</button></div>
       <div class="modal-body">
         <label class="field-label">Project Icon</label>
         <div class="img-upload-area">
           ${icon?`<img class="img-preview" src="${icon}">`:`<div class="img-preview-placeholder">${emoji}</div>`}
-          <button class="img-upload-btn" id="m-upload-icon">Upload Image</button>
-          ${icon?`<button class="img-remove-btn" id="m-remove-icon">✕ Remove</button>`:""}
+          <button class="img-upload-btn" id="ui">Upload Image</button>
+          ${icon?`<button class="img-remove-btn" id="ri">✕ Remove</button>`:""}
         </div>
-        ${!icon?`<label class="field-label">Or pick an emoji</label><div class="emoji-grid" id="m-emojis"></div>`:""}
+        ${!icon?`<label class="field-label">Or pick an emoji</label><div class="emoji-grid" id="eg"></div>`:""}
         <label class="field-label">Project Name</label>
-        <input id="m-pname" placeholder="e.g. Website Redesign" value="${esc(project?.name||"")}">
+        <input id="pn" placeholder="e.g. Website Redesign" value="${esc(project?.name||"")}">
         <label class="field-label">Banner Image</label>
-        <div class="banner-upload-area ${banner?"has-img":""}" id="m-banner-area">
+        <div class="banner-upload-area ${banner?"has-img":""}" id="ba">
           ${banner?`<img src="${banner}">`:""}
-          <span class="banner-upload-text">${banner?"📷 Change banner":"📷 Click to upload banner"}</span>
+          <span class="bup-text">${banner?"📷 Change":"📷 Upload banner"}</span>
         </div>
-        ${banner?`<button class="img-remove-btn" id="m-remove-banner" style="margin-top:4px">✕ Remove banner</button>`:""}
+        ${banner?`<button class="img-remove-btn" id="rb" style="margin-top:4px">✕ Remove banner</button>`:""}
       </div>
       <div class="modal-footer">
-        ${project&&state.projects.length>1?`<button class="btn-danger" id="m-del">Delete</button>`:""}
-        <div style="flex:1"></div><button class="btn-secondary" id="m-cancel">Cancel</button><button class="btn-primary" id="m-save">${project?"Save":"Create"}</button>
+        ${project&&state.projects.length>1?`<button class="btn-danger" id="dl">Delete</button>`:""}
+        <div style="flex:1"></div><button class="btn-secondary" id="cc">Cancel</button><button class="btn-primary" id="sv">${project?"Save":"Create"}</button>
       </div>`;
-
-    $("#mc",modal).onclick=close; $("#m-cancel",modal).onclick=close;
-    if($("#m-del",modal)) $("#m-del",modal).onclick=()=>{deleteProject(project.id);close();};
-
-    // Emoji grid
-    const eg=$("#m-emojis",modal);
-    if(eg){
-      eg.innerHTML=EMOJIS.map(e=>`<button class="emoji-btn ${emoji===e?"active":""}" data-em="${e}">${e}</button>`).join("");
-      $$("[data-em]",eg).forEach(b=>b.onclick=()=>{emoji=b.dataset.em;render();});
-    }
-
-    // Icon upload
-    $("#m-upload-icon",modal).onclick=()=>triggerFileInput("image/*",async f=>{icon=await resizeImage(f,128,128);render();});
-    if($("#m-remove-icon",modal)) $("#m-remove-icon",modal).onclick=()=>{icon=null;render();};
-
-    // Banner upload
-    $("#m-banner-area",modal).onclick=()=>triggerFileInput("image/*",async f=>{banner=await resizeImage(f,1200,400);render();});
-    if($("#m-remove-banner",modal)) $("#m-remove-banner",modal).onclick=()=>{banner=null;render();};
-
-    $("#m-save",modal).onclick=()=>{
-      const name=$("#m-pname",modal).value.trim(); if(!name)return;
-      if(project){
-        updateProjectData(project.id,name,emoji,icon);
-        const p=state.projects.find(pp=>pp.id===project.id);
-        if(p) p.banner=banner;
-        saveToFirebase(); renderBoard();
-      } else {
-        const p={id:uid(),name,emoji,icon,banner,tasks:[]};
-        state.projects.push(p); state.activeProjectId=p.id;
-        saveToFirebase(); renderBoard();
-      }
+    $("#mc",md).onclick=close;$("#cc",md).onclick=close;
+    if($("#dl",md))$("#dl",md).onclick=()=>{delProj(project.id);close();};
+    const eg=$("#eg",md);
+    if(eg){eg.innerHTML=EMOJIS.map(e=>`<button class="emoji-btn ${emoji===e?"active":""}" data-e="${e}">${e}</button>`).join("");$$("[data-e]",eg).forEach(b=>b.onclick=()=>{emoji=b.dataset.e;render();});}
+    $("#ui",md).onclick=()=>pickFile("image/*",async f=>{icon=await resizeImage(f,128,128);render();});
+    if($("#ri",md))$("#ri",md).onclick=()=>{icon=null;render();};
+    $("#ba",md).onclick=()=>pickFile("image/*",async f=>{banner=await resizeImage(f,1200,400);render();});
+    if($("#rb",md))$("#rb",md).onclick=()=>{banner=null;render();};
+    $("#sv",md).onclick=()=>{
+      const name=$("#pn",md).value.trim();if(!name)return;
+      if(project){updProj(project.id,{name,emoji,icon,banner});}
+      else{addProj(name,emoji,icon,banner);}
       close();
     };
   }
-
-  const close=()=>overlay.remove();
-  overlay.onclick=e=>{if(e.target===overlay)close();};
-  render();
-  overlay.appendChild(modal); document.body.appendChild(overlay);
-  setTimeout(()=>{const inp=$("#m-pname",modal);if(inp)inp.focus();},50);
+  const close=()=>ov.remove();
+  ov.onclick=e=>{if(e.target===ov)close();};
+  render();ov.appendChild(md);document.body.appendChild(ov);
+  setTimeout(()=>{const i=$("#pn",md);if(i)i.focus();},50);
 }
 
-// ─── Settings Modal ──────────────────────────────────
-function showSettingsModal(){
-  const overlay=el("div","modal-overlay");
-  const modal=el("div","modal"); modal.style.maxWidth="400px";
-  modal.innerHTML=`
+/* ── Settings ── */
+function showSettings(){
+  const ov=el("div","modal-overlay"),md=el("div","modal");md.style.maxWidth="400px";
+  md.innerHTML=`
     <div class="modal-header"><h2>Settings</h2><button class="modal-close" id="mc">✕</button></div>
     <div class="modal-body">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0"><div><div style="font-weight:600;font-size:14px">Firebase Sync</div><div style="font-size:12px;color:var(--text-secondary);margin-top:2px">Connected via Anonymous Auth</div></div><span style="width:10px;height:10px;border-radius:50%;background:var(--green)"></span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0"><div><div style="font-weight:600;font-size:14px">Firebase Sync</div><div style="font-size:12px;color:var(--text-secondary);margin-top:2px">Connected · UID: ${firebase?.localId?.slice(0,8)||"?"}…</div></div><span style="width:10px;height:10px;border-radius:50%;background:var(--green)"></span></div>
       <div style="border-top:1px solid var(--border);margin:8px 0"></div>
-      <div id="settings-action"></div>
+      <div id="sa"></div>
     </div>`;
   function showBtn(){
-    const a=$("#settings-action",modal);
-    a.innerHTML=`<button class="btn-danger" style="width:100%;text-align:center" id="s-disc">Disconnect Firebase</button>`;
-    $("#s-disc",modal).onclick=()=>{
-      a.innerHTML=`<p style="font-size:12px;color:#ff6b6b;margin:0 0 8px">Your data stays in Firebase — reconnect anytime.</p><div style="display:flex;gap:8px"><button class="btn-secondary" id="s-no">Cancel</button><button class="btn-danger" style="flex:1;text-align:center" id="s-yes">Confirm</button></div>`;
-      $("#s-no",modal).onclick=showBtn;
-      $("#s-yes",modal).onclick=()=>{firebase=null;localStorage.removeItem("kanban-fb-config");overlay.remove();renderSetup();};
+    const a=$("#sa",md);
+    a.innerHTML=`<button class="btn-danger" style="width:100%;text-align:center" id="sd">Disconnect Firebase</button>`;
+    $("#sd",md).onclick=()=>{
+      a.innerHTML=`<p style="font-size:12px;color:#ff6b6b;margin:0 0 8px">Your data stays in Firebase. Reconnect with the same DB URL to get it back.</p><div style="display:flex;gap:8px"><button class="btn-secondary" id="sn">Cancel</button><button class="btn-danger" style="flex:1;text-align:center" id="sy">Confirm</button></div>`;
+      $("#sn",md).onclick=showBtn;
+      $("#sy",md).onclick=()=>{
+        if(firebase)firebase.clearAuth();
+        firebase=null;
+        localStorage.removeItem("kanban-fb-config");
+        ov.remove();renderSetup();
+      };
     };
   }
   showBtn();
-  const close=()=>overlay.remove();
-  overlay.onclick=e=>{if(e.target===overlay)close();};
-  $("#mc",modal).onclick=close;
-  overlay.appendChild(modal); document.body.appendChild(overlay);
+  const close=()=>ov.remove();
+  ov.onclick=e=>{if(e.target===ov)close();};
+  $("#mc",md).onclick=close;
+  ov.appendChild(md);document.body.appendChild(ov);
 }
 
-// ─── Init ────────────────────────────────────────────
+/* ── Init ── */
 async function init(){
   $("#app").innerHTML=`<div class="loading"><div class="loading-dot"></div><p class="loading-text">Loading...</p></div>`;
   const saved=JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
   if(saved){
     try{
-      const fb=new FirebaseSync(saved.apiKey,saved.dbUrl); await fb.signInAnonymous(); firebase=fb;
+      const fb=new FirebaseSync(saved.apiKey,saved.dbUrl);
+      await fb.connect(); // Reuses existing UID if available
+      firebase=fb;
       const data=await fb.getData();
-      if(data){ state.appName=data.appName||state.appName; state.appIcon=data.appIcon||null; state.projects=data.projects||state.projects; state.activeProjectId=data.activeProjectId||state.projects[0].id; }
+      if(data){
+        state.appName=data.appName||state.appName;
+        state.appIcon=data.appIcon||null;
+        state.projects=data.projects||state.projects;
+        state.activeProjectId=data.activeProjectId||state.projects[0].id;
+      }
       document.title=state.appName;
       renderBoard();
-    }catch(e){ renderSetup(e.message); }
-  }else{ renderSetup(); }
+    }catch(e){renderSetup(e.message);}
+  }else{renderSetup();}
 }
 init();
 </script>
