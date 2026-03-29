@@ -42,13 +42,12 @@ input, textarea { font-family: inherit; color: var(--text-primary); background: 
 input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
 textarea { resize: vertical; min-height: 72px; }
 input[type="date"] { color-scheme: dark; }
+input[type="file"] { display: none; }
 
-/* ── Animations ── */
 @keyframes pulse { 0%,100% { transform: scale(1); opacity:.6 } 50% { transform: scale(1.15); opacity:1 } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
 @keyframes slideIn { from { transform: translateX(-100%) } to { transform: none } }
 
-/* ── Loading ── */
 .loading { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; gap:16px }
 .loading-dot { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent-light)); animation:pulse 1.2s ease-in-out infinite }
 .loading-text { color:var(--text-muted); font-size:14px; letter-spacing:1px }
@@ -88,22 +87,24 @@ input[type="date"] { color-scheme: dark; }
 
 /* ── Sidebar ── */
 .sidebar { width:260px; background:var(--bg-sidebar); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:20px 12px; gap:4px; flex-shrink:0; z-index:100; position:relative }
-.sidebar-header { display:flex; align-items:center; gap:10px; padding:4px 8px; margin-bottom:20px }
-.logo-mark { font-size:22px; color:var(--accent) }
-.logo-text { font-size:16px; font-weight:700; letter-spacing:-.5px; background:linear-gradient(135deg,var(--accent-light),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent }
-.sync-dot { width:8px; height:8px; border-radius:50%; margin-left:auto; transition:background .3s }
+.sidebar-header { display:flex; align-items:center; gap:10px; padding:4px 8px; margin-bottom:20px; cursor:pointer; border-radius:10px; transition:background .15s }
+.sidebar-header:hover { background:#ffffff06 }
+.app-icon { width:28px; height:28px; border-radius:8px; object-fit:cover; flex-shrink:0 }
+.app-icon-default { width:28px; height:28px; border-radius:8px; background:linear-gradient(135deg,var(--accent),var(--accent-light)); display:flex; align-items:center; justify-content:center; font-size:14px; color:#fff; font-weight:700; flex-shrink:0 }
+.logo-text { font-size:16px; font-weight:700; letter-spacing:-.5px; background:linear-gradient(135deg,var(--accent-light),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.sync-dot { width:8px; height:8px; border-radius:50%; margin-left:auto; transition:background .3s; flex-shrink:0 }
 .sidebar-label { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--text-muted); padding:12px 8px 6px; text-transform:uppercase }
 .sidebar-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:background .15s; border:1px solid transparent }
 .sidebar-item:hover { background:#ffffff06 }
 .sidebar-item.active { background:#ffffff08; border-color:#ffffff10 }
-.sidebar-item .emoji { font-size:18px }
+.sidebar-item .proj-icon { width:24px; height:24px; border-radius:6px; object-fit:cover; flex-shrink:0 }
+.sidebar-item .proj-icon-emoji { font-size:18px; width:24px; text-align:center; flex-shrink:0 }
 .sidebar-item .name { flex:1; font-size:14px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
 .sidebar-item .count { font-size:11px; color:var(--text-muted); background:#ffffff08; padding:2px 8px; border-radius:10px }
 .new-project-btn { margin-top:8px; padding:10px 12px; border:1px dashed #ffffff15; border-radius:10px; color:var(--text-muted); font-size:13px; text-align:left; transition:border-color .15s }
 .new-project-btn:hover { border-color:var(--accent) }
 .settings-btn { padding:10px 12px; border:1px solid var(--border); border-radius:10px; color:var(--text-muted); font-size:13px; text-align:left }
 
-/* ── Mobile sidebar ── */
 @media(max-width:768px) {
   .sidebar { position:fixed; top:0; left:0; bottom:0; transform:translateX(-100%); transition:transform .25s ease }
   .sidebar.open { transform:translateX(0); animation:slideIn .25s ease }
@@ -112,17 +113,25 @@ input[type="date"] { color-scheme: dark; }
   .top-stats { display:none !important }
 }
 
-/* ── Touch move (mobile) ── */
 .touch-move { margin-top:16px; padding:12px; background:#ffffff06; border-radius:10px; display:flex; flex-direction:column; gap:6px }
 .touch-move-title { font-size:12px; color:var(--text-secondary); margin-bottom:4px }
 .touch-move-btn { padding:8px 12px; background:#7c5cfc20; border:1px solid #7c5cfc40; border-radius:8px; color:var(--accent-light); font-size:13px; text-align:left }
 
 /* ── Main ── */
 .main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0 }
+
+/* ── Banner ── */
+.project-banner { width:100%; height:140px; background:var(--bg-surface); border-bottom:1px solid var(--border); position:relative; overflow:hidden; flex-shrink:0; cursor:pointer; transition:opacity .15s }
+.project-banner:hover .banner-overlay { opacity:1 }
+.banner-img { width:100%; height:100%; object-fit:cover }
+.banner-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; gap:8px; color:var(--text-muted); font-size:13px; background:linear-gradient(135deg, #141620 0%, #1a1d2a 50%, #141620 100%) }
+.banner-overlay { position:absolute; inset:0; background:#00000060; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; color:#fff; font-size:13px; font-weight:600; gap:6px }
+
 .top-bar { display:flex; align-items:center; padding:14px 20px; gap:12px; border-bottom:1px solid var(--border); flex-shrink:0; flex-wrap:wrap }
 .menu-btn { display:none; background:none; border:none; color:var(--text-secondary); font-size:20px; padding:4px }
 .top-center { display:flex; align-items:center; gap:8px; flex:1; min-width:0 }
-.top-center .emoji { font-size:22px }
+.top-center .proj-icon { width:28px; height:28px; border-radius:8px; object-fit:cover }
+.top-center .proj-icon-emoji { font-size:22px }
 .top-center h1 { font-size:18px; font-weight:700; letter-spacing:-.3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
 .edit-project-btn { color:var(--text-muted); font-size:16px; padding:2px 6px; border-radius:6px }
 .top-stats { display:flex; gap:8px }
@@ -173,14 +182,28 @@ input[type="date"] { color-scheme: dark; }
 .emoji-grid { display:flex; flex-wrap:wrap; gap:6px }
 .emoji-btn { font-size:20px; padding:6px 8px; border-radius:8px; border:1px solid var(--border-light); cursor:pointer; transition:all .15s }
 .emoji-btn.active { background:#7c5cfc20; border-color:#7c5cfc60 }
+
+/* ── Image Upload ── */
+.img-upload-area { display:flex; align-items:center; gap:12px }
+.img-preview { width:48px; height:48px; border-radius:10px; object-fit:cover; border:1px solid var(--border-light) }
+.img-preview-placeholder { width:48px; height:48px; border-radius:10px; background:var(--bg-input); border:1px dashed var(--border-light); display:flex; align-items:center; justify-content:center; font-size:20px; color:var(--text-muted) }
+.img-upload-btn { padding:6px 14px; border:1px solid var(--border-light); border-radius:var(--radius-sm); color:var(--text-secondary); font-size:12px; font-weight:600; cursor:pointer; transition:border-color .15s }
+.img-upload-btn:hover { border-color:var(--accent); color:var(--accent-light) }
+.img-remove-btn { padding:6px 10px; color:var(--text-muted); font-size:12px; cursor:pointer }
+.img-remove-btn:hover { color:var(--red) }
+
+.banner-upload-area { width:100%; height:100px; border:1px dashed var(--border-light); border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer; transition:border-color .15s; overflow:hidden; position:relative }
+.banner-upload-area:hover { border-color:var(--accent) }
+.banner-upload-area img { width:100%; height:100%; object-fit:cover; position:absolute; inset:0 }
+.banner-upload-area .banner-upload-text { position:relative; z-index:1; font-size:12px; color:var(--text-muted); text-align:center }
+.banner-upload-area.has-img .banner-upload-text { color:#fff; background:#00000080; padding:4px 12px; border-radius:6px }
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-// ─── State ───────────────────────────────────────────
 const COLUMNS = ["To Do", "In Progress", "Done"];
-const PRIORITIES = { high: "High", medium: "Medium", low: "Low" };
+const PRIORITIES = { high:"High", medium:"Medium", low:"Low" };
 const LABEL_COLORS = [
   { name:"Red", bg:"#ff4d4f22", border:"#ff4d4f", text:"#ff4d4f" },
   { name:"Orange", bg:"#fa8c1622", border:"#fa8c16", text:"#fa8c16" },
@@ -192,113 +215,119 @@ const LABEL_COLORS = [
   { name:"Pink", bg:"#eb2f9622", border:"#eb2f96", text:"#eb2f96" },
 ];
 const PRIORITY_COLORS = {
-  high: { bg:"#ff4d4f20", text:"#ff6b6b", icon:"▲" },
-  medium: { bg:"#fa8c1620", text:"#ffa940", icon:"◆" },
-  low: { bg:"#52c41a20", text:"#73d13d", icon:"▼" },
+  high:{ bg:"#ff4d4f20", text:"#ff6b6b", icon:"▲" },
+  medium:{ bg:"#fa8c1620", text:"#ffa940", icon:"◆" },
+  low:{ bg:"#52c41a20", text:"#73d13d", icon:"▼" },
 };
 const EMOJIS = ["🚀","📋","💡","🎮","🎨","🔧","📱","🌟","⚡","🏠","📚","🎯"];
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 
 let state = {
-  projects: [{ id:"default", name:"My Project", emoji:"🚀", tasks:[] }],
+  appName: "Kanban Flow",
+  appIcon: null,
+  projects: [{ id:"default", name:"My Project", emoji:"🚀", icon:null, banner:null, tasks:[] }],
   activeProjectId: "default",
 };
 let firebase = null;
 let syncStatus = "synced";
 let saveTimer = null;
 
+// ─── Image helpers ───────────────────────────────────
+function resizeImage(file, maxW, maxH) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let w = img.width, h = img.height;
+        if(w > maxW || h > maxH) {
+          const ratio = Math.min(maxW/w, maxH/h);
+          w = Math.round(w*ratio);
+          h = Math.round(h*ratio);
+        }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function triggerFileInput(accept, callback) {
+  const inp = document.createElement("input");
+  inp.type = "file"; inp.accept = accept;
+  inp.onchange = () => { if(inp.files[0]) callback(inp.files[0]); };
+  inp.click();
+}
+
 // ─── Firebase REST ───────────────────────────────────
 class FirebaseSync {
-  constructor(apiKey, dbUrl) {
-    this.apiKey = apiKey;
-    this.dbUrl = dbUrl.replace(/\/$/,"");
-    this.idToken = null;
-    this.localId = null;
-    this.refreshToken = null;
-  }
+  constructor(k, u) { this.apiKey=k; this.dbUrl=u.replace(/\/$/,""); this.idToken=null; this.localId=null; this.refreshToken=null; }
   async signInAnonymous() {
-    const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.apiKey}`, {
-      method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({returnSecureToken:true})
-    });
-    if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e?.error?.message || "Auth failed"); }
-    const d = await r.json();
-    this.idToken = d.idToken; this.localId = d.localId; this.refreshToken = d.refreshToken;
-    return d;
+    const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.apiKey}`,
+      { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({returnSecureToken:true}) });
+    if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e?.error?.message||"Auth failed"); }
+    const d=await r.json(); this.idToken=d.idToken; this.localId=d.localId; this.refreshToken=d.refreshToken; return d;
   }
   async refreshIdToken() {
-    const r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${this.apiKey}`, {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({grant_type:"refresh_token",refresh_token:this.refreshToken})
-    });
-    if (!r.ok) throw new Error("Token refresh failed");
-    const d = await r.json();
-    this.idToken = d.id_token; this.refreshToken = d.refresh_token;
+    const r = await fetch(`https://securetoken.googleapis.com/v1/token?key=${this.apiKey}`,
+      { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({grant_type:"refresh_token",refresh_token:this.refreshToken}) });
+    if(!r.ok) throw new Error("Token refresh failed");
+    const d=await r.json(); this.idToken=d.id_token; this.refreshToken=d.refresh_token;
   }
   async req(path, method="GET", body=null) {
-    let url = `${this.dbUrl}/users/${this.localId}/${path}.json?auth=${this.idToken}`;
-    const opts = { method, headers:{"Content-Type":"application/json"} };
-    if (body !== null) opts.body = JSON.stringify(body);
-    let r = await fetch(url, opts);
-    if (r.status === 401) {
-      await this.refreshIdToken();
-      r = await fetch(`${this.dbUrl}/users/${this.localId}/${path}.json?auth=${this.idToken}`, opts);
-    }
-    if (!r.ok) throw new Error(`Firebase ${method}: ${r.status}`);
+    let url=`${this.dbUrl}/users/${this.localId}/${path}.json?auth=${this.idToken}`;
+    const opts={method, headers:{"Content-Type":"application/json"}};
+    if(body!==null) opts.body=JSON.stringify(body);
+    let r=await fetch(url, opts);
+    if(r.status===401){ await this.refreshIdToken(); r=await fetch(`${this.dbUrl}/users/${this.localId}/${path}.json?auth=${this.idToken}`, opts); }
+    if(!r.ok) throw new Error(`Firebase ${method}: ${r.status}`);
     return r.json();
   }
-  getData() { return this.req("kanban"); }
-  setData(d) { return this.req("kanban","PUT",d); }
+  getData(){ return this.req("kanban"); }
+  setData(d){ return this.req("kanban","PUT",d); }
 }
 
 // ─── Helpers ─────────────────────────────────────────
-const $ = (s,p) => (p||document).querySelector(s);
-const $$ = (s,p) => [...(p||document).querySelectorAll(s)];
-const el = (tag, cls, html) => { const e = document.createElement(tag); if(cls) e.className=cls; if(html) e.innerHTML=html; return e; };
-const activeProject = () => state.projects.find(p => p.id === state.activeProjectId) || state.projects[0];
-const tasksInCol = col => (activeProject()?.tasks||[]).filter(t => t.column===col).sort((a,b)=>(a.order??0)-(b.order??0));
+const $=(s,p)=>(p||document).querySelector(s);
+const $$=(s,p)=>[...(p||document).querySelectorAll(s)];
+const el=(tag,cls,html)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(html) e.innerHTML=html; return e; };
+const activeProject=()=>state.projects.find(p=>p.id===state.activeProjectId)||state.projects[0];
+const tasksInCol=col=>(activeProject()?.tasks||[]).filter(t=>t.column===col).sort((a,b)=>(a.order??0)-(b.order??0));
+function formatDate(d){ if(!d)return""; const date=new Date(d),now=new Date(),diff=Math.ceil((date-now)/864e5); if(diff<0)return"Overdue"; if(diff===0)return"Today"; if(diff===1)return"Tomorrow"; return date.toLocaleDateString("en-US",{month:"short",day:"numeric"}); }
+function isOverdue(d){ return d&&new Date(d)<new Date(); }
+function colDotClass(c){ return c==="To Do"?"todo":c==="In Progress"?"progress":"done"; }
+function esc(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
 
-function formatDate(d) {
-  if(!d) return "";
-  const date=new Date(d), now=new Date(), diff=Math.ceil((date-now)/864e5);
-  if(diff<0) return "Overdue";
-  if(diff===0) return "Today";
-  if(diff===1) return "Tomorrow";
-  return date.toLocaleDateString("en-US",{month:"short",day:"numeric"});
-}
-function isOverdue(d) { return d && new Date(d) < new Date(); }
-function colDotClass(col) { return col==="To Do"?"todo":col==="In Progress"?"progress":"done"; }
-
-// ─── Save / Load ─────────────────────────────────────
 function saveToFirebase() {
-  if (!firebase) return;
-  syncStatus = "saving"; updateSyncDot();
+  if(!firebase) return;
+  syncStatus="saving"; updateSyncDot();
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
-    try {
-      await firebase.setData({ projects: state.projects, activeProjectId: state.activeProjectId });
-      syncStatus = "synced";
-    } catch(e) { console.error("Save:",e); syncStatus = "error"; }
+  saveTimer=setTimeout(async()=>{
+    try{ await firebase.setData({appName:state.appName, appIcon:state.appIcon, projects:state.projects, activeProjectId:state.activeProjectId}); syncStatus="synced"; }
+    catch(e){ console.error("Save:",e); syncStatus="error"; }
     updateSyncDot();
-  }, 800);
+  },800);
 }
+function updateSyncDot(){ const d=$(".sync-dot"); if(d) d.style.background=syncStatus==="synced"?"var(--green)":syncStatus==="saving"?"var(--amber)":"var(--red)"; }
 
-function updateSyncDot() {
-  const dot = $(".sync-dot");
-  if (!dot) return;
-  dot.style.background = syncStatus==="synced"?"var(--green)":syncStatus==="saving"?"var(--amber)":"var(--red)";
+function renderProjectIcon(proj, size) {
+  if(proj.icon) return `<img class="proj-icon" src="${proj.icon}" style="width:${size}px;height:${size}px;border-radius:${Math.round(size*.25)}px">`;
+  return `<span class="proj-icon-emoji" style="font-size:${Math.round(size*.75)}px;width:${size}px;text-align:center">${proj.emoji||"📋"}</span>`;
 }
 
 // ─── Render: Setup ───────────────────────────────────
 function renderSetup(error) {
-  const saved = JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
-  let step = 0;
-  const app = $("#app");
-
-  function draw() {
-    const steps = [
-      { title:"Create Firebase Project", html:`<p>1. Go to <strong>console.firebase.google.com</strong></p><p>2. Click <strong>"Add project"</strong></p><p>3. Name it something like <strong>"kanban-board"</strong></p><p>4. Disable Google Analytics (optional) → Create</p>` },
-      { title:"Enable Anonymous Auth", html:`<p>1. Go to <strong>Build → Authentication</strong></p><p>2. Click <strong>"Get started"</strong></p><p>3. Under Sign-in providers, click <strong>"Anonymous"</strong></p><p>4. Toggle <strong>Enable</strong> → Save</p>` },
-      { title:"Create Realtime Database", html:`<p>1. Go to <strong>Build → Realtime Database</strong></p><p>2. Click <strong>"Create Database"</strong></p><p>3. Choose your region → Next</p><p>4. Select <strong>"Start in test mode"</strong> → Enable</p><div class="warn-box">⚠️ <strong>Important:</strong> Immediately go to the <strong>Rules</strong> tab and replace with the rules below. This prevents the 30-day test mode expiry.</div><pre class="code-block">{
+  const saved=JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
+  let step=0;
+  function draw(){
+    const steps=[
+      {title:"Create Firebase Project",html:`<p>1. Go to <strong>console.firebase.google.com</strong></p><p>2. Click <strong>"Add project"</strong></p><p>3. Name it something like <strong>"kanban-board"</strong></p><p>4. Disable Google Analytics (optional) → Create</p>`},
+      {title:"Enable Anonymous Auth",html:`<p>1. Go to <strong>Build → Authentication</strong></p><p>2. Click <strong>"Get started"</strong></p><p>3. Under Sign-in providers, click <strong>"Anonymous"</strong></p><p>4. Toggle <strong>Enable</strong> → Save</p>`},
+      {title:"Create Realtime Database",html:`<p>1. Go to <strong>Build → Realtime Database</strong></p><p>2. Click <strong>"Create Database"</strong></p><p>3. Choose your region → Next</p><p>4. Select <strong>"Start in test mode"</strong> → Enable</p><div class="warn-box">⚠️ <strong>Immediately</strong> go to the <strong>Rules</strong> tab and replace with the rules below. This prevents the 30-day test mode expiry.</div><pre class="code-block">{
   "rules": {
     "users": {
       "$uid": {
@@ -307,462 +336,348 @@ function renderSetup(error) {
       }
     }
   }
-}</pre><p class="step-hint">This locks each user's data to their own UID — permanent, no expiry.</p>` },
-      { title:"Enter Your Credentials", html:`<p>1. Click <strong>⚙️ gear → Project settings</strong></p><p>2. Copy your <strong>Web API Key</strong></p><p>3. Go to Realtime Database and copy the <strong>URL</strong></p><p class="step-hint">Looks like: https://your-project-default-rtdb.firebaseio.com</p><label class="field-label">Web API Key</label><input id="inp-key" placeholder="AIzaSy..." value="${saved?.apiKey||""}"><label class="field-label">Database URL</label><input id="inp-url" placeholder="https://your-project-default-rtdb.firebaseio.com" value="${saved?.dbUrl||""}">` },
+}</pre><p class="step-hint">This locks each user's data to their own UID — permanent, no expiry.</p>`},
+      {title:"Enter Your Credentials",html:`<p>1. Click <strong>⚙️ gear → Project settings</strong></p><p>2. Copy your <strong>Web API Key</strong></p><p>3. Go to Realtime Database and copy the <strong>URL</strong></p><p class="step-hint">Looks like: https://your-project-default-rtdb.firebaseio.com</p><label class="field-label">Web API Key</label><input id="inp-key" placeholder="AIzaSy..." value="${saved?.apiKey||""}"><label class="field-label">Database URL</label><input id="inp-url" placeholder="https://your-project-default-rtdb.firebaseio.com" value="${saved?.dbUrl||""}">`},
     ];
-    const s = steps[step];
-    app.innerHTML = `
-      <div class="setup"><div class="setup-card">
-        <div class="setup-logo"><div style="font-size:32px">⬡</div><h1>Kanban Flow</h1><p>Connect Firebase to sync across all your devices</p></div>
-        <div class="progress-bar">${steps.map((_,i)=>`<div class="progress-seg ${i<=step?"active":""}"></div>`).join("")}</div>
-        <div class="step-card">
-          <div class="step-num">Step ${step+1} of ${steps.length}</div>
-          <div class="step-title">${s.title}</div>
-          <div class="step-content">${s.html}</div>
-        </div>
-        ${error?`<div class="error-box">⚠️ ${error}</div>`:""}
-        <div class="step-nav">
-          ${step>0?`<button class="btn-secondary" id="btn-back">← Back</button>`:""}
-          <div style="flex:1"></div>
-          ${step<steps.length-1?
-            `<button class="btn-primary" id="btn-next">Next →</button>`:
-            `<button class="btn-primary" id="btn-connect">Connect & Start →</button>`}
-        </div>
-      </div></div>`;
-    
-    const back = $("#btn-back");
-    const next = $("#btn-next");
-    const conn = $("#btn-connect");
-    if(back) back.onclick = () => { step--; draw(); };
-    if(next) next.onclick = () => { step++; draw(); };
-    if(conn) conn.onclick = async () => {
-      const apiKey = $("#inp-key").value.trim();
-      const dbUrl = $("#inp-url").value.trim();
-      if(!apiKey || !dbUrl) return;
-      conn.textContent = "Connecting..."; conn.disabled = true;
-      try {
-        const fb = new FirebaseSync(apiKey, dbUrl);
-        await fb.signInAnonymous();
-        firebase = fb;
-        localStorage.setItem("kanban-fb-config", JSON.stringify({apiKey, dbUrl}));
-        // Load existing data
-        const data = await fb.getData();
-        if(data) {
-          state.projects = data.projects || state.projects;
-          state.activeProjectId = data.activeProjectId || state.projects[0].id;
-        }
+    const s=steps[step];
+    $("#app").innerHTML=`<div class="setup"><div class="setup-card">
+      <div class="setup-logo"><div style="font-size:32px">⬡</div><h1>Kanban Flow</h1><p>Connect Firebase to sync across all your devices</p></div>
+      <div class="progress-bar">${steps.map((_,i)=>`<div class="progress-seg ${i<=step?"active":""}"></div>`).join("")}</div>
+      <div class="step-card"><div class="step-num">Step ${step+1} of ${steps.length}</div><div class="step-title">${s.title}</div><div class="step-content">${s.html}</div></div>
+      ${error?`<div class="error-box">⚠️ ${error}</div>`:""}
+      <div class="step-nav">${step>0?`<button class="btn-secondary" id="btn-back">← Back</button>`:""}<div style="flex:1"></div>${step<steps.length-1?`<button class="btn-primary" id="btn-next">Next →</button>`:`<button class="btn-primary" id="btn-connect">Connect & Start →</button>`}</div>
+    </div></div>`;
+    if($("#btn-back")) $("#btn-back").onclick=()=>{ step--; draw(); };
+    if($("#btn-next")) $("#btn-next").onclick=()=>{ step++; draw(); };
+    if($("#btn-connect")) $("#btn-connect").onclick=async()=>{
+      const apiKey=$("#inp-key").value.trim(), dbUrl=$("#inp-url").value.trim();
+      if(!apiKey||!dbUrl) return;
+      $("#btn-connect").textContent="Connecting..."; $("#btn-connect").disabled=true;
+      try{
+        const fb=new FirebaseSync(apiKey,dbUrl); await fb.signInAnonymous(); firebase=fb;
+        localStorage.setItem("kanban-fb-config",JSON.stringify({apiKey,dbUrl}));
+        const data=await fb.getData();
+        if(data){ state.appName=data.appName||state.appName; state.appIcon=data.appIcon||null; state.projects=data.projects||state.projects; state.activeProjectId=data.activeProjectId||state.projects[0].id; }
         renderBoard();
-      } catch(e) {
-        error = e.message;
-        draw();
-      }
+      }catch(e){ error=e.message; draw(); }
     };
   }
   draw();
 }
 
 // ─── Render: Board ───────────────────────────────────
-let draggedTaskId = null;
+let draggedTaskId=null;
 
-function renderBoard() {
-  const proj = activeProject();
-  const app = $("#app");
-  app.innerHTML = `
-    <div class="app">
-      <div class="overlay" id="overlay" style="display:none"></div>
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-          <span class="logo-mark">⬡</span>
-          <span class="logo-text">Kanban Flow</span>
-          <span class="sync-dot" style="background:var(--green)"></span>
+function renderBoard(){
+  const proj=activeProject();
+  $("#app").innerHTML=`<div class="app">
+    <div class="overlay" id="overlay" style="display:none"></div>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header" id="app-header">
+        ${state.appIcon?`<img class="app-icon" src="${state.appIcon}">`:`<div class="app-icon-default">⬡</div>`}
+        <span class="logo-text">${esc(state.appName)}</span>
+        <span class="sync-dot" style="background:var(--green)"></span>
+      </div>
+      <div class="sidebar-label">PROJECTS</div>
+      <div id="project-list"></div>
+      <button class="new-project-btn" id="btn-new-project">+ New Project</button>
+      <div id="touch-move-area"></div>
+      <div style="flex:1"></div>
+      <button class="settings-btn" id="btn-settings">⚙ Settings</button>
+    </aside>
+    <main class="main">
+      <div class="project-banner" id="proj-banner">
+        ${proj.banner?`<img class="banner-img" src="${proj.banner}"><div class="banner-overlay">📷 Change banner</div>`:`<div class="banner-placeholder">📷 Click to add a banner</div>`}
+      </div>
+      <header class="top-bar">
+        <button class="menu-btn" id="btn-menu">☰</button>
+        <div class="top-center">
+          ${renderProjectIcon(proj, 28)}
+          <h1>${esc(proj.name)}</h1>
+          <button class="edit-project-btn" id="btn-edit-project">✎</button>
         </div>
-        <div class="sidebar-label">PROJECTS</div>
-        <div id="project-list"></div>
-        <button class="new-project-btn" id="btn-new-project">+ New Project</button>
-        <div id="touch-move-area"></div>
-        <div style="flex:1"></div>
-        <button class="settings-btn" id="btn-settings">⚙ Settings</button>
-      </aside>
-      <main class="main">
-        <header class="top-bar">
-          <button class="menu-btn" id="btn-menu">☰</button>
-          <div class="top-center">
-            <span class="emoji">${proj.emoji}</span>
-            <h1>${proj.name}</h1>
-            <button class="edit-project-btn" id="btn-edit-project">✎</button>
-          </div>
-          <div class="top-stats">
-            ${COLUMNS.map(c=>`<span class="stat-badge">${tasksInCol(c).length} ${c==="To Do"?"📝":c==="In Progress"?"⚡":"✅"}</span>`).join("")}
-          </div>
-        </header>
-        <div class="columns" id="columns"></div>
-      </main>
-    </div>`;
-
-  renderProjects();
-  renderColumns();
-  updateSyncDot();
-
-  // Events
-  $("#btn-menu").onclick = () => toggleSidebar(true);
-  $("#overlay").onclick = () => toggleSidebar(false);
-  $("#btn-new-project").onclick = () => showProjectModal();
-  $("#btn-edit-project").onclick = () => showProjectModal(proj);
-  $("#btn-settings").onclick = showSettingsModal;
+        <div class="top-stats">${COLUMNS.map(c=>`<span class="stat-badge">${tasksInCol(c).length} ${c==="To Do"?"📝":c==="In Progress"?"⚡":"✅"}</span>`).join("")}</div>
+      </header>
+      <div class="columns" id="columns"></div>
+    </main>
+  </div>`;
+  renderProjects(); renderColumns(); updateSyncDot();
+  $("#app-header").onclick=()=>showAppModal();
+  $("#btn-menu").onclick=()=>toggleSidebar(true);
+  $("#overlay").onclick=()=>toggleSidebar(false);
+  $("#btn-new-project").onclick=()=>showProjectModal();
+  $("#btn-edit-project").onclick=()=>showProjectModal(proj);
+  $("#btn-settings").onclick=showSettingsModal;
+  $("#proj-banner").onclick=()=>{
+    triggerFileInput("image/*", async(file)=>{
+      const data=await resizeImage(file,1200,400);
+      const p=activeProject(); p.banner=data; saveToFirebase(); renderBoard();
+    });
+  };
 }
 
-function toggleSidebar(open) {
-  const sb = $("#sidebar"), ov = $("#overlay");
-  if(open) { sb.classList.add("open"); ov.style.display="block"; }
-  else { sb.classList.remove("open"); ov.style.display="none"; }
-}
+function toggleSidebar(open){ const sb=$("#sidebar"),ov=$("#overlay"); if(open){sb.classList.add("open");ov.style.display="block";}else{sb.classList.remove("open");ov.style.display="none";} }
 
-function renderProjects() {
-  const list = $("#project-list");
-  if(!list) return;
-  list.innerHTML = "";
-  state.projects.forEach(p => {
-    const d = el("div","sidebar-item"+(p.id===state.activeProjectId?" active":""));
-    d.innerHTML = `<span class="emoji">${p.emoji}</span><span class="name">${p.name}</span><span class="count">${(p.tasks||[]).length}</span>`;
-    d.onclick = () => { state.activeProjectId = p.id; saveToFirebase(); renderBoard(); };
+function renderProjects(){
+  const list=$("#project-list"); if(!list) return; list.innerHTML="";
+  state.projects.forEach(p=>{
+    const d=el("div","sidebar-item"+(p.id===state.activeProjectId?" active":""));
+    d.innerHTML=`${renderProjectIcon(p,24)}<span class="name">${esc(p.name)}</span><span class="count">${(p.tasks||[]).length}</span>`;
+    d.onclick=()=>{ state.activeProjectId=p.id; saveToFirebase(); renderBoard(); };
     list.appendChild(d);
   });
 }
 
-function renderColumns() {
-  const wrap = $("#columns");
-  if(!wrap) return;
-  wrap.innerHTML = "";
-  COLUMNS.forEach(col => {
-    const tasks = tasksInCol(col);
-    const div = el("div","column");
-    div.innerHTML = `
-      <div class="col-header">
-        <span class="col-dot ${colDotClass(col)}"></span>
-        <span class="col-title">${col}</span>
-        <span class="col-count">${tasks.length}</span>
-      </div>
-      <div class="col-body" data-col="${col}"></div>`;
-    
-    const body = $(".col-body", div);
-    tasks.forEach(t => body.appendChild(createCard(t)));
-
-    const addBtn = el("button","add-card-btn","+ Add card");
-    addBtn.onclick = () => showTaskModal(null, col);
-    body.appendChild(addBtn);
-
-    // Drop zone
-    div.addEventListener("dragover", e => { e.preventDefault(); div.classList.add("drag-over"); });
-    div.addEventListener("dragleave", () => div.classList.remove("drag-over"));
-    div.addEventListener("drop", e => {
-      e.preventDefault();
-      div.classList.remove("drag-over");
-      if(draggedTaskId) { moveTask(draggedTaskId, col); }
-    });
-
+function renderColumns(){
+  const wrap=$("#columns"); if(!wrap) return; wrap.innerHTML="";
+  COLUMNS.forEach(col=>{
+    const tasks=tasksInCol(col);
+    const div=el("div","column");
+    div.innerHTML=`<div class="col-header"><span class="col-dot ${colDotClass(col)}"></span><span class="col-title">${col}</span><span class="col-count">${tasks.length}</span></div><div class="col-body" data-col="${col}"></div>`;
+    const body=$(".col-body",div);
+    tasks.forEach(t=>body.appendChild(createCard(t)));
+    const addBtn=el("button","add-card-btn","+ Add card"); addBtn.onclick=()=>showTaskModal(null,col); body.appendChild(addBtn);
+    div.addEventListener("dragover",e=>{e.preventDefault();div.classList.add("drag-over");});
+    div.addEventListener("dragleave",()=>div.classList.remove("drag-over"));
+    div.addEventListener("drop",e=>{e.preventDefault();div.classList.remove("drag-over");if(draggedTaskId)moveTask(draggedTaskId,col);});
     wrap.appendChild(div);
   });
 }
 
-function createCard(task) {
-  const card = el("div","card");
-  card.draggable = true;
-  card.dataset.id = task.id;
-
-  let html = "";
-  if(task.labels?.length) {
-    html += `<div class="card-labels">${task.labels.map(l => {
-      const lc = LABEL_COLORS.find(c=>c.name===l);
-      return lc ? `<span class="label-pill" style="background:${lc.bg};border-color:${lc.border};color:${lc.text}">${l}</span>` : "";
-    }).join("")}</div>`;
-  }
-  html += `<div class="card-title">${esc(task.title)}</div>`;
-  if(task.description) html += `<div class="card-desc">${esc(task.description)}</div>`;
-
-  let meta = "";
-  if(task.priority) {
-    const pc = PRIORITY_COLORS[task.priority];
-    meta += `<span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${pc.icon} ${PRIORITIES[task.priority]}</span>`;
-  }
-  if(task.dueDate) {
-    const od = isOverdue(task.dueDate) && task.column!=="Done";
-    meta += `<span class="due-badge ${od?"overdue":""}">📅 ${formatDate(task.dueDate)}</span>`;
-  }
-  meta += `<button class="mobile-move" data-move="${task.id}">⇄</button>`;
-  if(meta) html += `<div class="card-meta">${meta}</div>`;
-
-  card.innerHTML = html;
-  card.onclick = (e) => { if(e.target.dataset.move) return; showTaskModal(task); };
-
-  // Mobile move
-  const moveBtn = $("[data-move]", card);
-  if(moveBtn) moveBtn.onclick = (e) => { e.stopPropagation(); showTouchMove(task); };
-
-  // Drag
-  card.addEventListener("dragstart", e => { draggedTaskId = task.id; card.classList.add("dragging"); e.dataTransfer.effectAllowed="move"; });
-  card.addEventListener("dragend", () => { draggedTaskId = null; card.classList.remove("dragging"); });
-
+function createCard(task){
+  const card=el("div","card"); card.draggable=true; card.dataset.id=task.id;
+  let html="";
+  if(task.labels?.length) html+=`<div class="card-labels">${task.labels.map(l=>{const lc=LABEL_COLORS.find(c=>c.name===l);return lc?`<span class="label-pill" style="background:${lc.bg};border-color:${lc.border};color:${lc.text}">${l}</span>`:""}).join("")}</div>`;
+  html+=`<div class="card-title">${esc(task.title)}</div>`;
+  if(task.description) html+=`<div class="card-desc">${esc(task.description)}</div>`;
+  let meta="";
+  if(task.priority){const pc=PRIORITY_COLORS[task.priority]; meta+=`<span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${pc.icon} ${PRIORITIES[task.priority]}</span>`;}
+  if(task.dueDate){const od=isOverdue(task.dueDate)&&task.column!=="Done"; meta+=`<span class="due-badge ${od?"overdue":""}">📅 ${formatDate(task.dueDate)}</span>`;}
+  meta+=`<button class="mobile-move" data-move="${task.id}">⇄</button>`;
+  if(meta) html+=`<div class="card-meta">${meta}</div>`;
+  card.innerHTML=html;
+  card.onclick=e=>{if(e.target.dataset.move)return; showTaskModal(task);};
+  const moveBtn=$("[data-move]",card); if(moveBtn) moveBtn.onclick=e=>{e.stopPropagation();showTouchMove(task);};
+  card.addEventListener("dragstart",e=>{draggedTaskId=task.id;card.classList.add("dragging");e.dataTransfer.effectAllowed="move";});
+  card.addEventListener("dragend",()=>{draggedTaskId=null;card.classList.remove("dragging");});
   return card;
 }
 
-function esc(s) { const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
-
-function showTouchMove(task) {
+function showTouchMove(task){
   toggleSidebar(true);
-  const area = $("#touch-move-area");
-  area.innerHTML = `<div class="touch-move">
-    <div class="touch-move-title">Move "${esc(task.title)}" to:</div>
-    ${COLUMNS.filter(c=>c!==task.column).map(c=>`<button class="touch-move-btn" data-to="${c}">${c}</button>`).join("")}
-    <button class="touch-move-btn" style="background:#ffffff10" id="touch-cancel">Cancel</button>
-  </div>`;
-  $$("[data-to]",area).forEach(b => b.onclick = () => { moveTask(task.id, b.dataset.to); area.innerHTML=""; toggleSidebar(false); });
-  $("#touch-cancel",area).onclick = () => { area.innerHTML=""; };
+  const area=$("#touch-move-area");
+  area.innerHTML=`<div class="touch-move"><div class="touch-move-title">Move "${esc(task.title)}" to:</div>${COLUMNS.filter(c=>c!==task.column).map(c=>`<button class="touch-move-btn" data-to="${c}">${c}</button>`).join("")}<button class="touch-move-btn" style="background:#ffffff10" id="touch-cancel">Cancel</button></div>`;
+  $$("[data-to]",area).forEach(b=>b.onclick=()=>{moveTask(task.id,b.dataset.to);area.innerHTML="";toggleSidebar(false);});
+  $("#touch-cancel",area).onclick=()=>{area.innerHTML="";};
 }
 
 // ─── Data mutations ──────────────────────────────────
-function addTask(col, data) {
-  const order = tasksInCol(col).length;
-  const task = { id:uid(), column:col, order, title:data.title, description:data.description||"", labels:data.labels||[], priority:data.priority||null, dueDate:data.dueDate||null, createdAt:Date.now() };
-  const proj = activeProject();
-  proj.tasks.push(task);
-  saveToFirebase(); renderBoard();
+function addTask(col,data){ const task={id:uid(),column:col,order:tasksInCol(col).length,title:data.title,description:data.description||"",labels:data.labels||[],priority:data.priority||null,dueDate:data.dueDate||null,createdAt:Date.now()}; activeProject().tasks.push(task); saveToFirebase(); renderBoard(); }
+function updateTask(id,data){ const t=activeProject().tasks.find(t=>t.id===id); if(t)Object.assign(t,data); saveToFirebase(); renderBoard(); }
+function deleteTask(id){ activeProject().tasks=activeProject().tasks.filter(t=>t.id!==id); saveToFirebase(); renderBoard(); }
+function moveTask(id,toCol){ const t=activeProject().tasks.find(t=>t.id===id); if(t){t.column=toCol;t.order=tasksInCol(toCol).length;} draggedTaskId=null; saveToFirebase(); renderBoard(); }
+function addProject(name,emoji,icon){ const p={id:uid(),name,emoji:emoji||"📋",icon:icon||null,banner:null,tasks:[]}; state.projects.push(p); state.activeProjectId=p.id; saveToFirebase(); renderBoard(); }
+function updateProjectData(id,name,emoji,icon){ const p=state.projects.find(p=>p.id===id); if(p){p.name=name;p.emoji=emoji;p.icon=icon!==undefined?icon:p.icon;} saveToFirebase(); renderBoard(); }
+function deleteProject(id){ if(state.projects.length<=1)return; state.projects=state.projects.filter(p=>p.id!==id); state.activeProjectId=state.projects[0].id; saveToFirebase(); renderBoard(); }
+
+// ─── App Branding Modal ──────────────────────────────
+function showAppModal(){
+  const overlay=el("div","modal-overlay");
+  const modal=el("div","modal"); modal.style.maxWidth="400px";
+  let icon=state.appIcon;
+
+  function render(){
+    modal.innerHTML=`
+      <div class="modal-header"><h2>Customize App</h2><button class="modal-close" id="mc">✕</button></div>
+      <div class="modal-body">
+        <label class="field-label">App Icon</label>
+        <div class="img-upload-area">
+          ${icon?`<img class="img-preview" src="${icon}">`:`<div class="img-preview-placeholder">⬡</div>`}
+          <button class="img-upload-btn" id="m-upload-icon">Upload Image</button>
+          ${icon?`<button class="img-remove-btn" id="m-remove-icon">✕ Remove</button>`:""}
+        </div>
+        <label class="field-label">App Name</label>
+        <input id="m-appname" value="${esc(state.appName)}" placeholder="My Kanban">
+      </div>
+      <div class="modal-footer"><div style="flex:1"></div><button class="btn-secondary" id="m-cancel">Cancel</button><button class="btn-primary" id="m-save">Save</button></div>`;
+    $("#mc",modal).onclick=close;
+    $("#m-cancel",modal).onclick=close;
+    $("#m-upload-icon",modal).onclick=()=>triggerFileInput("image/*",async f=>{icon=await resizeImage(f,128,128);render();});
+    if($("#m-remove-icon",modal)) $("#m-remove-icon",modal).onclick=()=>{icon=null;render();};
+    $("#m-save",modal).onclick=()=>{
+      const name=$("#m-appname",modal).value.trim();
+      if(!name)return;
+      state.appName=name; state.appIcon=icon;
+      document.title=name;
+      saveToFirebase(); close(); renderBoard();
+    };
+  }
+
+  const close=()=>overlay.remove();
+  overlay.onclick=e=>{if(e.target===overlay)close();};
+  render();
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
 }
 
-function updateTask(id, data) {
-  const proj = activeProject();
-  const t = proj.tasks.find(t=>t.id===id);
-  if(t) Object.assign(t, data);
-  saveToFirebase(); renderBoard();
-}
+// ─── Task Modal ──────────────────────────────────────
+function showTaskModal(task,col){
+  const overlay=el("div","modal-overlay");
+  const modal=el("div","modal");
+  const isEdit=!!task; if(task)col=task.column;
+  let labels=task?.labels?.slice()||[]; let priority=task?.priority||null;
 
-function deleteTask(id) {
-  const proj = activeProject();
-  proj.tasks = proj.tasks.filter(t=>t.id!==id);
-  saveToFirebase(); renderBoard();
-}
-
-function moveTask(id, toCol) {
-  const proj = activeProject();
-  const t = proj.tasks.find(t=>t.id===id);
-  if(t) { t.column = toCol; t.order = tasksInCol(toCol).length; }
-  draggedTaskId = null;
-  saveToFirebase(); renderBoard();
-}
-
-function addProject(name, emoji) {
-  const p = { id:uid(), name, emoji:emoji||"📋", tasks:[] };
-  state.projects.push(p);
-  state.activeProjectId = p.id;
-  saveToFirebase(); renderBoard();
-}
-
-function updateProjectData(id, name, emoji) {
-  const p = state.projects.find(p=>p.id===id);
-  if(p) { p.name = name; p.emoji = emoji; }
-  saveToFirebase(); renderBoard();
-}
-
-function deleteProject(id) {
-  if(state.projects.length<=1) return;
-  state.projects = state.projects.filter(p=>p.id!==id);
-  state.activeProjectId = state.projects[0].id;
-  saveToFirebase(); renderBoard();
-}
-
-// ─── Modals ──────────────────────────────────────────
-function showTaskModal(task, col) {
-  const overlay = el("div","modal-overlay");
-  const modal = el("div","modal");
-  const isEdit = !!task;
-  if(task) col = task.column;
-
-  let labels = task?.labels?.slice() || [];
-  let priority = task?.priority || null;
-
-  modal.innerHTML = `
+  modal.innerHTML=`
     <div class="modal-header"><h2>${isEdit?"Edit Card":`New Card — ${col}`}</h2><button class="modal-close" id="mc">✕</button></div>
     <div class="modal-body">
-      <label class="field-label">Title *</label>
-      <input id="m-title" placeholder="What needs to be done?" value="${esc(task?.title||"")}">
-      <label class="field-label">Description</label>
-      <textarea id="m-desc" placeholder="Add details...">${esc(task?.description||"")}</textarea>
-      <label class="field-label">Labels</label>
-      <div class="labels-grid" id="m-labels"></div>
-      <label class="field-label">Priority</label>
-      <div class="priority-row" id="m-priority"></div>
-      <label class="field-label">Due Date</label>
-      <input type="date" id="m-due" value="${task?.dueDate||""}">
+      <label class="field-label">Title *</label><input id="m-title" placeholder="What needs to be done?" value="${esc(task?.title||"")}">
+      <label class="field-label">Description</label><textarea id="m-desc" placeholder="Add details...">${esc(task?.description||"")}</textarea>
+      <label class="field-label">Labels</label><div class="labels-grid" id="m-labels"></div>
+      <label class="field-label">Priority</label><div class="priority-row" id="m-priority"></div>
+      <label class="field-label">Due Date</label><input type="date" id="m-due" value="${task?.dueDate||""}">
       ${isEdit?`<label class="field-label">Move to</label><div class="priority-row" id="m-move"></div>`:""}
     </div>
-    <div class="modal-footer">
-      ${isEdit?`<button class="btn-danger" id="m-del">Delete</button>`:""}
-      <div style="flex:1"></div>
-      <button class="btn-secondary" id="m-cancel">Cancel</button>
-      <button class="btn-primary" id="m-save">${isEdit?"Save":"Create"}</button>
-    </div>`;
+    <div class="modal-footer">${isEdit?`<button class="btn-danger" id="m-del">Delete</button>`:""}<div style="flex:1"></div><button class="btn-secondary" id="m-cancel">Cancel</button><button class="btn-primary" id="m-save">${isEdit?"Save":"Create"}</button></div>`;
 
-  function renderLabels() {
-    const g = $("#m-labels", modal);
-    g.innerHTML = LABEL_COLORS.map(lc => {
-      const on = labels.includes(lc.name);
-      return `<button class="label-opt" data-label="${lc.name}" style="background:${on?lc.bg:"transparent"};border-color:${on?lc.border:"#ffffff18"};color:${on?lc.text:"#888"}">${lc.name}</button>`;
-    }).join("");
-    $$("[data-label]",g).forEach(b => b.onclick = () => {
-      const n = b.dataset.label;
-      labels = labels.includes(n) ? labels.filter(l=>l!==n) : [...labels, n];
-      renderLabels();
-    });
+  function renderLabels(){
+    const g=$("#m-labels",modal);
+    g.innerHTML=LABEL_COLORS.map(lc=>{const on=labels.includes(lc.name);return`<button class="label-opt" data-label="${lc.name}" style="background:${on?lc.bg:"transparent"};border-color:${on?lc.border:"#ffffff18"};color:${on?lc.text:"#888"}">${lc.name}</button>`;}).join("");
+    $$("[data-label]",g).forEach(b=>b.onclick=()=>{const n=b.dataset.label;labels=labels.includes(n)?labels.filter(l=>l!==n):[...labels,n];renderLabels();});
   }
-
-  function renderPriority() {
-    const g = $("#m-priority", modal);
-    g.innerHTML = Object.entries(PRIORITIES).map(([k,v]) => {
-      const pc = PRIORITY_COLORS[k]; const on = priority===k;
-      return `<button class="priority-opt" data-pri="${k}" style="background:${on?pc.bg:"transparent"};border-color:${on?pc.text:"#ffffff18"};color:${on?pc.text:"#888"}">${pc.icon} ${v}</button>`;
-    }).join("");
-    $$("[data-pri]",g).forEach(b => b.onclick = () => {
-      priority = priority===b.dataset.pri ? null : b.dataset.pri;
-      renderPriority();
-    });
+  function renderPriority(){
+    const g=$("#m-priority",modal);
+    g.innerHTML=Object.entries(PRIORITIES).map(([k,v])=>{const pc=PRIORITY_COLORS[k];const on=priority===k;return`<button class="priority-opt" data-pri="${k}" style="background:${on?pc.bg:"transparent"};border-color:${on?pc.text:"#ffffff18"};color:${on?pc.text:"#888"}">${pc.icon} ${v}</button>`;}).join("");
+    $$("[data-pri]",g).forEach(b=>b.onclick=()=>{priority=priority===b.dataset.pri?null:b.dataset.pri;renderPriority();});
   }
-
   renderLabels(); renderPriority();
-
-  if(isEdit) {
-    const mv = $("#m-move", modal);
-    mv.innerHTML = COLUMNS.filter(c=>c!==task.column).map(c=>`<button class="move-btn" data-movecol="${c}">→ ${c}</button>`).join("");
-    $$("[data-movecol]",mv).forEach(b => b.onclick = () => { moveTask(task.id, b.dataset.movecol); overlay.remove(); });
-  }
-
-  const close = () => overlay.remove();
-  overlay.onclick = e => { if(e.target===overlay) close(); };
-  $("#mc",modal).onclick = close;
-  $("#m-cancel",modal).onclick = close;
-  if($("#m-del",modal)) $("#m-del",modal).onclick = () => { deleteTask(task.id); close(); };
-  $("#m-save",modal).onclick = () => {
-    const title = $("#m-title",modal).value.trim();
-    if(!title) return;
-    const data = { title, description:$("#m-desc",modal).value, labels, priority, dueDate:$("#m-due",modal).value };
-    if(isEdit) updateTask(task.id, data); else addTask(col, data);
-    close();
+  if(isEdit){ const mv=$("#m-move",modal); mv.innerHTML=COLUMNS.filter(c=>c!==task.column).map(c=>`<button class="move-btn" data-movecol="${c}">→ ${c}</button>`).join(""); $$("[data-movecol]",mv).forEach(b=>b.onclick=()=>{moveTask(task.id,b.dataset.movecol);overlay.remove();}); }
+  const close=()=>overlay.remove();
+  overlay.onclick=e=>{if(e.target===overlay)close();};
+  $("#mc",modal).onclick=close; $("#m-cancel",modal).onclick=close;
+  if($("#m-del",modal)) $("#m-del",modal).onclick=()=>{deleteTask(task.id);close();};
+  $("#m-save",modal).onclick=()=>{
+    const title=$("#m-title",modal).value.trim(); if(!title)return;
+    const data={title,description:$("#m-desc",modal).value,labels,priority,dueDate:$("#m-due",modal).value};
+    if(isEdit)updateTask(task.id,data); else addTask(col,data); close();
   };
-
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
-  $("#m-title",modal).focus();
+  overlay.appendChild(modal); document.body.appendChild(overlay); $("#m-title",modal).focus();
 }
 
-function showProjectModal(project) {
-  const overlay = el("div","modal-overlay");
-  const modal = el("div","modal");
-  modal.style.maxWidth = "400px";
-  let emoji = project?.emoji || "📋";
+// ─── Project Modal ───────────────────────────────────
+function showProjectModal(project){
+  const overlay=el("div","modal-overlay");
+  const modal=el("div","modal"); modal.style.maxWidth="440px";
+  let emoji=project?.emoji||"📋";
+  let icon=project?.icon||null;
+  let banner=project?.banner||null;
 
-  modal.innerHTML = `
-    <div class="modal-header"><h2>${project?"Edit Project":"New Project"}</h2><button class="modal-close" id="mc">✕</button></div>
-    <div class="modal-body">
-      <label class="field-label">Icon</label>
-      <div class="emoji-grid" id="m-emojis"></div>
-      <label class="field-label">Project Name</label>
-      <input id="m-pname" placeholder="e.g. Website Redesign" value="${esc(project?.name||"")}">
-    </div>
-    <div class="modal-footer">
-      ${project&&state.projects.length>1?`<button class="btn-danger" id="m-del">Delete</button>`:""}
-      <div style="flex:1"></div>
-      <button class="btn-secondary" id="m-cancel">Cancel</button>
-      <button class="btn-primary" id="m-save">${project?"Save":"Create"}</button>
-    </div>`;
+  function render(){
+    modal.innerHTML=`
+      <div class="modal-header"><h2>${project?"Edit Project":"New Project"}</h2><button class="modal-close" id="mc">✕</button></div>
+      <div class="modal-body">
+        <label class="field-label">Project Icon</label>
+        <div class="img-upload-area">
+          ${icon?`<img class="img-preview" src="${icon}">`:`<div class="img-preview-placeholder">${emoji}</div>`}
+          <button class="img-upload-btn" id="m-upload-icon">Upload Image</button>
+          ${icon?`<button class="img-remove-btn" id="m-remove-icon">✕ Remove</button>`:""}
+        </div>
+        ${!icon?`<label class="field-label">Or pick an emoji</label><div class="emoji-grid" id="m-emojis"></div>`:""}
+        <label class="field-label">Project Name</label>
+        <input id="m-pname" placeholder="e.g. Website Redesign" value="${esc(project?.name||"")}">
+        <label class="field-label">Banner Image</label>
+        <div class="banner-upload-area ${banner?"has-img":""}" id="m-banner-area">
+          ${banner?`<img src="${banner}">`:""}
+          <span class="banner-upload-text">${banner?"📷 Change banner":"📷 Click to upload banner"}</span>
+        </div>
+        ${banner?`<button class="img-remove-btn" id="m-remove-banner" style="margin-top:4px">✕ Remove banner</button>`:""}
+      </div>
+      <div class="modal-footer">
+        ${project&&state.projects.length>1?`<button class="btn-danger" id="m-del">Delete</button>`:""}
+        <div style="flex:1"></div><button class="btn-secondary" id="m-cancel">Cancel</button><button class="btn-primary" id="m-save">${project?"Save":"Create"}</button>
+      </div>`;
 
-  function renderEmojis() {
-    const g = $("#m-emojis",modal);
-    g.innerHTML = EMOJIS.map(e=>`<button class="emoji-btn ${emoji===e?"active":""}" data-em="${e}">${e}</button>`).join("");
-    $$("[data-em]",g).forEach(b => b.onclick = () => { emoji=b.dataset.em; renderEmojis(); });
+    $("#mc",modal).onclick=close; $("#m-cancel",modal).onclick=close;
+    if($("#m-del",modal)) $("#m-del",modal).onclick=()=>{deleteProject(project.id);close();};
+
+    // Emoji grid
+    const eg=$("#m-emojis",modal);
+    if(eg){
+      eg.innerHTML=EMOJIS.map(e=>`<button class="emoji-btn ${emoji===e?"active":""}" data-em="${e}">${e}</button>`).join("");
+      $$("[data-em]",eg).forEach(b=>b.onclick=()=>{emoji=b.dataset.em;render();});
+    }
+
+    // Icon upload
+    $("#m-upload-icon",modal).onclick=()=>triggerFileInput("image/*",async f=>{icon=await resizeImage(f,128,128);render();});
+    if($("#m-remove-icon",modal)) $("#m-remove-icon",modal).onclick=()=>{icon=null;render();};
+
+    // Banner upload
+    $("#m-banner-area",modal).onclick=()=>triggerFileInput("image/*",async f=>{banner=await resizeImage(f,1200,400);render();});
+    if($("#m-remove-banner",modal)) $("#m-remove-banner",modal).onclick=()=>{banner=null;render();};
+
+    $("#m-save",modal).onclick=()=>{
+      const name=$("#m-pname",modal).value.trim(); if(!name)return;
+      if(project){
+        updateProjectData(project.id,name,emoji,icon);
+        const p=state.projects.find(pp=>pp.id===project.id);
+        if(p) p.banner=banner;
+        saveToFirebase(); renderBoard();
+      } else {
+        const p={id:uid(),name,emoji,icon,banner,tasks:[]};
+        state.projects.push(p); state.activeProjectId=p.id;
+        saveToFirebase(); renderBoard();
+      }
+      close();
+    };
   }
-  renderEmojis();
 
-  const close = () => overlay.remove();
-  overlay.onclick = e => { if(e.target===overlay) close(); };
-  $("#mc",modal).onclick = close;
-  $("#m-cancel",modal).onclick = close;
-  if($("#m-del",modal)) $("#m-del",modal).onclick = () => { deleteProject(project.id); close(); };
-  $("#m-save",modal).onclick = () => {
-    const name = $("#m-pname",modal).value.trim();
-    if(!name) return;
-    if(project) updateProjectData(project.id, name, emoji); else addProject(name, emoji);
-    close();
-  };
-
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
-  $("#m-pname",modal).focus();
+  const close=()=>overlay.remove();
+  overlay.onclick=e=>{if(e.target===overlay)close();};
+  render();
+  overlay.appendChild(modal); document.body.appendChild(overlay);
+  setTimeout(()=>{const inp=$("#m-pname",modal);if(inp)inp.focus();},50);
 }
 
-function showSettingsModal() {
-  const overlay = el("div","modal-overlay");
-  const modal = el("div","modal");
-  modal.style.maxWidth = "400px";
-
-  modal.innerHTML = `
+// ─── Settings Modal ──────────────────────────────────
+function showSettingsModal(){
+  const overlay=el("div","modal-overlay");
+  const modal=el("div","modal"); modal.style.maxWidth="400px";
+  modal.innerHTML=`
     <div class="modal-header"><h2>Settings</h2><button class="modal-close" id="mc">✕</button></div>
     <div class="modal-body">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
-        <div><div style="font-weight:600;font-size:14px">Firebase Sync</div><div style="font-size:12px;color:var(--text-secondary);margin-top:2px">Connected via Anonymous Auth</div></div>
-        <span style="width:10px;height:10px;border-radius:50%;background:var(--green)"></span>
-      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0"><div><div style="font-weight:600;font-size:14px">Firebase Sync</div><div style="font-size:12px;color:var(--text-secondary);margin-top:2px">Connected via Anonymous Auth</div></div><span style="width:10px;height:10px;border-radius:50%;background:var(--green)"></span></div>
       <div style="border-top:1px solid var(--border);margin:8px 0"></div>
       <div id="settings-action"></div>
     </div>`;
-
-  const actionArea = () => $("#settings-action", modal);
-  function showDisconnectBtn() {
-    actionArea().innerHTML = `<button class="btn-danger" style="width:100%;text-align:center" id="s-disc">Disconnect Firebase</button>`;
-    $("#s-disc",modal).onclick = () => {
-      actionArea().innerHTML = `<p style="font-size:12px;color:#ff6b6b;margin:0 0 8px">Your data stays in Firebase — reconnect anytime.</p>
-        <div style="display:flex;gap:8px"><button class="btn-secondary" id="s-no">Cancel</button><button class="btn-danger" style="flex:1;text-align:center" id="s-yes">Confirm</button></div>`;
-      $("#s-no",modal).onclick = showDisconnectBtn;
-      $("#s-yes",modal).onclick = () => {
-        firebase = null;
-        localStorage.removeItem("kanban-fb-config");
-        overlay.remove();
-        renderSetup();
-      };
+  function showBtn(){
+    const a=$("#settings-action",modal);
+    a.innerHTML=`<button class="btn-danger" style="width:100%;text-align:center" id="s-disc">Disconnect Firebase</button>`;
+    $("#s-disc",modal).onclick=()=>{
+      a.innerHTML=`<p style="font-size:12px;color:#ff6b6b;margin:0 0 8px">Your data stays in Firebase — reconnect anytime.</p><div style="display:flex;gap:8px"><button class="btn-secondary" id="s-no">Cancel</button><button class="btn-danger" style="flex:1;text-align:center" id="s-yes">Confirm</button></div>`;
+      $("#s-no",modal).onclick=showBtn;
+      $("#s-yes",modal).onclick=()=>{firebase=null;localStorage.removeItem("kanban-fb-config");overlay.remove();renderSetup();};
     };
   }
-  showDisconnectBtn();
-
-  const close = () => overlay.remove();
-  overlay.onclick = e => { if(e.target===overlay) close(); };
-  $("#mc",modal).onclick = close;
-
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
+  showBtn();
+  const close=()=>overlay.remove();
+  overlay.onclick=e=>{if(e.target===overlay)close();};
+  $("#mc",modal).onclick=close;
+  overlay.appendChild(modal); document.body.appendChild(overlay);
 }
 
 // ─── Init ────────────────────────────────────────────
-async function init() {
-  const app = $("#app");
-  app.innerHTML = `<div class="loading"><div class="loading-dot"></div><p class="loading-text">Loading...</p></div>`;
-
-  const saved = JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
-  if(saved) {
-    try {
-      const fb = new FirebaseSync(saved.apiKey, saved.dbUrl);
-      await fb.signInAnonymous();
-      firebase = fb;
-      const data = await fb.getData();
-      if(data) {
-        state.projects = data.projects || state.projects;
-        state.activeProjectId = data.activeProjectId || state.projects[0].id;
-      }
+async function init(){
+  $("#app").innerHTML=`<div class="loading"><div class="loading-dot"></div><p class="loading-text">Loading...</p></div>`;
+  const saved=JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
+  if(saved){
+    try{
+      const fb=new FirebaseSync(saved.apiKey,saved.dbUrl); await fb.signInAnonymous(); firebase=fb;
+      const data=await fb.getData();
+      if(data){ state.appName=data.appName||state.appName; state.appIcon=data.appIcon||null; state.projects=data.projects||state.projects; state.activeProjectId=data.activeProjectId||state.projects[0].id; }
+      document.title=state.appName;
       renderBoard();
-    } catch(e) {
-      renderSetup(e.message);
-    }
-  } else {
-    renderSetup();
-  }
+    }catch(e){ renderSetup(e.message); }
+  }else{ renderSetup(); }
 }
-
 init();
 </script>
 </body>
