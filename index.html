@@ -718,7 +718,7 @@ function showTaskModal(task,col){
   const ov=el("div","mo"),md=el("div","md");
   const isE=!!task;if(task)col=task.column;
   let selLids=[...(task?.labelIds||[])], priority=task?.priority||null;
-  let pLabels=[...(getProj().labels||[])];
+  let pLabels=JSON.parse(JSON.stringify(getProj().labels||[])); // Deep clone so Cancel works properly
   let editLid=null, selC="Red";
 
   md.innerHTML=`
@@ -748,8 +748,9 @@ function showTaskModal(task,col){
     <div class="md-f">${isE?`<button class="bd" id="mdl">Delete</button>`:""}<div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${isE?"Save":"Create"}</button></div>`;
   
   function rL(){
-    // Selected labels
-    $("#ml_sel").innerHTML=selLids.map(lid=>{
+    // Passed 'md' as parent constraint to DOM queries so it works before being attached
+    const mlSel = $("#ml_sel", md);
+    if(mlSel) mlSel.innerHTML=selLids.map(lid=>{
       const lDef=pLabels.find(x=>x.id===lid);
       if(!lDef) return "";
       const lc=LCOLS.find(c=>c.n===lDef.c)||LCOLS[0];
@@ -757,9 +758,9 @@ function showTaskModal(task,col){
     }).join("");
     $$("[data-rs]",md).forEach(b=>b.onclick=()=>{selLids=selLids.filter(x=>x!==b.dataset.rs);rL();});
 
-    // Available labels
     const avail=pLabels.filter(x=>!selLids.includes(x.id));
-    $("#ml_av").innerHTML=avail.map(lDef=>{
+    const mlAv = $("#ml_av", md);
+    if(mlAv) mlAv.innerHTML=avail.map(lDef=>{
       const lc=LCOLS.find(c=>c.n===lDef.c)||LCOLS[0];
       return `<span class="lpill" style="cursor:pointer;background:transparent;border-color:${lc.bd};color:${lc.t}" data-ra="${lDef.id}">
         ${esc(lDef.n)} +<span data-ed="${lDef.id}" style="margin-left:4px;padding-left:4px;border-left:1px solid ${lc.bd};opacity:0.6">✎</span>
@@ -769,7 +770,7 @@ function showTaskModal(task,col){
       if(e.target.closest('[data-ed]')){
         editLid=b.dataset.ra;
         const eDef=pLabels.find(x=>x.id===editLid);
-        $("#lf_n").value=eDef.n;
+        $("#lf_n", md).value=eDef.n;
         selC=eDef.c;
         rForm();
       }else{
@@ -780,15 +781,15 @@ function showTaskModal(task,col){
   }
 
   function rForm(){
-    $("#lf_title").textContent = editLid?"Edit Label":"Create Label";
-    $("#lf_sv").textContent = editLid?"Save":"Add";
-    $("#lf_del").style.display = editLid?"block":"none";
-    $("#lf_c").innerHTML = LCOLS.map(c=>`<div data-sc="${c.n}" style="width:20px;height:20px;border-radius:50%;background:${c.bd};cursor:pointer;box-shadow:${selC===c.n?`0 0 0 2px var(--bg4),0 0 0 4px ${c.bd}`:'none'}"></div>`).join("");
+    $("#lf_title", md).textContent = editLid?"Edit Label":"Create Label";
+    $("#lf_sv", md).textContent = editLid?"Save":"Add";
+    $("#lf_del", md).style.display = editLid?"block":"none";
+    $("#lf_c", md).innerHTML = LCOLS.map(c=>`<div data-sc="${c.n}" style="width:20px;height:20px;border-radius:50%;background:${c.bd};cursor:pointer;box-shadow:${selC===c.n?`0 0 0 2px var(--bg4),0 0 0 4px ${c.bd}`:'none'}"></div>`).join("");
     $$("[data-sc]",md).forEach(b=>b.onclick=()=>{selC=b.dataset.sc;rForm();});
   }
 
   $("#lf_sv",md).onclick=()=>{
-    const n=$("#lf_n").value.trim();if(!n)return;
+    const n=$("#lf_n", md).value.trim();if(!n)return;
     if(editLid){
       const l=pLabels.find(x=>x.id===editLid);
       if(l){l.n=n;l.c=selC;}
@@ -797,13 +798,13 @@ function showTaskModal(task,col){
       pLabels.push({id:nid,n,c:selC});
       selLids.push(nid);
     }
-    editLid=null;$("#lf_n").value="";selC="Red";rL();
+    editLid=null;$("#lf_n", md).value="";selC="Red";rL();
   };
-  $("#lf_cc",md).onclick=()=>{editLid=null;$("#lf_n").value="";selC="Red";rL();};
+  $("#lf_cc",md).onclick=()=>{editLid=null;$("#lf_n", md).value="";selC="Red";rL();};
   $("#lf_del",md).onclick=()=>{
     pLabels=pLabels.filter(x=>x.id!==editLid);
     selLids=selLids.filter(x=>x!==editLid);
-    editLid=null;$("#lf_n").value="";selC="Red";rL();
+    editLid=null;$("#lf_n", md).value="";selC="Red";rL();
   };
   
   function rP(){const g=$("#mp",md);g.innerHTML=Object.entries(PRIS).map(([k,v])=>{const pc=PCOLS[k],on=priority===k;return`<button class="popt" data-p="${k}" style="background:${on?pc.bg:"transparent"};border-color:${on?pc.t:"#ffffff18"};color:${on?pc.t:"#888"}">${pc.i} ${v}</button>`;}).join("");$$("[data-p]",g).forEach(b=>b.onclick=()=>{priority=priority===b.dataset.p?null:b.dataset.p;rP();});}
@@ -815,11 +816,11 @@ function showTaskModal(task,col){
   $("#cx",md).onclick=$("#cc",md).onclick=close;
   if($("#mdl",md))$("#mdl",md).onclick=()=>{delTask(task.id);close();};
   $("#sv",md).onclick=()=>{
-    const t=$("#mt",md).value.trim();if(!t)return;
-    const d={title:t,description:$("#mds",md).value,labelIds:selLids,priority,dueDate:$("#mdu",md).value};
-    getProj().labels=pLabels; // Save label definitions back to project
-    if(isE)updTask(task.id,d);else addTask(col,d);
-    close();
+      const t=$("#mt",md).value.trim();if(!t)return;
+      const d={title:t,description:$("#mds",md).value,labelIds:selLids,priority,dueDate:$("#mdu",md).value};
+      getProj().labels=pLabels; 
+      if(isE)updTask(task.id,d);else addTask(col,d);
+      close();
   };
   ov.appendChild(md);document.body.appendChild(ov);$("#mt",md).focus();
 }
