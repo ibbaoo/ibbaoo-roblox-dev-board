@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0c13">
 <title>Kanban Flow</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5cfc'/><rect x='20' y='25' width='16' height='50' rx='6' fill='white'/><rect x='42' y='25' width='16' height='30' rx='6' fill='white'/><rect x='64' y='25' width='16' height='40' rx='6' fill='white'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -30,6 +30,9 @@ input:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--acg
 textarea{resize:vertical;min-height:72px}
 input[type="date"]{color-scheme:dark}
 input[type="file"]{display:none}
+input[type="color"]{padding:0;border:none;border-radius:6px;overflow:hidden;cursor:pointer}
+input[type="color"]::-webkit-color-swatch-wrapper{padding:0}
+input[type="color"]::-webkit-color-swatch{border:none}
 input[type="range"]{-webkit-appearance:none;background:var(--bd2);height:4px;border-radius:2px;border:none;padding:0}
 input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--ac);cursor:pointer}
 
@@ -43,7 +46,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 /* Setup */
 .setup{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
 .setup-card{background:var(--bg2);border:1px solid var(--bd);border-radius:20px;max-width:520px;width:100%;padding:32px 24px;box-shadow:0 24px 80px #00000060;animation:fadeIn .4s ease}
-.setup-logo{text-align:center;margin-bottom:28px;display:flex;flex-direction:column;align-items:center}
+.setup-logo{text-align:center;margin-bottom:28px}
 .setup-logo h1{font-size:24px;font-weight:700;margin:8px 0 4px;background:linear-gradient(135deg,var(--acl),var(--ac));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .setup-logo p{font-size:13px;color:var(--t3)}
 .pbar{display:flex;gap:6px;margin-bottom:24px}
@@ -76,7 +79,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .sb-hdr{display:flex;align-items:center;gap:10px;padding:4px 8px;margin-bottom:20px;cursor:pointer;border-radius:10px;-webkit-tap-highlight-color:transparent}
 .sb-hdr:hover{background:#ffffff06}
 .app-ico{width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0}
-.app-ico-def{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--ac),var(--acl));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.app-ico-def{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--ac),var(--acl));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0}
 .logo-t{font-size:16px;font-weight:700;letter-spacing:-.5px;background:linear-gradient(135deg,var(--acl),var(--ac));-webkit-background-clip:text;-webkit-text-fill-color:transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sdot{width:8px;height:8px;border-radius:50%;margin-left:auto;flex-shrink:0;transition:background .3s}
 .sb-lbl{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--t3);padding:12px 8px 6px;text-transform:uppercase}
@@ -150,7 +153,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .crd:hover{border-color:#ffffff15;box-shadow:0 4px 16px #00000030}
 .crd.drg{opacity:.4}
 .crd-lb{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-.lpill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;border:1px solid;letter-spacing:.3px;display:inline-flex;align-items:center;gap:4px}
+.lpill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;border:1px solid;letter-spacing:.3px}
 .crd-t{font-size:14px;font-weight:600;line-height:1.4}
 .crd-d{font-size:12px;color:var(--t2);line-height:1.4;margin-top:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .crd-m{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
@@ -179,7 +182,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 /* Image upload */
 .iua{display:flex;align-items:center;gap:12px}
 .ipv{width:64px;height:64px;border-radius:12px;object-fit:cover;border:1px solid var(--bd2)}
-.iph{width:64px;height:64px;border-radius:12px;background:var(--bg5);border:1px dashed var(--bd2);display:flex;align-items:center;justify-content:center;color:var(--t3)}
+.iph{width:64px;height:64px;border-radius:12px;background:var(--bg5);border:1px dashed var(--bd2);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--t3)}
 .iub{padding:8px 14px;border:1px solid var(--bd2);border-radius:var(--rs);color:var(--t2);font-size:12px;font-weight:600;cursor:pointer}
 .iub:hover{border-color:var(--ac);color:var(--acl)}
 .irb{padding:8px 10px;color:var(--t3);font-size:12px;cursor:pointer}
@@ -202,7 +205,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 <script>
 const COLS=["To Do","In Progress","Done"];
 const PRIS={high:"High",medium:"Medium",low:"Low"};
-const LCOLS=[
+const DEFAULT_LABELS=[
   {n:"Red",bg:"#ff4d4f22",bd:"#ff4d4f",t:"#ff4d4f"},
   {n:"Orange",bg:"#fa8c1622",bd:"#fa8c16",t:"#fa8c16"},
   {n:"Gold",bg:"#fadb1422",bd:"#fadb14",t:"#d4b106"},
@@ -215,11 +218,10 @@ const LCOLS=[
 const PCOLS={high:{bg:"#ff4d4f20",t:"#ff6b6b",i:"▲"},medium:{bg:"#fa8c1620",t:"#ffa940",i:"◆"},low:{bg:"#52c41a20",t:"#73d13d",i:"▼"}};
 const EMOJIS=["🚀","📋","💡","🎮","🎨","🔧","📱","🌟","⚡","🏠","📚","🎯","🔥","💎","🌊","🍀"];
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const KANBAN_ICON_SVG = `<svg width="50%" height="50%" viewBox="0 0 100 100"><rect x="18" y="20" width="16" height="60" rx="6" fill="white"/><rect x="42" y="20" width="16" height="35" rx="6" fill="white"/><rect x="66" y="20" width="16" height="48" rx="6" fill="white"/></svg>`;
 
-let S={appName:"Kanban Flow",appIcon:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,tasks:[],subs:[]}],activeId:"default",activeSubId:null};
+let S={appName:"Kanban Flow",appIcon:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,tasks:[],subs:[],labels:JSON.parse(JSON.stringify(DEFAULT_LABELS))}],activeId:"default",activeSubId:null};
 let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null;
-let collapsedProjs=new Set();
+let collapsedProjs=new Set(); 
 
 /* ── Helpers ── */
 const $=(s,p)=>(p||document).querySelector(s);
@@ -227,14 +229,19 @@ const $$=(s,p)=>[...(p||document).querySelectorAll(s)];
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h)e.innerHTML=h;return e;};
 const esc=s=>{const d=document.createElement("div");d.textContent=s;return d.innerHTML;};
 function getProj(){return S.projects.find(p=>p.id===S.activeId)||S.projects[0];}
+function getProjLabels(){const p=getProj();if(!p.labels)p.labels=JSON.parse(JSON.stringify(DEFAULT_LABELS));return p.labels;}
 function getActiveTasks(){
   const p=getProj();
   if(S.activeSubId){
     const sp=(p.subs||[]).find(s=>s.id===S.activeSubId);
-    if(sp){if(!sp.tasks)sp.tasks=[];return sp.tasks;}
+    if(sp){
+        if(!sp.tasks) sp.tasks=[]; 
+        return sp.tasks;
+    }
     return [];
   }
-  if(!p.tasks)p.tasks=[];return p.tasks;
+  if(!p.tasks) p.tasks=[]; 
+  return p.tasks;
 }
 function getActiveItem(){
   const p=getProj();
@@ -279,7 +286,7 @@ function showCropper(file,aspect,outW,outH,cb){
       const vp=$("#cvp",md),ci=$("#cim",md),zm=$("#czm",md);
       function upd(){
         const iw=img.width*sc,ih=img.height*sc;
-        if(ox>0)ox=0;if(oy>0)ox=0;if(ox<vpW-iw)ox=vpW-iw;if(oy<vpH-ih)oy=vpH-ih;
+        if(ox>0)ox=0;if(oy>0)oy=0;if(ox<vpW-iw)ox=vpW-iw;if(oy<vpH-ih)oy=vpH-ih;
         ci.style.transform=`translate(${ox}px,${oy}px) scale(${sc})`;
         ci.style.width=img.width+"px";ci.style.height=img.height+"px";
       }
@@ -361,6 +368,7 @@ class FBSync{
   set(d){return this.req("kanban","PUT",d);}
   clear(){localStorage.removeItem(this.sk);}
 
+  // SSE real-time listener
   listen(onData){
     if(sse){sse.close();sse=null;}
     const u=`${this.url}/kanban.json?auth=${this.tok}`;
@@ -368,7 +376,7 @@ class FBSync{
     sse.addEventListener("put",e=>{
       try{
         const msg=JSON.parse(e.data);
-        if(Date.now()-lastSaveT<2000)return; 
+        if(Date.now()-lastSaveT<2000)return; // skip own echo
         if(msg.path==="/"&&msg.data){onData(msg.data);}
       }catch(err){}
     });
@@ -376,6 +384,7 @@ class FBSync{
       try{
         const msg=JSON.parse(e.data);
         if(Date.now()-lastSaveT<2000)return;
+        // re-fetch full data on patch for simplicity
         this.get().then(d=>{if(d)onData(d);});
       }catch(err){}
     });
@@ -408,6 +417,11 @@ function onRemoteData(d){
   S.appName=d.appName||S.appName;
   S.appIcon=d.appIcon||null;
   S.projects=d.projects||S.projects;
+  S.projects.forEach(p=>{
+      if(!p.subs)p.subs=[];
+      if(!p.labels)p.labels=JSON.parse(JSON.stringify(DEFAULT_LABELS));
+  });
+  // Don't overwrite active selection from remote
   document.title=S.appName;
   renderBoard();
 }
@@ -432,10 +446,7 @@ function renderSetup(error){
     ];
     const s=steps[step];
     $("#app").innerHTML=`<div class="setup"><div class="setup-card">
-      <div class="setup-logo">
-        <div style="width:48px;height:48px;margin-bottom:8px;border-radius:12px;background:linear-gradient(135deg,var(--ac),var(--acl));display:flex;align-items:center;justify-content:center">${KANBAN_ICON_SVG}</div>
-        <h1>Kanban Flow</h1><p>Connect Firebase for real-time sync across all devices</p>
-      </div>
+      <div class="setup-logo"><div style="font-size:32px">⬡</div><h1>Kanban Flow</h1><p>Connect Firebase for real-time sync across all devices</p></div>
       <div class="pbar">${steps.map((_,i)=>`<div class="pseg ${i<=step?"on":""}"></div>`).join("")}</div>
       <div class="scard"><div class="snum">Step ${step+1} of ${steps.length}</div><div class="stitle">${s.t}</div><div class="scont">${s.h}</div></div>
       ${error?`<div class="errb">⚠️ ${error}</div>`:""}
@@ -451,7 +462,13 @@ function renderSetup(error){
         const f=new FBSync(k,u);await f.connect();fb=f;
         localStorage.setItem("kanban-fb-config",JSON.stringify({apiKey:k,dbUrl:u}));
         const d=await f.get();
-        if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;}
+        if(d){
+            S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;
+            S.projects.forEach(p=>{
+                if(!p.subs)p.subs=[];
+                if(!p.labels)p.labels=JSON.parse(JSON.stringify(DEFAULT_LABELS));
+            });
+        }
         document.title=S.appName;
         fb.listen(onRemoteData);
         renderBoard();
@@ -471,7 +488,7 @@ function renderBoard(){
     <div class="ov" id="ov" style="display:none"></div>
     <aside class="sb" id="sb">
       <div class="sb-hdr" id="ahdr">
-        ${S.appIcon?`<img class="app-ico" src="${S.appIcon}">`:`<div class="app-ico-def">${KANBAN_ICON_SVG}</div>`}
+        ${S.appIcon?`<img class="app-ico" src="${S.appIcon}">`:`<div class="app-ico-def">⬡</div>`}
         <span class="logo-t">${esc(S.appName)}</span>
         <span class="sdot" style="background:var(--grn)"></span>
       </div>
@@ -516,6 +533,7 @@ function renderProjs(){
     const d=el("div","sb-it"+(isAct?" on":""));
     let h=`${pIcon(p,28)}<span class="nm">${esc(p.name)}</span><span class="ct">${(p.tasks||[]).length+(p.subs||[]).reduce((a,s)=>(a+(s.tasks||[]).length),0)}</span>`;
     
+    // Toggle Button
     if(hasSubs){
         h+=`<span class="stgl" data-pid="${p.id}" style="margin-left:4px;display:flex;align-items:center">${isColl?'▶':'▼'}</span>`;
     }
@@ -530,11 +548,12 @@ function renderProjs(){
          return;
       }
       S.activeId=p.id;S.activeSubId=null;
-      collapsedProjs.delete(p.id);
+      collapsedProjs.delete(p.id); // auto-expand on click
       save();renderBoard();
     };
     l.appendChild(d);
     
+    // Sub-projects (if not collapsed)
     if(!isColl){
         if(p.subs?.length){
           const sw=el("div","sb-sub");
@@ -547,6 +566,7 @@ function renderProjs(){
           });
           l.appendChild(sw);
         }
+        // Add sub-project button
         if(p.id===S.activeId){
           const ab=el("div","sb-sub");
           const asb=el("button","sb-it","<span class='pe' style='font-size:14px;width:22px;text-align:center;color:var(--t3)'>+</span><span class='nm' style='color:var(--t3);font-size:12px'>Add sub-project</span>");
@@ -575,15 +595,10 @@ function renderCols(){
 }
 
 function mkCard(t){
+  const pl=getProjLabels();
   const c=el("div","crd");c.draggable=true;
   let h="";
-  if(t.labels?.length)h+=`<div class="crd-lb">${t.labels.map(l=>{
-      const isObj = typeof l === 'object';
-      const ln = isObj ? l.n : l;
-      const lcName = isObj ? l.c : l;
-      const lc = LCOLS.find(c=>c.n===lcName)||LCOLS[0];
-      return `<span class="lpill" style="background:${lc.bg};border-color:${lc.bd};color:${lc.t}">${esc(ln)}</span>`;
-  }).join("")}</div>`;
+  if(t.labels?.length)h+=`<div class="crd-lb">${t.labels.map(l=>{const lc=pl.find(c=>c.n===l);return lc?`<span class="lpill" style="background:${lc.bg};border-color:${lc.bd};color:${lc.t}">${l}</span>`:""}).join("")}</div>`;
   h+=`<div class="crd-t">${esc(t.title)}</div>`;
   if(t.description)h+=`<div class="crd-d">${esc(t.description)}</div>`;
   let m="";
@@ -618,7 +633,7 @@ function updTask(id,d){const t=curTasks().find(t=>t.id===id);if(t)Object.assign(
 function delTask(id){setCurTasks(curTasks().filter(t=>t.id!==id));save();renderBoard();}
 function moveTask(id,to){const t=curTasks().find(t=>t.id===id);if(t){t.column=to;t.order=tasksIn(to).length;}dragId=null;save();renderBoard();}
 
-function addProj(n,e,ico,ban){S.projects.push({id:uid(),name:n,emoji:e||"📋",icon:ico||null,banner:ban||null,tasks:[],subs:[]});S.activeId=S.projects[S.projects.length-1].id;S.activeSubId=null;save();renderBoard();}
+function addProj(n,e,ico,ban,labels){S.projects.push({id:uid(),name:n,emoji:e||"📋",icon:ico||null,banner:ban||null,labels:labels||JSON.parse(JSON.stringify(DEFAULT_LABELS)),tasks:[],subs:[]});S.activeId=S.projects[S.projects.length-1].id;S.activeSubId=null;save();renderBoard();}
 function updProj(id,d){const p=S.projects.find(p=>p.id===id);if(p)Object.assign(p,d);save();renderBoard();}
 function delProj(id){if(S.projects.length<=1)return;S.projects=S.projects.filter(p=>p.id!==id);S.activeId=S.projects[0].id;S.activeSubId=null;save();renderBoard();}
 
@@ -636,7 +651,7 @@ function showAppModal(){
       <div class="md-b">
         <label class="flbl">App Icon</label>
         <div class="iua">
-          ${ico?`<img class="ipv" src="${ico}">`:`<div class="iph" style="background:var(--bg3)">${KANBAN_ICON_SVG}</div>`}
+          ${ico?`<img class="ipv" src="${ico}">`:`<div class="iph">⬡</div>`}
           <button class="iub" id="ui">Upload Image</button>
           ${ico?`<button class="irb" id="ri">✕ Remove</button>`:""}
         </div>
@@ -656,6 +671,7 @@ function showAppModal(){
 
 /* ── Task Modal ── */
 function showTaskModal(task,col){
+  const pl=getProjLabels();
   const ov=el("div","mo"),md=el("div","md");
   const isE=!!task;if(task)col=task.column;
   let labels=task?.labels?.slice()||[],priority=task?.priority||null;
@@ -664,44 +680,15 @@ function showTaskModal(task,col){
     <div class="md-b">
       <label class="flbl">Title *</label><input id="mt" placeholder="What needs to be done?" value="${esc(task?.title||"")}">
       <label class="flbl">Description</label><textarea id="mds" placeholder="Add details...">${esc(task?.description||"")}</textarea>
-      
-      <label class="flbl">Labels</label>
-      <div id="ml_list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-        <input id="ml_inp" placeholder="Type label name..." style="flex:1;font-size:13px;padding:8px 10px">
-      </div>
-      <div class="lgrid" id="ml_cols"></div>
-
-      <label class="flbl" style="margin-top:16px">Priority</label><div class="prow" id="mp"></div>
+      <label class="flbl">Labels</label><div class="lgrid" id="ml"></div>
+      <label class="flbl">Priority</label><div class="prow" id="mp"></div>
       <label class="flbl">Due Date</label><input type="date" id="mdu" value="${task?.dueDate||""}">
       ${isE?`<label class="flbl">Move to</label><div class="prow" id="mm"></div>`:""}
     </div>
     <div class="md-f">${isE?`<button class="bd" id="mdl">Delete</button>`:""}<div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${isE?"Save":"Create"}</button></div>`;
-  
-  function rL(){
-    const lst=$("#ml_list",md);
-    lst.innerHTML = labels.map((l,i)=>{
-      const isObj = typeof l === 'object';
-      const ln = isObj ? l.n : l;
-      const lcName = isObj ? l.c : l;
-      const lc = LCOLS.find(c=>c.n===lcName)||LCOLS[0];
-      return `<span class="lpill" style="cursor:pointer;background:${lc.bg};border-color:${lc.bd};color:${lc.t}" data-li="${i}">${esc(ln)} &times;</span>`;
-    }).join("");
-    $$("[data-li]",lst).forEach(b=>b.onclick=()=>{labels.splice(b.dataset.li,1);rL();});
-
-    const cg=$("#ml_cols",md);
-    cg.innerHTML = LCOLS.map(c=>`<button class="lopt" data-lc="${c.n}" style="background:transparent;border-color:${c.bd};color:${c.t}">${c.n}</button>`).join("");
-    $$("[data-lc]",cg).forEach(b=>b.onclick=()=>{
-      const inputVal = $("#ml_inp",md).value.trim();
-      labels.push({n: inputVal || b.dataset.lc, c: b.dataset.lc});
-      $("#ml_inp",md).value = "";
-      rL();
-    });
-  }
-  
+  function rL(){const g=$("#ml",md);g.innerHTML=pl.map(l=>{const on=labels.includes(l.n);return`<button class="lopt" data-l="${l.n}" style="background:${on?l.bg:"transparent"};border-color:${on?l.bd:"#ffffff18"};color:${on?l.t:"#888"}">${l.n}</button>`;}).join("");$$("[data-l]",g).forEach(b=>b.onclick=()=>{const n=b.dataset.l;labels=labels.includes(n)?labels.filter(l=>l!==n):[...labels,n];rL();});}
   function rP(){const g=$("#mp",md);g.innerHTML=Object.entries(PRIS).map(([k,v])=>{const pc=PCOLS[k],on=priority===k;return`<button class="popt" data-p="${k}" style="background:${on?pc.bg:"transparent"};border-color:${on?pc.t:"#ffffff18"};color:${on?pc.t:"#888"}">${pc.i} ${v}</button>`;}).join("");$$("[data-p]",g).forEach(b=>b.onclick=()=>{priority=priority===b.dataset.p?null:b.dataset.p;rP();});}
   rL();rP();
-  
   if(isE){const mv=$("#mm",md);mv.innerHTML=COLS.filter(c=>c!==task.column).map(c=>`<button class="mvb" data-mc="${c}">→ ${c}</button>`).join("");$$("[data-mc]",mv).forEach(b=>b.onclick=()=>{moveTask(task.id,b.dataset.mc);ov.remove();});}
   const close=()=>ov.remove();
   ov.onclick=e=>{if(e.target===ov)close();};
@@ -715,13 +702,15 @@ function showTaskModal(task,col){
 function showProjModal(project){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="460px";
   let emoji=project?.emoji||"📋",ico=project?.icon||null,ban=project?.banner||null;
+  let labels=project?.labels?JSON.parse(JSON.stringify(project.labels)):JSON.parse(JSON.stringify(DEFAULT_LABELS));
+  
   function render(){
     md.innerHTML=`
       <div class="md-h"><h2>${project?"Edit Project":"New Project"}</h2><button class="md-x" id="cx">✕</button></div>
       <div class="md-b">
         <label class="flbl">Project Icon</label>
         <div class="iua">
-          ${ico?`<img class="ipv" src="${ico}">`:`<div class="iph" style="font-size:24px">${emoji}</div>`}
+          ${ico?`<img class="ipv" src="${ico}">`:`<div class="iph">${emoji}</div>`}
           <button class="iub" id="ui">Upload Image</button>
           ${ico?`<button class="irb" id="ri">✕ Remove</button>`:""}
         </div>
@@ -734,6 +723,10 @@ function showProjModal(project){
           <span class="bt">${ban?"📷 Change":"📷 Upload banner"}</span>
         </div>
         ${ban?`<button class="irb" id="rb" style="margin-top:2px">✕ Remove banner</button>`:""}
+        
+        <label class="flbl" style="margin-top:20px">Custom Labels</label>
+        <div id="plm" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
+        <button class="bs" id="al" style="width:100%;font-size:12px;padding:6px;margin-bottom:8px">+ Add Label</button>
       </div>
       <div class="md-f">
         ${project&&S.projects.length>1?`<button class="bd" id="dl">Delete</button>`:""}
@@ -747,13 +740,37 @@ function showProjModal(project){
     if($("#ri",md))$("#ri",md).onclick=()=>{ico=null;render();};
     $("#ba",md).onclick=()=>pickFile("image/*",f=>showCropper(f,3.5,1400,400,d=>{ban=d;render();}));
     if($("#rb",md))$("#rb",md).onclick=()=>{ban=null;render();};
+    
+    // Labels logic
+    renderLabels();
+    $("#al",md).onclick=()=>{labels.push({n:"New Label",bg:"#88888822",bd:"#888888",t:"#888888"});renderLabels();};
+
     $("#sv",md).onclick=()=>{
       const n=$("#pn",md).value.trim();if(!n)return;
-      if(project){updProj(project.id,{name:n,emoji,icon:ico,banner:ban});}
-      else{addProj(n,emoji,ico,ban);}
+      if(project){updProj(project.id,{name:n,emoji,icon:ico,banner:ban,labels});}
+      else{addProj(n,emoji,ico,ban,labels);}
       close();
     };
   }
+
+  function renderLabels(){
+      const container=$("#plm",md);
+      if(!container)return;
+      container.innerHTML=labels.map((l,i)=>`
+          <div style="display:flex;gap:6px;align-items:center">
+              <input type="text" value="${esc(l.n)}" data-lidx="${i}" style="padding:6px;font-size:12px;flex:1">
+              <input type="color" value="${l.bd}" data-cidx="${i}" style="width:30px;height:30px">
+              <button class="irb" data-rml="${i}" style="padding:4px">✕</button>
+          </div>
+      `).join("");
+      $$("[data-lidx]",container).forEach(inp=>inp.onchange=e=>{labels[e.target.dataset.lidx].n=e.target.value.trim();});
+      $$("[data-cidx]",container).forEach(inp=>inp.onchange=e=>{
+          const c=e.target.value,i=e.target.dataset.cidx;
+          labels[i].bd=c;labels[i].t=c;labels[i].bg=c+"22";
+      });
+      $$("[data-rml]",container).forEach(btn=>btn.onclick=e=>{labels.splice(e.target.dataset.rml,1);renderLabels();});
+  }
+
   const close=()=>ov.remove();
   ov.onclick=e=>{if(e.target===ov)close();};
   render();ov.appendChild(md);document.body.appendChild(ov);
@@ -837,8 +854,13 @@ async function init(){
     try{
       const f=new FBSync(sv.apiKey,sv.dbUrl);await f.connect();fb=f;
       const d=await f.get();
-      if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;}
-      S.projects.forEach(p=>{if(!p.subs)p.subs=[];});
+      if(d){
+          S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;
+          S.projects.forEach(p=>{
+              if(!p.subs)p.subs=[];
+              if(!p.labels)p.labels=JSON.parse(JSON.stringify(DEFAULT_LABELS));
+          });
+      }
       document.title=S.appName;
       fb.listen(onRemoteData);
       renderBoard();
