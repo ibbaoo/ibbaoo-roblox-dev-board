@@ -256,17 +256,25 @@ function pickFile(acc,cb){const i=document.createElement("input");i.type="file";
 
 /* ── Data Migrations ── */
 function runMigration(){
+  const badLabels = ["Red","Orange","Gold","Green","Cyan","Blue","Purple","Pink",""];
   S.projects.forEach(p=>{
     if(!p.labels) p.labels=[];
     if(p.archived===undefined) p.archived=false;
+    
+    // Nuke the accidental color-named labels
+    p.labels = p.labels.filter(l => !badLabels.includes(l.n?.trim()));
+    
     const allTasks=[...(p.tasks||[])];
     (p.subs||[]).forEach(s=>allTasks.push(...(s.tasks||[])));
+    
     allTasks.forEach(t=>{
+      // Cleanup legacy string format
       if(t.labels){
         t.labelIds=t.labelIds||[];
         t.labels.forEach(l=>{
           const n=typeof l==='object'?l.n:l;
           const c=typeof l==='object'?l.c:l;
+          if (badLabels.includes(n?.trim())) return; // Skip converting bad ones
           let ex=p.labels.find(pl=>pl.n===n);
           if(!ex){
             ex={id:uid(),n,c:c||'Red'};
@@ -275,6 +283,10 @@ function runMigration(){
           if(!t.labelIds.includes(ex.id)) t.labelIds.push(ex.id);
         });
         delete t.labels;
+      }
+      // Cleanup orphaned label IDs from tasks
+      if(t.labelIds) {
+         t.labelIds = t.labelIds.filter(id => p.labels.some(l => l.id === id));
       }
     });
   });
