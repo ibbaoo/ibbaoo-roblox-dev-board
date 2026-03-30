@@ -117,12 +117,15 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 
 /* Main */
 .mn{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.pban{width:100%;height:200px;background:var(--bg3);border-bottom:1px solid var(--bd);position:relative;overflow:hidden;flex-shrink:0;cursor:pointer}
+.pban{width:100%;height:220px;background:var(--bg3);position:relative;overflow:hidden;flex-shrink:0;cursor:pointer}
+.pban img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.pban:hover img{transform:scale(1.02)}
+.pban::before{content:'';position:absolute;bottom:0;left:0;right:0;height:100px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);mask-image:linear-gradient(to bottom, transparent, black);-webkit-mask-image:linear-gradient(to bottom, transparent, black);z-index:1;pointer-events:none}
+.pban::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom, transparent 30%, var(--bg) 100%);z-index:2;pointer-events:none}
+.pban-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--t3);font-size:13px;background:linear-gradient(135deg,#141620 0%,#1a1d2a 50%,#141620 100%);z-index:0;position:relative}
+.pban-ov{position:absolute;inset:0;background:#00000060;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;color:#fff;font-size:13px;font-weight:600;z-index:3}
 .pban:hover .pban-ov{opacity:1}
-.pban img{width:100%;height:100%;object-fit:cover}
-.pban-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--t3);font-size:13px;background:linear-gradient(135deg,#141620 0%,#1a1d2a 50%,#141620 100%)}
-.pban-ov{position:absolute;inset:0;background:#00000060;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;color:#fff;font-size:13px;font-weight:600}
-.tbar{display:flex;align-items:center;padding:14px 20px;gap:12px;border-bottom:1px solid var(--bd);flex-shrink:0;flex-wrap:wrap}
+.tbar{display:flex;align-items:center;padding:14px 20px;gap:12px;border-bottom:1px solid var(--bd);flex-shrink:0;flex-wrap:wrap;position:relative;z-index:10}
 .mb{display:none;align-items:center;justify-content:center;color:var(--t2);font-size:22px;padding:4px}
 .tc{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
 .tc .pi{width:32px;height:32px;border-radius:8px;object-fit:cover}
@@ -772,7 +775,9 @@ function delSub(id){const p=getProj();const s=(p.subs||[]).find(x=>x.id===id); i
 function showAppModal(){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="420px";
   let ico=S.appIcon;
+  let currentName = S.appName;
   function render(){
+    if($("#an", md)) currentName = $("#an", md).value;
     md.innerHTML=`
       <div class="md-h"><h2>Customize App</h2><button class="md-x" id="cx">✕</button></div>
       <div class="md-b">
@@ -783,7 +788,7 @@ function showAppModal(){
           ${ico?`<button class="irb" id="ri">✕ Remove</button>`:""}
         </div>
         <label class="flbl">App Name</label>
-        <input id="an" value="${esc(S.appName)}" placeholder="My Kanban">
+        <input id="an" value="${esc(currentName)}" placeholder="My Kanban">
       </div>
       <div class="md-f"><div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">Save</button></div>`;
     $("#cx",md).onclick=$("#cc",md).onclick=close;
@@ -857,11 +862,14 @@ function showTaskModal(task,col){
   }
 
   function rForm(){
-    $("#lf_title", md).textContent = editLid?"Edit Label":"Create Label";
-    $("#lf_sv", md).textContent = editLid?"Save":"Add";
-    $("#lf_del", md).style.display = editLid?"block":"none";
-    $("#lf_c", md).innerHTML = LCOLS.map(c=>`<div data-sc="${c.n}" style="width:20px;height:20px;border-radius:50%;background:${c.bd};cursor:pointer;box-shadow:${selC===c.n?`0 0 0 2px var(--bg4),0 0 0 4px ${c.bd}`:'none'}"></div>`).join("");
-    $$("[data-sc]",md).forEach(b=>b.onclick=()=>{selC=b.dataset.sc;rForm();});
+    const lft = $("#lf_title", md); if(lft) lft.textContent = editLid?"Edit Label":"Create Label";
+    const lfs = $("#lf_sv", md); if(lfs) lfs.textContent = editLid?"Save":"Add";
+    const lfd = $("#lf_del", md); if(lfd) lfd.style.display = editLid?"block":"none";
+    const lfc = $("#lf_c", md);
+    if(lfc) {
+        lfc.innerHTML = LCOLS.map(c=>`<div data-sc="${c.n}" style="width:20px;height:20px;border-radius:50%;background:${c.bd};cursor:pointer;box-shadow:${selC===c.n?`0 0 0 2px var(--bg4),0 0 0 4px ${c.bd}`:'none'}"></div>`).join("");
+        $$("[data-sc]",md).forEach(b=>b.onclick=()=>{selC=b.dataset.sc;rForm();});
+    }
   }
 
   $("#lf_sv",md).onclick=()=>{
@@ -905,7 +913,9 @@ function showTaskModal(task,col){
 function showProjModal(project){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="460px";
   let emoji=project?.emoji||"📋",ico=project?.icon||null,ban=project?.banner||null;
+  let currentName = project?.name || "";
   function render(){
+    if($("#pn", md)) currentName = $("#pn", md).value;
     md.innerHTML=`
       <div class="md-h"><h2>${project?"Edit Project":"New Project"}</h2><button class="md-x" id="cx">✕</button></div>
       <div class="md-b">
@@ -917,7 +927,7 @@ function showProjModal(project){
         </div>
         ${!ico?`<label class="flbl">Or pick an emoji</label><div class="egrid" id="eg"></div>`:""}
         <label class="flbl">Project Name</label>
-        <input id="pn" placeholder="e.g. Website Redesign" value="${esc(project?.name||"")}">
+        <input id="pn" placeholder="e.g. Website Redesign" value="${esc(currentName)}">
         <label class="flbl">Banner Image</label>
         <div class="bua ${ban?"hi":""}" id="ba">
           ${ban?`<img src="${ban}">`:""}
@@ -964,7 +974,9 @@ function showSubModal(subId){
   const p=getProj();
   const sub=subId?(p.subs||[]).find(s=>s.id===subId):null;
   let emoji=sub?.emoji||"📋",ico=sub?.icon||null;
+  let currentName = sub?.name || "";
   function render(){
+    if($("#sn", md)) currentName = $("#sn", md).value;
     md.innerHTML=`
       <div class="md-h"><h2>${sub?"Edit Sub-project":"New Sub-project"}</h2><button class="md-x" id="cx">✕</button></div>
       <div class="md-b">
@@ -976,7 +988,7 @@ function showSubModal(subId){
         </div>
         ${!ico?`<label class="flbl">Emoji</label><div class="egrid" id="eg"></div>`:""}
         <label class="flbl">Name</label>
-        <input id="sn" placeholder="e.g. Frontend" value="${esc(sub?.name||"")}">
+        <input id="sn" placeholder="e.g. Frontend" value="${esc(currentName)}">
       </div>
       <div class="md-f">
         ${sub?`<button class="bd" id="dl">Delete</button>`:""}
