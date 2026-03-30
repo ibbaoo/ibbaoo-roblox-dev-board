@@ -25,8 +25,8 @@ body{font-family:var(--f);background:var(--bg);color:var(--t1);-webkit-font-smoo
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:#ffffff15;border-radius:10px}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-input,textarea{font-family:inherit;color:var(--t1);background:var(--bg5);border:1px solid var(--bd2);border-radius:var(--rs);padding:10px 12px;font-size:16px;outline:none;width:100%;-webkit-appearance:none}
-input:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--acg)}
+input,textarea,select{font-family:inherit;color:var(--t1);background:var(--bg5);border:1px solid var(--bd2);border-radius:var(--rs);padding:10px 12px;font-size:16px;outline:none;width:100%;-webkit-appearance:none}
+input:focus,textarea:focus,select:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--acg)}
 textarea{resize:vertical;min-height:72px}
 input[type="date"]{color-scheme:dark}
 input[type="file"]{display:none}
@@ -95,6 +95,12 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .sb-sub .sb-it{padding:8px 10px}
 .sb-sub .sb-it .pe{font-size:16px;width:22px}
 .sb-sub .sb-it .pi{width:22px;height:22px;border-radius:5px}
+.sb-ip-task{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 40px;cursor:pointer;border-radius:8px;opacity:0.75;transition:0.2s;}
+.sb-ip-task:hover{opacity:1;background:#ffffff06;}
+.sb-ip-task.sub{padding-left:56px;}
+.ip-dot{width:6px;height:6px;border-radius:50%;background:var(--amb);box-shadow:0 0 6px var(--amb);flex-shrink:0;}
+.sb-ip-task .nm{font-size:12px;font-weight:500;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
 .npb{margin-top:6px;padding:12px;border:1px dashed #ffffff15;border-radius:10px;color:var(--t3);font-size:13px;text-align:left}
 .npb:hover{border-color:var(--ac)}
 .stb{padding:12px;border:1px solid var(--bd);border-radius:10px;color:var(--t3);font-size:13px;text-align:left}
@@ -115,26 +121,26 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .tmv-t{font-size:12px;color:var(--t2);margin-bottom:4px}
 .tmv-b{padding:10px 12px;background:#7c5cfc20;border:1px solid #7c5cfc40;border-radius:8px;color:var(--acl);font-size:13px;text-align:left}
 
-/* Main */
-.mn{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.pban{width:100%;height:200px;background:var(--bg3);border-bottom:1px solid var(--bd);position:relative;overflow:hidden;flex-shrink:0;cursor:pointer}
-.pban:hover .pban-ov{opacity:1}
-.pban img{width:100%;height:100%;object-fit:cover}
-.pban-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--t3);font-size:13px;background:linear-gradient(135deg,#141620 0%,#1a1d2a 50%,#141620 100%)}
-.pban-ov{position:absolute;inset:0;background:#00000060;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;color:#fff;font-size:13px;font-weight:600}
-.tbar{display:flex;align-items:center;padding:14px 20px;gap:12px;border-bottom:1px solid var(--bd);flex-shrink:0;flex-wrap:wrap}
+/* Main & Banner Blur overlay */
+.mn{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;position:relative;background:var(--bg3);}
+.pban{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.pban .bg-clear {width:100%;height:300px;object-fit:cover;position:absolute;top:0;left:0;z-index:2;mask-image:linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);-webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%);}
+.pban .bg-blur {width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;z-index:1;filter:blur(50px);opacity:0.4;transform:scale(1.1);}
+
+.tbar{display:flex;align-items:center;padding:24px 20px 16px;gap:12px;flex-shrink:0;flex-wrap:wrap;position:relative;z-index:10;background:transparent;border:none;}
 .mb{display:none;align-items:center;justify-content:center;color:var(--t2);font-size:22px;padding:4px}
 .tc{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
 .tc .pi{width:32px;height:32px;border-radius:8px;object-fit:cover}
 .tc .pe{font-size:24px}
-.tc h1{font-size:18px;font-weight:700;letter-spacing:-.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.epb{color:var(--t3);font-size:16px;padding:4px 8px;border-radius:6px}
+.tc h1{font-size:18px;font-weight:700;letter-spacing:-.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 2px 16px rgba(0,0,0,0.8)}
+.epb{color:var(--t3);font-size:14px;padding:6px;border-radius:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;width:30px;height:30px;transition:0.2s}
+.epb:hover{background:rgba(0,0,0,0.7);color:var(--t1)}
 .tst{display:flex;gap:8px}
-.stb2{font-size:12px;color:var(--t2);background:#ffffff06;padding:4px 10px;border-radius:8px}
+.stb2{font-size:12px;color:var(--t2);background:#ffffff06;padding:4px 10px;border-radius:8px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.05)}
 
 /* Columns */
-.cols{display:flex;flex:1;gap:16px;padding:16px 20px 20px;overflow:auto;align-items:flex-start}
-.col{flex:1;min-width:260px;max-width:380px;background:var(--bg3);border-radius:14px;border:1px solid var(--bd);display:flex;flex-direction:column;max-height:100%;transition:border-color .2s,box-shadow .2s}
+.cols{display:flex;flex:1;gap:16px;padding:12px 20px 20px;overflow:auto;align-items:flex-start;position:relative;z-index:10}
+.col{flex:1;min-width:260px;max-width:380px;background:rgba(20,22,32,0.65);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:14px;border:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;max-height:100%;transition:border-color .2s,box-shadow .2s}
 .col.dov{border-color:#7c5cfc50;box-shadow:0 0 24px #7c5cfc15}
 .ch{display:flex;align-items:center;gap:8px;padding:14px 16px 10px}
 .cdot{width:8px;height:8px;border-radius:50%}
@@ -142,10 +148,10 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .cdot.ip{background:#f59e0b;box-shadow:0 0 8px #f59e0b60}
 .cdot.dn{background:#10b981;box-shadow:0 0 8px #10b98160}
 .ctt{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t2)}
-.cct{font-size:11px;color:var(--t3);margin-left:auto;background:#ffffff08;padding:2px 8px;border-radius:10px}
+.cct{font-size:11px;color:var(--t3);margin-left:auto;background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:10px}
 .cbod{padding:6px 10px 12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1}
-.acb{padding:12px;border:1px dashed #ffffff10;border-radius:8px;color:var(--t3);font-size:13px;text-align:center}
-.acb:hover{border-color:var(--ac);color:var(--acl)}
+.acb{padding:12px;border:1px dashed rgba(255,255,255,0.1);border-radius:8px;color:var(--t3);font-size:13px;text-align:center;background:transparent;transition:0.2s}
+.acb:hover{border-color:var(--ac);color:var(--acl);background:rgba(255,255,255,0.02)}
 
 /* Card */
 .crd{background:var(--bg4);border:1px solid #ffffff0a;border-radius:10px;padding:12px 14px;cursor:grab;user-select:none;transition:transform .15s,box-shadow .15s;animation:fadeIn .25s ease}
@@ -219,45 +225,29 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const ts=()=>Date.now();
 const KANBAN_ICON_SVG = `<svg width="50%" height="50%" viewBox="0 0 100 100"><rect x="18" y="20" width="16" height="60" rx="6" fill="white"/><rect x="42" y="20" width="16" height="35" rx="6" fill="white"/><rect x="66" y="20" width="16" height="48" rx="6" fill="white"/></svg>`;
 
-let S={appName:"Kanban Flow",appIcon:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null};
+let S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null};
 let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null;
 let collapsedProjs=new Set();
 
 /* ── PWA Generation ── */
 function setupPWA(){
   if(document.getElementById('pwa-manifest')) return;
-  const svg = KANBAN_ICON_SVG.replace(/"/g, "'");
   const canvas = document.createElement('canvas');
   canvas.width = 512; canvas.height = 512;
   const ctx = canvas.getContext('2d');
-  
-  // Fill background
   ctx.fillStyle = '#7c5cfc';
-  ctx.beginPath();
-  ctx.roundRect(0, 0, 512, 512, 100);
-  ctx.fill();
-
+  ctx.beginPath(); ctx.roundRect(0, 0, 512, 512, 100); ctx.fill();
   const img = new Image();
   img.onload = () => {
     ctx.drawImage(img, 0, 0, 512, 512);
     const pngUrl = canvas.toDataURL('image/png');
-    
-    const ati = document.createElement('link');
-    ati.rel = 'apple-touch-icon';
-    ati.href = pngUrl;
-    document.head.appendChild(ati);
-    
+    const ati = document.createElement('link'); ati.rel = 'apple-touch-icon'; ati.href = pngUrl; document.head.appendChild(ati);
     const manifest = {
-       name: "Kanban Flow",
-       short_name: "Kanban",
-       display: "standalone",
-       background_color: "#0a0c13",
-       theme_color: "#0a0c13",
+       name: "Kanban Flow", short_name: "Kanban", display: "standalone",
+       background_color: "#0a0c13", theme_color: "#0a0c13",
        icons: [{ src: pngUrl, sizes: "512x512", type: "image/png" }]
     };
-    const manLink = document.createElement('link');
-    manLink.id = 'pwa-manifest';
-    manLink.rel = 'manifest';
+    const manLink = document.createElement('link'); manLink.id = 'pwa-manifest'; manLink.rel = 'manifest';
     manLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
     document.head.appendChild(manLink);
   };
@@ -286,7 +276,34 @@ function getActiveItem(){
   if(S.activeSubId)return(p.subs||[]).find(s=>s.id===S.activeSubId)||p;
   return p;
 }
-const tasksIn=col=>getActiveTasks().filter(t=>t.column===col && !t._deleted).sort((a,b)=>(a.order??0)-(b.order??0));
+const tasksIn=col=>{
+  let tasks=getActiveTasks().filter(t=>t.column===col && !t._deleted);
+  const p=getProj();
+  
+  if (S.filterLabel && S.filterLabel !== 'all') {
+      tasks = tasks.filter(t => t.labelIds && t.labelIds.includes(S.filterLabel));
+  }
+
+  if (S.sortBy === 'label') {
+      tasks.sort((a,b) => {
+          const lA = a.labelIds?.[0] ? p.labels.find(x=>x.id===a.labelIds[0])?.n : 'ZZZ';
+          const lB = b.labelIds?.[0] ? p.labels.find(x=>x.id===b.labelIds[0])?.n : 'ZZZ';
+          return (lA||'ZZZ').localeCompare(lB||'ZZZ') || ((a.order??0)-(b.order??0));
+      });
+  } else if (S.sortBy === 'priority') {
+      const pMap = { high: 1, medium: 2, low: 3, null: 4, undefined: 4 };
+      tasks.sort((a,b) => (pMap[a.priority]||4) - (pMap[b.priority]||4) || ((a.order??0)-(b.order??0)));
+  } else if (S.sortBy === 'due') {
+      tasks.sort((a,b) => {
+          if(!a.dueDate && !b.dueDate) return ((a.order??0)-(b.order??0));
+          if(!a.dueDate) return 1; if(!b.dueDate) return -1;
+          return new Date(a.dueDate) - new Date(b.dueDate) || ((a.order??0)-(b.order??0));
+      });
+  } else {
+      tasks.sort((a,b) => (a.order??0)-(b.order??0));
+  }
+  return tasks;
+};
 function fmtD(d){if(!d)return"";const dt=new Date(d),n=new Date(),df=Math.ceil((dt-n)/864e5);if(df<0)return"Overdue";if(df===0)return"Today";if(df===1)return"Tomorrow";return dt.toLocaleDateString("en-US",{month:"short",day:"numeric"});}
 function isOD(d){return d&&new Date(d)<new Date();}
 function dotC(c){return c==="To Do"?"td":c==="In Progress"?"ip":"dn";}
@@ -304,7 +321,6 @@ function runMigration(){
     if(!p.labels) p.labels=[];
     if(p.archived===undefined) p.archived=false;
     
-    // Purge bad labels
     p.labels = p.labels.filter(l => l.n && !badLabels.includes(l.n.trim()));
     
     const allTasks=[...(p.tasks||[])];
@@ -327,9 +343,7 @@ function runMigration(){
         });
         delete t.labels;
       }
-      if(t.labelIds) {
-         t.labelIds = t.labelIds.filter(id => p.labels.some(l => l.id === id));
-      }
+      if(t.labelIds) t.labelIds = t.labelIds.filter(id => p.labels.some(l => l.id === id));
     });
   });
 }
@@ -410,7 +424,7 @@ function showCropper(file,aspect,outW,outH,cb){
   ov.appendChild(md);document.body.appendChild(ov);
 }
 
-/* ── Firebase & Robust Deep Merge Sync ── */
+/* ── Firebase & Realtime Deep Merge Sync ── */
 class FBSync{
   constructor(k,u){this.key=k;this.url=u.replace(/\/$/,"");this.tok=null;this.ref=null;this.sk="kanban-auth-"+this._h(u);}
   _h(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h).toString(36);}
@@ -451,6 +465,7 @@ class FBSync{
     sse.addEventListener("put",e=>{
       try{
         const msg=JSON.parse(e.data);
+        if(Date.now()-lastSaveT<2000)return; 
         if(msg.path==="/"&&msg.data){onData(msg.data);}
         else if(msg.path!=="/"){ this.get().then(d=>{if(d)onData(d);}); }
       }catch(err){}
@@ -476,7 +491,7 @@ function save(){
   clearTimeout(saveT);
   saveT=setTimeout(async()=>{
     lastSaveT=Date.now();
-    try{await fb.set({appName:S.appName,appIcon:S.appIcon,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});syncSt="synced";}
+    try{await fb.set({appName:S.appName,appIcon:S.appIcon,sortBy:S.sortBy,filterLabel:S.filterLabel,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});syncSt="synced";}
     catch(e){console.error("Save:",e);syncSt="error";}
     uDot();
   },600);
@@ -486,6 +501,8 @@ function uDot(){const d=$(".sdot");if(d)d.style.background=syncSt==="synced"?"va
 function onRemoteData(d){
   if(d.appName) S.appName=d.appName;
   if(d.appIcon!==undefined) S.appIcon=d.appIcon;
+  if(d.sortBy) S.sortBy=d.sortBy;
+  if(d.filterLabel) S.filterLabel=d.filterLabel;
   
   if(d.projects){
      const lpm=new Map(S.projects.map(p=>[p.id,p]));
@@ -493,18 +510,15 @@ function onRemoteData(d){
         const lp=lpm.get(rp.id);
         if(!lp){ S.projects.push(rp); }
         else{
-           // Merge Project Data
            if((rp._ts||0)>(lp._ts||0)){
               lp.name=rp.name; lp.emoji=rp.emoji; lp.icon=rp.icon; lp.banner=rp.banner; lp.archived=rp.archived; lp._ts=rp._ts; lp._deleted=rp._deleted; lp.labels=rp.labels;
            }
-           // Merge Tasks
            const ltm=new Map((lp.tasks||[]).map(t=>[t.id,t]));
            (rp.tasks||[]).forEach(rt=>{
               const lt=ltm.get(rt.id);
               if(!lt){ if(!lp.tasks)lp.tasks=[]; lp.tasks.push(rt); }
               else if((rt._ts||0)>(lt._ts||0)){ Object.assign(lt,rt); }
            });
-           // Merge Subs
            const lsm=new Map((lp.subs||[]).map(s=>[s.id,s]));
            (rp.subs||[]).forEach(rs=>{
               const ls=lsm.get(rs.id);
@@ -566,7 +580,7 @@ function renderSetup(error){
         const f=new FBSync(k,u);await f.connect();fb=f;
         localStorage.setItem("kanban-fb-config",JSON.stringify({apiKey:k,dbUrl:u}));
         const d=await f.get();
-        if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;}
+        if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;S.sortBy=d.sortBy||"default";S.filterLabel=d.filterLabel||"all";}
         runMigration();
         document.title=S.appName;
         fb.listen(onRemoteData);
@@ -581,6 +595,8 @@ function renderSetup(error){
 let dragId=null;
 
 function renderBoard(){
+  S.sortBy = S.sortBy || "default";
+  S.filterLabel = S.filterLabel || "all";
   const p=getProj(),item=getActiveItem();
   document.title=S.appName;
   $("#app").innerHTML=`<div class="app">
@@ -600,12 +616,32 @@ function renderBoard(){
     </aside>
     <main class="mn">
       <div class="pban" id="pbn">
-        ${p.banner?`<img src="${p.banner}"><div class="pban-ov">📷 Change banner</div>`:`<div class="pban-ph">📷 Click to add a banner</div>`}
+        ${p.banner?`
+            <img class="bg-blur" src="${p.banner}">
+            <img class="bg-clear" src="${p.banner}">
+        `:''}
       </div>
       <header class="tbar">
         <button class="mb" id="bm">☰</button>
-        <div class="tc">${pIcon(item,32)}<h1>${esc(item.name)}</h1><button class="epb" id="be">✎</button></div>
-        <div class="tst">${COLS.map(c=>`<span class="stb2">${tasksIn(c).length} ${c==="To Do"?"📝":c==="In Progress"?"⚡":"✅"}</span>`).join("")}</div>
+        <div class="tc">
+            ${pIcon(item,32)}
+            <h1>${esc(item.name)}</h1>
+            <button class="epb" id="be" title="Edit Project Settings">✎</button>
+            <button class="epb" id="bbn" title="${p.banner?'Change Banner':'Add Banner'}">🖼️</button>
+        </div>
+        <div class="tst" style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+            <select id="filterSel" style="background:rgba(255,255,255,0.06); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.1); color:var(--t1); font-size:12px; padding:6px 10px; border-radius:8px; cursor:pointer; width:auto;">
+                <option value="all" style="background:var(--bg2); color:var(--t1);">Filter: All Labels</option>
+                ${(p.labels||[]).map(l => `<option value="${l.id}" style="background:var(--bg2); color:var(--t1);" ${S.filterLabel===l.id?'selected':''}>Label: ${esc(l.n)}</option>`).join("")}
+            </select>
+            <select id="sortSel" style="background:rgba(255,255,255,0.06); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.1); color:var(--t1); font-size:12px; padding:6px 10px; border-radius:8px; cursor:pointer; width:auto;">
+                <option value="default" style="background:var(--bg2); color:var(--t1);" ${S.sortBy==='default'?'selected':''}>Sort: Default</option>
+                <option value="label" style="background:var(--bg2); color:var(--t1);" ${S.sortBy==='label'?'selected':''}>Sort: Label</option>
+                <option value="priority" style="background:var(--bg2); color:var(--t1);" ${S.sortBy==='priority'?'selected':''}>Sort: Priority</option>
+                <option value="due" style="background:var(--bg2); color:var(--t1);" ${S.sortBy==='due'?'selected':''}>Sort: Due Date</option>
+            </select>
+            ${COLS.map(c=>`<span class="stb2">${tasksIn(c).length} ${c==="To Do"?"📝":c==="In Progress"?"⚡":"✅"}</span>`).join("")}
+        </div>
       </header>
       <div class="cols" id="cls"></div>
     </main>
@@ -617,7 +653,21 @@ function renderBoard(){
   $("#np").onclick=()=>showProjModal(null,false);
   $("#be").onclick=()=>{if(S.activeSubId)showSubModal(S.activeSubId);else showProjModal(p,false);};
   $("#bst").onclick=showSettings;
-  $("#pbn").onclick=()=>pickFile("image/*",f=>showCropper(f,3.5,1400,400,d=>{getProj().banner=d;save();renderBoard();}));
+  $("#bbn").onclick=()=>pickFile("image/*",f=>showCropper(f,3.5,1400,400,d=>{getProj().banner=d;save();renderBoard();}));
+  $("#sortSel").onchange=(e)=>{S.sortBy=e.target.value; save(); renderCols();};
+  $("#filterSel").onchange=(e)=>{S.filterLabel=e.target.value; save(); renderCols();};
+}
+
+function renderIPTasks(container, tasks, pid, spid, isSub) {
+  const inProg = (tasks||[]).filter(t => t.column === 'In Progress' && !t._deleted);
+  inProg.forEach(t => {
+      const td = el("div", "sb-ip-task" + (isSub ? " sub" : ""));
+      td.innerHTML = `<span class="ip-dot"></span><span class="nm">${esc(t.title)}</span>`;
+      td.onclick = (e) => {
+          e.stopPropagation(); S.activeId = pid; S.activeSubId = spid; save(); renderBoard();
+      };
+      container.appendChild(td);
+  });
 }
 
 function togSb(o){const s=$("#sb"),v=$("#ov");if(o){s.classList.add("open");v.style.display="block";}else{s.classList.remove("open");v.style.display="none";}}
@@ -657,6 +707,8 @@ function renderProjs(){
         l.appendChild(d);
         
         if(!isColl && (!p.archived || isAct)){
+            renderIPTasks(l, p.tasks, p.id, null, false); 
+            
             if(p.subs?.length){
               const validSubs = p.subs.filter(s=>!s._deleted);
               const sw=el("div","sb-sub");
@@ -666,6 +718,7 @@ function renderProjs(){
                 sd.innerHTML=`${pIcon(sp,22)}<span class="nm">${esc(sp.name)}</span><span class="ct">${(sp.tasks||[]).filter(t=>!t._deleted).length}</span>`;
                 sd.onclick=()=>{S.activeId=p.id;S.activeSubId=sp.id;save();renderBoard();};
                 sw.appendChild(sd);
+                renderIPTasks(sw, sp.tasks, p.id, sp.id, true); 
               });
               l.appendChild(sw);
             }
@@ -700,6 +753,12 @@ function renderProjs(){
 
 function renderCols(){
   const w=$("#cls");if(!w)return;w.innerHTML="";
+  
+  const hFilter = $("#filterSel");
+  if(hFilter && S.filterLabel){ hFilter.value = S.filterLabel; }
+  const hSort = $("#sortSel");
+  if(hSort && S.sortBy){ hSort.value = S.sortBy; }
+
   COLS.forEach(col=>{
     const tasks=tasksIn(col);
     const d=el("div","col");
@@ -894,7 +953,7 @@ function showTaskModal(task,col){
   $("#sv",md).onclick=()=>{
       const t=$("#mt",md).value.trim();if(!t)return;
       const d={title:t,description:$("#mds",md).value,labelIds:selLids,priority,dueDate:$("#mdu",md).value};
-      getProj().labels=pLabels; 
+      getProj().labels=pLabels; getProj()._ts = ts();
       if(isE)updTask(task.id,d);else addTask(col,d);
       close();
   };
@@ -1059,7 +1118,7 @@ async function init(){
     try{
       const f=new FBSync(sv.apiKey,sv.dbUrl);await f.connect();fb=f;
       const d=await f.get();
-      if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;}
+      if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;S.sortBy=d.sortBy||"default";S.filterLabel=d.filterLabel||"all";}
       S.projects.forEach(p=>{if(!p.subs)p.subs=[];});
       runMigration();
       document.title=S.appName;
