@@ -87,6 +87,8 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .sb-it .pe{font-size:20px;width:28px;text-align:center;flex-shrink:0}
 .sb-it .nm{flex:1;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sb-it .ct{font-size:11px;color:var(--t3);background:#ffffff08;padding:2px 8px;border-radius:10px}
+.stgl{padding:2px 6px;color:var(--t3);font-size:10px;cursor:pointer;border-radius:4px;transition:0.2s}
+.stgl:hover{background:#ffffff15;color:var(--t1)}
 .sb-sub{padding-left:20px}
 .sb-sub .sb-it{padding:8px 10px}
 .sb-sub .sb-it .pe{font-size:16px;width:22px}
@@ -216,6 +218,7 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 let S={appName:"Kanban Flow",appIcon:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,tasks:[],subs:[]}],activeId:"default",activeSubId:null};
 let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null;
+let collapsedProjs=new Set(); // Tracks collapsed projects
 
 /* ── Helpers ── */
 const $=(s,p)=>(p||document).querySelector(s);
@@ -225,8 +228,16 @@ const esc=s=>{const d=document.createElement("div");d.textContent=s;return d.inn
 function getProj(){return S.projects.find(p=>p.id===S.activeId)||S.projects[0];}
 function getActiveTasks(){
   const p=getProj();
-  if(S.activeSubId){const sp=(p.subs||[]).find(s=>s.id===S.activeSubId);return sp?.tasks||[];}
-  return p.tasks||[];
+  if(S.activeSubId){
+    const sp=(p.subs||[]).find(s=>s.id===S.activeSubId);
+    if(sp){
+        if(!sp.tasks) sp.tasks=[]; // Fix: Ensure array reference lives on the object
+        return sp.tasks;
+    }
+    return [];
+  }
+  if(!p.tasks) p.tasks=[]; // Fix: Ensure array reference lives on the object
+  return p.tasks;
 }
 function getActiveItem(){
   const p=getProj();
@@ -502,29 +513,53 @@ function renderProjs(){
   const l=$("#pl");if(!l)return;l.innerHTML="";
   S.projects.forEach(p=>{
     const isAct=p.id===S.activeId&&!S.activeSubId;
+    const isColl=collapsedProjs.has(p.id);
+    const hasSubs=(p.subs&&p.subs.length>0)||p.id===S.activeId;
+    
     const d=el("div","sb-it"+(isAct?" on":""));
-    d.innerHTML=`${pIcon(p,28)}<span class="nm">${esc(p.name)}</span><span class="ct">${(p.tasks||[]).length+(p.subs||[]).reduce((a,s)=>(a+(s.tasks||[]).length),0)}</span>`;
-    d.onclick=()=>{S.activeId=p.id;S.activeSubId=null;save();renderBoard();};
-    l.appendChild(d);
-    // Sub-projects
-    if(p.subs?.length){
-      const sw=el("div","sb-sub");
-      p.subs.forEach(sp=>{
-        const isSubAct=p.id===S.activeId&&S.activeSubId===sp.id;
-        const sd=el("div","sb-it"+(isSubAct?" on":""));
-        sd.innerHTML=`${pIcon(sp,22)}<span class="nm">${esc(sp.name)}</span><span class="ct">${(sp.tasks||[]).length}</span>`;
-        sd.onclick=()=>{S.activeId=p.id;S.activeSubId=sp.id;save();renderBoard();};
-        sw.appendChild(sd);
-      });
-      l.appendChild(sw);
+    let h=`${pIcon(p,28)}<span class="nm">${esc(p.name)}</span><span class="ct">${(p.tasks||[]).length+(p.subs||[]).reduce((a,s)=>(a+(s.tasks||[]).length),0)}</span>`;
+    
+    // Toggle Button
+    if(hasSubs){
+        h+=`<span class="stgl" data-pid="${p.id}" style="margin-left:4px;display:flex;align-items:center">${isColl?'▶':'▼'}</span>`;
     }
-    // Add sub-project button
-    if(p.id===S.activeId){
-      const ab=el("div","sb-sub");
-      const asb=el("button","sb-it","<span class='pe' style='font-size:14px;width:22px;text-align:center;color:var(--t3)'>+</span><span class='nm' style='color:var(--t3);font-size:12px'>Add sub-project</span>");
-      asb.onclick=()=>showSubModal(null);
-      ab.appendChild(asb);
-      l.appendChild(ab);
+    
+    d.innerHTML=h;
+    d.onclick=(e)=>{
+      if(e.target.closest('.stgl')){
+         e.stopPropagation();
+         if(collapsedProjs.has(p.id)) collapsedProjs.delete(p.id);
+         else collapsedProjs.add(p.id);
+         renderProjs();
+         return;
+      }
+      S.activeId=p.id;S.activeSubId=null;
+      collapsedProjs.delete(p.id); // auto-expand on click
+      save();renderBoard();
+    };
+    l.appendChild(d);
+    
+    // Sub-projects (if not collapsed)
+    if(!isColl){
+        if(p.subs?.length){
+          const sw=el("div","sb-sub");
+          p.subs.forEach(sp=>{
+            const isSubAct=p.id===S.activeId&&S.activeSubId===sp.id;
+            const sd=el("div","sb-it"+(isSubAct?" on":""));
+            sd.innerHTML=`${pIcon(sp,22)}<span class="nm">${esc(sp.name)}</span><span class="ct">${(sp.tasks||[]).length}</span>`;
+            sd.onclick=()=>{S.activeId=p.id;S.activeSubId=sp.id;save();renderBoard();};
+            sw.appendChild(sd);
+          });
+          l.appendChild(sw);
+        }
+        // Add sub-project button
+        if(p.id===S.activeId){
+          const ab=el("div","sb-sub");
+          const asb=el("button","sb-it","<span class='pe' style='font-size:14px;width:22px;text-align:center;color:var(--t3)'>+</span><span class='nm' style='color:var(--t3);font-size:12px'>Add sub-project</span>");
+          asb.onclick=()=>showSubModal(null);
+          ab.appendChild(asb);
+          l.appendChild(ab);
+        }
     }
   });
 }
