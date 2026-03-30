@@ -113,7 +113,8 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
   .tst{display:none!important}
   .cols{padding:12px!important;gap:0!important;flex-direction:column!important;align-items:stretch!important}
   .col{min-width:unset!important;max-width:unset!important;margin-bottom:12px}
-  .tbar{padding:14px 14px!important}
+  .pban{height:120px!important}
+  .tbar{padding:10px 14px!important}
 }
 
 .tmv{margin-top:12px;padding:12px;background:#ffffff06;border-radius:10px;display:flex;flex-direction:column;gap:6px}
@@ -122,7 +123,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 
 /* Main & Banner Blur overlay */
 .mn{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;position:relative}
-.pban{position:absolute;inset:0;height:60vh;width:100%;z-index:0;pointer-events:none;mask-image:linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);-webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 100%);opacity:0.65;transition:opacity .3s;}
+.pban{position:absolute;inset:0;height:100%;width:100%;z-index:0;pointer-events:none;mask-image:linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%);-webkit-mask-image:linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0) 80%);opacity:0.45;transition:opacity .3s;}
 .pban img{width:100%;height:100%;object-fit:cover;}
 .tbar{display:flex;align-items:center;padding:24px 20px 16px;gap:12px;flex-shrink:0;flex-wrap:wrap;position:relative;z-index:10;background:transparent;border:none;}
 .mb{display:none;align-items:center;justify-content:center;color:var(--t2);font-size:22px;padding:4px}
@@ -458,6 +459,7 @@ class FBSync{
     sse.addEventListener("put",e=>{
       try{
         const msg=JSON.parse(e.data);
+        if(Date.now()-lastSaveT<2000)return; 
         if(msg.path==="/"&&msg.data){onData(msg.data);}
         else if(msg.path!=="/"){ this.get().then(d=>{if(d)onData(d);}); }
       }catch(err){}
@@ -483,7 +485,7 @@ function save(){
   clearTimeout(saveT);
   saveT=setTimeout(async()=>{
     lastSaveT=Date.now();
-    try{await fb.set({appName:S.appName,appIcon:S.appIcon,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});syncSt="synced";}
+    try{await fb.set({appName:S.appName,appIcon:S.appIcon,sortBy:S.sortBy,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});syncSt="synced";}
     catch(e){console.error("Save:",e);syncSt="error";}
     uDot();
   },600);
@@ -493,6 +495,7 @@ function uDot(){const d=$(".sdot");if(d)d.style.background=syncSt==="synced"?"va
 function onRemoteData(d){
   if(d.appName) S.appName=d.appName;
   if(d.appIcon!==undefined) S.appIcon=d.appIcon;
+  if(d.sortBy) S.sortBy=d.sortBy;
   
   if(d.projects){
      const lpm=new Map(S.projects.map(p=>[p.id,p]));
@@ -570,7 +573,7 @@ function renderSetup(error){
         const f=new FBSync(k,u);await f.connect();fb=f;
         localStorage.setItem("kanban-fb-config",JSON.stringify({apiKey:k,dbUrl:u}));
         const d=await f.get();
-        if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;}
+        if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;S.sortBy=d.sortBy||"default";}
         runMigration();
         document.title=S.appName;
         fb.listen(onRemoteData);
@@ -688,7 +691,7 @@ function renderProjs(){
         l.appendChild(d);
         
         if(!isColl && (!p.archived || isAct)){
-            renderIPTasks(l, p.tasks, p.id, null, false); // Main project In Progress tasks
+            renderIPTasks(l, p.tasks, p.id, null, false); 
             
             if(p.subs?.length){
               const validSubs = p.subs.filter(s=>!s._deleted);
@@ -699,7 +702,7 @@ function renderProjs(){
                 sd.innerHTML=`${pIcon(sp,22)}<span class="nm">${esc(sp.name)}</span><span class="ct">${(sp.tasks||[]).filter(t=>!t._deleted).length}</span>`;
                 sd.onclick=()=>{S.activeId=p.id;S.activeSubId=sp.id;save();renderBoard();};
                 sw.appendChild(sd);
-                renderIPTasks(sw, sp.tasks, p.id, sp.id, true); // Sub-project In Progress tasks
+                renderIPTasks(sw, sp.tasks, p.id, sp.id, true); 
               });
               l.appendChild(sw);
             }
@@ -1020,4 +1023,89 @@ function showSubModal(subId){
     if($("#dl",md))$("#dl",md).onclick=()=>{delSub(sub.id);close();};
     const eg=$("#eg",md);
     if(eg){eg.innerHTML=EMOJIS.map(e=>`<button class="eb ${emoji===e?"on":""}" data-e="${e}">${e}</button>`).join("");$$("[data-e]",eg).forEach(b=>b.onclick=()=>{emoji=b.dataset.e;render();});}
-    $("#ui",md).onclick=()=>pickFile("image/*",f=>showCropper(f,1,128,128,
+    $("#ui",md).onclick=()=>pickFile("image/*",f=>showCropper(f,1,128,128,d=>{ico=d;render();}));
+    if($("#ri",md))$("#ri",md).onclick=()=>{ico=null;render();};
+    $("#sv",md).onclick=()=>{
+      const n=$("#sn",md).value.trim();if(!n)return;
+      if(sub)updSub(sub.id,{name:n,emoji,icon:ico});
+      else addSub(n,emoji,ico);
+      close();
+    };
+  }
+  const close=()=>ov.remove();
+  ov.onclick=e=>{if(e.target===ov)close();};
+  render();ov.appendChild(md);document.body.appendChild(ov);
+  setTimeout(()=>{const i=$("#sn",md);if(i)i.focus();},50);
+}
+
+/* ── Settings ── */
+function showSettings(){
+  const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="400px";
+  md.innerHTML=`
+    <div class="md-h"><h2>Settings</h2><button class="md-x" id="cx">✕</button></div>
+    <div class="md-b">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0"><div><div style="font-weight:600;font-size:14px">Firebase Real-time Sync</div><div style="font-size:12px;color:var(--t2);margin-top:2px">Connected · Live updates enabled</div></div><span style="width:10px;height:10px;border-radius:50%;background:var(--grn)"></span></div>
+      <div style="border-top:1px solid var(--bd);margin:8px 0"></div>
+      <div id="sa"></div>
+      <div style="border-top:1px solid var(--bd);margin:8px 0"></div>
+      <button class="bs" id="s_clean" style="width:100%;text-align:center">🧹 Clean Up Unused Labels</button>
+    </div>`;
+  function showBtn(){
+    const a=$("#sa",md);
+    a.innerHTML=`<button class="bd" style="width:100%;text-align:center" id="sd">Disconnect</button>`;
+    $("#sd",md).onclick=()=>{
+      a.innerHTML=`<p style="font-size:12px;color:#ff6b6b;margin:0 0 8px">Data stays in Firebase. Reconnect with same DB URL to get it back.</p><div style="display:flex;gap:8px"><button class="bs" id="sn">Cancel</button><button class="bd" style="flex:1;text-align:center" id="sy">Confirm</button></div>`;
+      $("#sn",md).onclick=showBtn;
+      $("#sy",md).onclick=()=>{if(fb){fb.stopListening();fb.clear();}fb=null;localStorage.removeItem("kanban-fb-config");ov.remove();renderSetup();};
+    };
+  }
+  showBtn();
+  const close=()=>ov.remove();
+  ov.onclick=e=>{if(e.target===ov)close();};
+  $("#cx",md).onclick=close;
+  
+  $("#s_clean",md).onclick=()=>{
+      if(!confirm("Are you sure? This will delete all labels across all projects that aren't currently attached to any tasks.")) return;
+      let usedLids = new Set();
+      S.projects.forEach(p => {
+          if (p._deleted) return;
+          const allTasks=[...(p.tasks||[])];
+          (p.subs||[]).forEach(s=>{ if(!s._deleted) allTasks.push(...(s.tasks||[])) });
+          allTasks.forEach(t => {
+             if(t._deleted) return;
+             (t.labelIds||[]).forEach(id => usedLids.add(id))
+          });
+          if(p.labels) {
+              const beforeCount = p.labels.length;
+              p.labels = p.labels.filter(l => usedLids.has(l.id));
+              if (p.labels.length !== beforeCount) p._ts = ts();
+          }
+      });
+      save(); renderBoard();
+      close();
+  };
+
+  ov.appendChild(md);document.body.appendChild(ov);
+}
+
+/* ── Init ── */
+async function init(){
+  $("#app").innerHTML=`<div class="loading"><div class="loading-dot"></div><p class="loading-text">Loading...</p></div>`;
+  const sv=JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
+  if(sv){
+    try{
+      const f=new FBSync(sv.apiKey,sv.dbUrl);await f.connect();fb=f;
+      const d=await f.get();
+      if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;S.sortBy=d.sortBy||"default";}
+      S.projects.forEach(p=>{if(!p.subs)p.subs=[];});
+      runMigration();
+      document.title=S.appName;
+      fb.listen(onRemoteData);
+      renderBoard();
+    }catch(e){renderSetup(e.message);}
+  }else{renderSetup();}
+}
+init();
+</script>
+</body>
+</html>
