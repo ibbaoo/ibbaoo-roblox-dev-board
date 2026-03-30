@@ -152,7 +152,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .crd:hover{border-color:#ffffff15;box-shadow:0 4px 16px #00000030}
 .crd.drg{opacity:.4}
 .crd-lb{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-.lpill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;border:1px solid;letter-spacing:.3px;display:inline-flex;align-items:center;gap:4px}
+.lpill{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid;letter-spacing:.3px;display:inline-flex;align-items:center;gap:4px;transition:0.15s}
 .crd-t{font-size:14px;font-weight:600;line-height:1.4}
 .crd-d{font-size:12px;color:var(--t2);line-height:1.4;margin-top:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .crd-m{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
@@ -170,7 +170,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .md-b{padding:8px 20px 16px;display:flex;flex-direction:column;gap:10px}
 .md-f{display:flex;align-items:center;gap:8px;padding:12px 20px 16px}
 .lgrid{display:flex;flex-wrap:wrap;gap:6px}
-.lopt{font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;border:1px solid #ffffff18;cursor:pointer}
 .prow{display:flex;gap:6px;flex-wrap:wrap}
 .popt{font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid #ffffff18;cursor:pointer}
 .mvb{font-size:12px;padding:8px 14px;border-radius:8px;border:1px solid #ffffff15;background:#ffffff06;color:var(--acl);cursor:pointer}
@@ -217,11 +216,54 @@ const LCOLS=[
 const PCOLS={high:{bg:"#ff4d4f20",t:"#ff6b6b",i:"▲"},medium:{bg:"#fa8c1620",t:"#ffa940",i:"◆"},low:{bg:"#52c41a20",t:"#73d13d",i:"▼"}};
 const EMOJIS=["🚀","📋","💡","🎮","🎨","🔧","📱","🌟","⚡","🏠","📚","🎯","🔥","💎","🌊","🍀"];
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const ts=()=>Date.now();
 const KANBAN_ICON_SVG = `<svg width="50%" height="50%" viewBox="0 0 100 100"><rect x="18" y="20" width="16" height="60" rx="6" fill="white"/><rect x="42" y="20" width="16" height="35" rx="6" fill="white"/><rect x="66" y="20" width="16" height="48" rx="6" fill="white"/></svg>`;
 
-let S={appName:"Kanban Flow",appIcon:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null};
+let S={appName:"Kanban Flow",appIcon:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null};
 let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null;
 let collapsedProjs=new Set();
+
+/* ── PWA Generation ── */
+function setupPWA(){
+  if(document.getElementById('pwa-manifest')) return;
+  const svg = KANBAN_ICON_SVG.replace(/"/g, "'");
+  const canvas = document.createElement('canvas');
+  canvas.width = 512; canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  
+  // Fill background
+  ctx.fillStyle = '#7c5cfc';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, 512, 512, 100);
+  ctx.fill();
+
+  const img = new Image();
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0, 512, 512);
+    const pngUrl = canvas.toDataURL('image/png');
+    
+    const ati = document.createElement('link');
+    ati.rel = 'apple-touch-icon';
+    ati.href = pngUrl;
+    document.head.appendChild(ati);
+    
+    const manifest = {
+       name: "Kanban Flow",
+       short_name: "Kanban",
+       display: "standalone",
+       background_color: "#0a0c13",
+       theme_color: "#0a0c13",
+       icons: [{ src: pngUrl, sizes: "512x512", type: "image/png" }]
+    };
+    const manLink = document.createElement('link');
+    manLink.id = 'pwa-manifest';
+    manLink.rel = 'manifest';
+    manLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+    document.head.appendChild(manLink);
+  };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 100 100"><rect x="18" y="20" width="16" height="60" rx="6" fill="white"/><rect x="42" y="20" width="16" height="35" rx="6" fill="white"/><rect x="66" y="20" width="16" height="48" rx="6" fill="white"/></svg>`);
+}
+setupPWA();
 
 /* ── Helpers ── */
 const $=(s,p)=>(p||document).querySelector(s);
@@ -233,7 +275,7 @@ function getProj(){return S.projects.find(p=>p.id===S.activeId)||S.projects[0];}
 function getActiveTasks(){
   const p=getProj();
   if(S.activeSubId){
-    const sp=(p.subs||[]).find(s=>s.id===S.activeSubId);
+    const sp=(p.subs||[]).find(s=>s.id===S.activeSubId && !s._deleted);
     if(sp){if(!sp.tasks)sp.tasks=[];return sp.tasks;}
     return [];
   }
@@ -244,7 +286,7 @@ function getActiveItem(){
   if(S.activeSubId)return(p.subs||[]).find(s=>s.id===S.activeSubId)||p;
   return p;
 }
-const tasksIn=col=>getActiveTasks().filter(t=>t.column===col).sort((a,b)=>(a.order??0)-(b.order??0));
+const tasksIn=col=>getActiveTasks().filter(t=>t.column===col && !t._deleted).sort((a,b)=>(a.order??0)-(b.order??0));
 function fmtD(d){if(!d)return"";const dt=new Date(d),n=new Date(),df=Math.ceil((dt-n)/864e5);if(df<0)return"Overdue";if(df===0)return"Today";if(df===1)return"Tomorrow";return dt.toLocaleDateString("en-US",{month:"short",day:"numeric"});}
 function isOD(d){return d&&new Date(d)<new Date();}
 function dotC(c){return c==="To Do"?"td":c==="In Progress"?"ip":"dn";}
@@ -258,33 +300,33 @@ function pickFile(acc,cb){const i=document.createElement("input");i.type="file";
 function runMigration(){
   const badLabels = ["Red","Orange","Gold","Green","Cyan","Blue","Purple","Pink",""];
   S.projects.forEach(p=>{
+    if(!p._ts) p._ts=ts();
     if(!p.labels) p.labels=[];
     if(p.archived===undefined) p.archived=false;
     
-    // Nuke the accidental color-named labels
-    p.labels = p.labels.filter(l => !badLabels.includes(l.n?.trim()));
+    // Purge bad labels
+    p.labels = p.labels.filter(l => l.n && !badLabels.includes(l.n.trim()));
     
     const allTasks=[...(p.tasks||[])];
-    (p.subs||[]).forEach(s=>allTasks.push(...(s.tasks||[])));
+    (p.subs||[]).forEach(s=>{
+        if(!s._ts) s._ts=ts();
+        allTasks.push(...(s.tasks||[]))
+    });
     
     allTasks.forEach(t=>{
-      // Cleanup legacy string format
+      if(!t._ts) t._ts=ts();
       if(t.labels){
         t.labelIds=t.labelIds||[];
         t.labels.forEach(l=>{
           const n=typeof l==='object'?l.n:l;
           const c=typeof l==='object'?l.c:l;
-          if (badLabels.includes(n?.trim())) return; // Skip converting bad ones
+          if (!n || badLabels.includes(n.trim())) return;
           let ex=p.labels.find(pl=>pl.n===n);
-          if(!ex){
-            ex={id:uid(),n,c:c||'Red'};
-            p.labels.push(ex);
-          }
+          if(!ex){ ex={id:uid(),n,c:c||'Red'}; p.labels.push(ex); }
           if(!t.labelIds.includes(ex.id)) t.labelIds.push(ex.id);
         });
         delete t.labels;
       }
-      // Cleanup orphaned label IDs from tasks
       if(t.labelIds) {
          t.labelIds = t.labelIds.filter(id => p.labels.some(l => l.id === id));
       }
@@ -368,7 +410,7 @@ function showCropper(file,aspect,outW,outH,cb){
   ov.appendChild(md);document.body.appendChild(ov);
 }
 
-/* ── Firebase ── */
+/* ── Firebase & Robust Deep Merge Sync ── */
 class FBSync{
   constructor(k,u){this.key=k;this.url=u.replace(/\/$/,"");this.tok=null;this.ref=null;this.sk="kanban-auth-"+this._h(u);}
   _h(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h).toString(36);}
@@ -409,16 +451,12 @@ class FBSync{
     sse.addEventListener("put",e=>{
       try{
         const msg=JSON.parse(e.data);
-        if(Date.now()-lastSaveT<2000)return; 
         if(msg.path==="/"&&msg.data){onData(msg.data);}
+        else if(msg.path!=="/"){ this.get().then(d=>{if(d)onData(d);}); }
       }catch(err){}
     });
     sse.addEventListener("patch",e=>{
-      try{
-        const msg=JSON.parse(e.data);
-        if(Date.now()-lastSaveT<2000)return;
-        this.get().then(d=>{if(d)onData(d);});
-      }catch(err){}
+      try{ this.get().then(d=>{if(d)onData(d);}); }catch(err){}
     });
     sse.onerror=()=>{
       sse.close();sse=null;
@@ -446,9 +484,44 @@ function save(){
 function uDot(){const d=$(".sdot");if(d)d.style.background=syncSt==="synced"?"var(--grn)":syncSt==="saving"?"var(--amb)":"var(--red)";}
 
 function onRemoteData(d){
-  S.appName=d.appName||S.appName;
-  S.appIcon=d.appIcon||null;
-  S.projects=d.projects||S.projects;
+  if(d.appName) S.appName=d.appName;
+  if(d.appIcon!==undefined) S.appIcon=d.appIcon;
+  
+  if(d.projects){
+     const lpm=new Map(S.projects.map(p=>[p.id,p]));
+     d.projects.forEach(rp=>{
+        const lp=lpm.get(rp.id);
+        if(!lp){ S.projects.push(rp); }
+        else{
+           // Merge Project Data
+           if((rp._ts||0)>(lp._ts||0)){
+              lp.name=rp.name; lp.emoji=rp.emoji; lp.icon=rp.icon; lp.banner=rp.banner; lp.archived=rp.archived; lp._ts=rp._ts; lp._deleted=rp._deleted; lp.labels=rp.labels;
+           }
+           // Merge Tasks
+           const ltm=new Map((lp.tasks||[]).map(t=>[t.id,t]));
+           (rp.tasks||[]).forEach(rt=>{
+              const lt=ltm.get(rt.id);
+              if(!lt){ if(!lp.tasks)lp.tasks=[]; lp.tasks.push(rt); }
+              else if((rt._ts||0)>(lt._ts||0)){ Object.assign(lt,rt); }
+           });
+           // Merge Subs
+           const lsm=new Map((lp.subs||[]).map(s=>[s.id,s]));
+           (rp.subs||[]).forEach(rs=>{
+              const ls=lsm.get(rs.id);
+              if(!ls){ if(!lp.subs)lp.subs=[]; lp.subs.push(rs); }
+              else{
+                 if((rs._ts||0)>(ls._ts||0)){ ls.name=rs.name; ls.emoji=rs.emoji; ls.icon=rs.icon; ls._ts=rs._ts; ls._deleted=rs._deleted; }
+                 const lstm=new Map((ls.tasks||[]).map(t=>[t.id,t]));
+                 (rs.tasks||[]).forEach(rst=>{
+                    const lst=lstm.get(rst.id);
+                    if(!lst){ if(!ls.tasks)ls.tasks=[]; ls.tasks.push(rst); }
+                    else if((rst._ts||0)>(lst._ts||0)){ Object.assign(lst,rst); }
+                 });
+              }
+           });
+        }
+     });
+  }
   runMigration();
   document.title=S.appName;
   renderBoard();
@@ -552,17 +625,17 @@ function togSb(o){const s=$("#sb"),v=$("#ov");if(o){s.classList.add("open");v.st
 function renderProjs(){
   const l=$("#pl");if(!l)return;l.innerHTML="";
   
-  const actives = S.projects.filter(p => !p.archived);
-  const archs = S.projects.filter(p => p.archived);
+  const actives = S.projects.filter(p => !p.archived && !p._deleted);
+  const archs = S.projects.filter(p => p.archived && !p._deleted);
   
   const renderGroup = (projs, isArchGroup) => {
       projs.forEach(p=>{
         const isAct=p.id===S.activeId&&!S.activeSubId;
         const isColl=collapsedProjs.has(p.id);
-        const hasSubs=(p.subs&&p.subs.length>0)||p.id===S.activeId;
+        const hasSubs=(p.subs&&p.subs.filter(s=>!s._deleted).length>0)||p.id===S.activeId;
         
         const d=el("div","sb-it"+(isAct?" on":"")+(p.archived?" arch":""));
-        let h=`${pIcon(p,28)}<span class="nm">${esc(p.name)}</span><span class="ct">${(p.tasks||[]).length+(p.subs||[]).reduce((a,s)=>(a+(s.tasks||[]).length),0)}</span>`;
+        let h=`${pIcon(p,28)}<span class="nm">${esc(p.name)}</span><span class="ct">${(p.tasks||[]).filter(t=>!t._deleted).length+(p.subs||[]).filter(s=>!s._deleted).reduce((a,s)=>(a+(s.tasks||[]).filter(t=>!t._deleted).length),0)}</span>`;
         
         if(hasSubs && !isArchGroup){
             h+=`<span class="stgl" data-pid="${p.id}" style="margin-left:4px;display:flex;align-items:center">${isColl?'▶':'▼'}</span>`;
@@ -585,11 +658,12 @@ function renderProjs(){
         
         if(!isColl && (!p.archived || isAct)){
             if(p.subs?.length){
+              const validSubs = p.subs.filter(s=>!s._deleted);
               const sw=el("div","sb-sub");
-              p.subs.forEach(sp=>{
+              validSubs.forEach(sp=>{
                 const isSubAct=p.id===S.activeId&&S.activeSubId===sp.id;
                 const sd=el("div","sb-it"+(isSubAct?" on":""));
-                sd.innerHTML=`${pIcon(sp,22)}<span class="nm">${esc(sp.name)}</span><span class="ct">${(sp.tasks||[]).length}</span>`;
+                sd.innerHTML=`${pIcon(sp,22)}<span class="nm">${esc(sp.name)}</span><span class="ct">${(sp.tasks||[]).filter(t=>!t._deleted).length}</span>`;
                 sd.onclick=()=>{S.activeId=p.id;S.activeSubId=sp.id;save();renderBoard();};
                 sw.appendChild(sd);
               });
@@ -620,10 +694,7 @@ function renderProjs(){
           renderProjs();
       };
       l.appendChild(archHdr);
-      
-      if(!isArchColl) {
-          renderGroup(archs, true);
-      }
+      if(!isArchColl) renderGroup(archs, true);
   }
 }
 
@@ -681,21 +752,21 @@ function showTouchMove(t){
 function curTasks(){return getActiveTasks();}
 function setCurTasks(tasks){
   const p=getProj();
-  if(S.activeSubId){const sp=(p.subs||[]).find(s=>s.id===S.activeSubId);if(sp)sp.tasks=tasks;}
-  else p.tasks=tasks;
+  if(S.activeSubId){const sp=(p.subs||[]).find(s=>s.id===S.activeSubId);if(sp){sp.tasks=tasks;sp._ts=ts();}}
+  else {p.tasks=tasks;p._ts=ts();}
 }
-function addTask(col,d){const tasks=curTasks();tasks.push({id:uid(),column:col,order:tasksIn(col).length,title:d.title,description:d.description||"",labelIds:d.labelIds||[],priority:d.priority||null,dueDate:d.dueDate||null,createdAt:Date.now()});save();renderBoard();}
-function updTask(id,d){const t=curTasks().find(t=>t.id===id);if(t)Object.assign(t,d);save();renderBoard();}
-function delTask(id){setCurTasks(curTasks().filter(t=>t.id!==id));save();renderBoard();}
-function moveTask(id,to){const t=curTasks().find(t=>t.id===id);if(t){t.column=to;t.order=tasksIn(to).length;}dragId=null;save();renderBoard();}
+function addTask(col,d){const tasks=curTasks();tasks.push({id:uid(),column:col,order:tasksIn(col).length,title:d.title,description:d.description||"",labelIds:d.labelIds||[],priority:d.priority||null,dueDate:d.dueDate||null,createdAt:Date.now(),_ts:ts()});save();renderBoard();}
+function updTask(id,d){const t=curTasks().find(t=>t.id===id);if(t){Object.assign(t,d); t._ts=ts();}save();renderBoard();}
+function delTask(id){const t=curTasks().find(t=>t.id===id); if(t){ t._deleted=true; t._ts=ts(); save(); renderBoard(); }}
+function moveTask(id,to){const t=curTasks().find(t=>t.id===id);if(t){t.column=to;t.order=tasksIn(to).length;t._ts=ts();}dragId=null;save();renderBoard();}
 
-function addProj(n,e,ico,ban){S.projects.push({id:uid(),name:n,emoji:e||"📋",icon:ico||null,banner:ban||null,archived:false,labels:[],tasks:[],subs:[]});S.activeId=S.projects[S.projects.length-1].id;S.activeSubId=null;save();renderBoard();}
-function updProj(id,d){const p=S.projects.find(p=>p.id===id);if(p)Object.assign(p,d);save();renderBoard();}
-function delProj(id){if(S.projects.length<=1)return;S.projects=S.projects.filter(p=>p.id!==id);S.activeId=S.projects.find(p=>!p.archived)?.id||S.projects[0].id;S.activeSubId=null;save();renderBoard();}
+function addProj(n,e,ico,ban){S.projects.push({id:uid(),name:n,emoji:e||"📋",icon:ico||null,banner:ban||null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]});S.activeId=S.projects[S.projects.length-1].id;S.activeSubId=null;save();renderBoard();}
+function updProj(id,d){const p=S.projects.find(p=>p.id===id);if(p){Object.assign(p,d); p._ts=ts();}save();renderBoard();}
+function delProj(id){if(S.projects.filter(x=>!x._deleted).length<=1)return; const p=S.projects.find(p=>p.id===id); if(p){ p._deleted=true; p._ts=ts(); S.activeId=S.projects.find(x=>!x._deleted&&!x.archived)?.id||S.projects.find(x=>!x._deleted)?.id; S.activeSubId=null; save();renderBoard(); }}
 
-function addSub(n,e,ico){const p=getProj();if(!p.subs)p.subs=[];const sp={id:uid(),name:n,emoji:e||"📋",icon:ico||null,tasks:[]};p.subs.push(sp);S.activeSubId=sp.id;save();renderBoard();}
-function updSub(id,d){const p=getProj();const sp=(p.subs||[]).find(s=>s.id===id);if(sp)Object.assign(sp,d);save();renderBoard();}
-function delSub(id){const p=getProj();p.subs=(p.subs||[]).filter(s=>s.id!==id);if(S.activeSubId===id)S.activeSubId=null;save();renderBoard();}
+function addSub(n,e,ico){const p=getProj();if(!p.subs)p.subs=[];const sp={id:uid(),name:n,emoji:e||"📋",icon:ico||null,tasks:[],_ts:ts()};p.subs.push(sp);S.activeSubId=sp.id;save();renderBoard();}
+function updSub(id,d){const p=getProj();const sp=(p.subs||[]).find(s=>s.id===id);if(sp){Object.assign(sp,d); sp._ts=ts();}save();renderBoard();}
+function delSub(id){const p=getProj();const s=(p.subs||[]).find(x=>x.id===id); if(s){ s._deleted=true; s._ts=ts(); if(S.activeSubId===id) S.activeSubId=null; save(); renderBoard(); }}
 
 /* ── App Modal ── */
 function showAppModal(){
@@ -730,7 +801,7 @@ function showTaskModal(task,col){
   const ov=el("div","mo"),md=el("div","md");
   const isE=!!task;if(task)col=task.column;
   let selLids=[...(task?.labelIds||[])], priority=task?.priority||null;
-  let pLabels=JSON.parse(JSON.stringify(getProj().labels||[])); // Deep clone so Cancel works properly
+  let pLabels=JSON.parse(JSON.stringify(getProj().labels||[])); 
   let editLid=null, selC="Red";
 
   md.innerHTML=`
@@ -740,8 +811,7 @@ function showTaskModal(task,col){
       <label class="flbl">Description</label><textarea id="mds" placeholder="Add details...">${esc(task?.description||"")}</textarea>
       
       <label class="flbl">Labels</label>
-      <div class="lgrid" id="ml_sel"></div>
-      <div class="lgrid" id="ml_av" style="margin-top:8px"></div>
+      <div class="lgrid" id="ml_all" style="margin-bottom:8px"></div>
       <div style="background:#ffffff05;border:1px solid var(--bd2);border-radius:8px;padding:10px;margin-top:10px">
           <div style="font-size:11px;color:var(--t3);margin-bottom:6px;font-weight:600" id="lf_title">Create Label</div>
           <input id="lf_n" placeholder="Label name..." style="font-size:13px;padding:6px 10px;margin-bottom:8px">
@@ -760,32 +830,27 @@ function showTaskModal(task,col){
     <div class="md-f">${isE?`<button class="bd" id="mdl">Delete</button>`:""}<div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${isE?"Save":"Create"}</button></div>`;
   
   function rL(){
-    const mlSel = $("#ml_sel", md);
-    if(mlSel) mlSel.innerHTML=selLids.map(lid=>{
-      const lDef=pLabels.find(x=>x.id===lid);
-      if(!lDef) return "";
-      const lc=LCOLS.find(c=>c.n===lDef.c)||LCOLS[0];
-      return `<span class="lpill" style="cursor:pointer;background:${lc.bg};border-color:${lc.bd};color:${lc.t}" data-rs="${lid}">${esc(lDef.n)} <span style="opacity:0.6;margin-left:2px">&times;</span></span>`;
-    }).join("");
-    $$("[data-rs]",md).forEach(b=>b.onclick=()=>{selLids=selLids.filter(x=>x!==b.dataset.rs);rL();});
-
-    const avail=pLabels.filter(x=>!selLids.includes(x.id));
-    const mlAv = $("#ml_av", md);
-    if(mlAv) mlAv.innerHTML=avail.map(lDef=>{
-      const lc=LCOLS.find(c=>c.n===lDef.c)||LCOLS[0];
-      return `<span class="lpill" style="cursor:pointer;background:transparent;border-color:${lc.bd};color:${lc.t}" data-ra="${lDef.id}">
-        ${esc(lDef.n)} <span style="opacity:0.6;margin-left:2px">+</span><span data-ed="${lDef.id}" style="margin-left:6px;padding-left:6px;border-left:1px solid ${lc.bd};opacity:0.6">✎</span>
+    const mlAll = $("#ml_all", md);
+    if(mlAll) mlAll.innerHTML = pLabels.map(lDef => {
+      const lc = LCOLS.find(c=>c.n===lDef.c)||LCOLS[0];
+      const isSel = selLids.includes(lDef.id);
+      return `<span class="lpill" style="cursor:pointer; background:${isSel?lc.bg:'transparent'}; border-color:${lc.bd}; color:${lc.t}" data-ltgl="${lDef.id}">
+        ${esc(lDef.n)} <span data-ed="${lDef.id}" style="margin-left:6px;padding-left:6px;border-left:1px solid ${lc.bd};opacity:0.6">✎</span>
       </span>`;
     }).join("");
-    $$("[data-ra]",md).forEach(b=>b.onclick=(e)=>{
+    
+    $$("[data-ltgl]",md).forEach(b=>b.onclick=(e)=>{
       if(e.target.closest('[data-ed]')){
-        editLid=b.dataset.ra;
-        const eDef=pLabels.find(x=>x.id===editLid);
-        $("#lf_n", md).value=eDef.n;
-        selC=eDef.c;
+        editLid = b.dataset.ltgl;
+        const eDef = pLabels.find(x=>x.id===editLid);
+        $("#lf_n", md).value = eDef.n;
+        selC = eDef.c;
         rForm();
-      }else{
-        selLids.push(b.dataset.ra);rL();
+      } else {
+        const id = b.dataset.ltgl;
+        if(selLids.includes(id)) selLids = selLids.filter(x=>x!==id);
+        else selLids.push(id);
+        rL();
       }
     });
     rForm();
@@ -861,16 +926,16 @@ function showProjModal(project){
         ${ban?`<button class="irb" id="rb" style="margin-top:2px">✕ Remove banner</button>`:""}
       </div>
       <div class="md-f">
-        ${project&&S.projects.length>1?`<button class="bd" id="dl">Delete</button>`:""}
+        ${project&&S.projects.filter(x=>!x._deleted).length>1?`<button class="bd" id="dl">Delete</button>`:""}
         ${project?`<button class="mvb" id="ar" style="margin-right:auto">${project.archived?'Unarchive':'Archive'}</button>`:""}
         <div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${project?"Save":"Create"}</button>
       </div>`;
     $("#cx",md).onclick=$("#cc",md).onclick=close;
     if($("#dl",md))$("#dl",md).onclick=()=>{delProj(project.id);close();};
     if($("#ar",md))$("#ar",md).onclick=()=>{
-        project.archived = !project.archived;
+        project.archived = !project.archived; project._ts = ts();
         if(project.archived && project.id === S.activeId){
-            S.activeId = S.projects.find(p=>!p.archived)?.id || S.projects[0].id;
+            S.activeId = S.projects.find(p=>!p.archived && !p._deleted)?.id || S.projects.find(p=>!p._deleted)?.id;
         }
         save(); close(); renderBoard();
     };
@@ -966,11 +1031,17 @@ function showSettings(){
       if(!confirm("Are you sure? This will delete all labels across all projects that aren't currently attached to any tasks.")) return;
       let usedLids = new Set();
       S.projects.forEach(p => {
+          if (p._deleted) return;
           const allTasks=[...(p.tasks||[])];
-          (p.subs||[]).forEach(s=>allTasks.push(...(s.tasks||[])));
-          allTasks.forEach(t => (t.labelIds||[]).forEach(id => usedLids.add(id)));
+          (p.subs||[]).forEach(s=>{ if(!s._deleted) allTasks.push(...(s.tasks||[])) });
+          allTasks.forEach(t => {
+             if(t._deleted) return;
+             (t.labelIds||[]).forEach(id => usedLids.add(id))
+          });
           if(p.labels) {
+              const beforeCount = p.labels.length;
               p.labels = p.labels.filter(l => usedLids.has(l.id));
+              if (p.labels.length !== beforeCount) p._ts = ts();
           }
       });
       save(); renderBoard();
