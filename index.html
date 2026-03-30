@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0c13">
@@ -10,408 +10,442 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⬡</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg-root:#0a0c13; --bg-sidebar:#10121a; --bg-surface:#141620; --bg-card:#191c28; --bg-input:#0d0f17;
-  --border:#ffffff08; --border-light:#ffffff12;
-  --text-primary:#e2e4ec; --text-secondary:#888da0; --text-muted:#555a6e;
-  --accent:#7c5cfc; --accent-glow:#7c5cfc40; --accent-light:#a78bfa;
-  --green:#10b981; --amber:#f59e0b; --red:#ef4444;
-  --radius:12px; --radius-sm:8px;
-  --font:'DM Sans',system-ui,sans-serif;
+:root{
+  --bg:#0a0c13;--bg2:#10121a;--bg3:#141620;--bg4:#191c28;--bg5:#0d0f17;
+  --bd:#ffffff08;--bd2:#ffffff12;
+  --t1:#e2e4ec;--t2:#888da0;--t3:#555a6e;
+  --ac:#7c5cfc;--acg:#7c5cfc40;--acl:#a78bfa;
+  --grn:#10b981;--amb:#f59e0b;--red:#ef4444;
+  --r:12px;--rs:8px;
+  --f:'DM Sans',system-ui,sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
-body{font-family:var(--font);background:var(--bg-root);color:var(--text-primary);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--f);background:var(--bg);color:var(--t1);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-thumb{background:#ffffff15;border-radius:10px}
-::-webkit-scrollbar-track{background:transparent}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
-input,textarea{font-family:inherit;color:var(--text-primary);background:var(--bg-input);border:1px solid var(--border-light);border-radius:var(--radius-sm);padding:10px 12px;font-size:16px;outline:none;width:100%;-webkit-appearance:none}
-input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-glow)}
+input,textarea{font-family:inherit;color:var(--t1);background:var(--bg5);border:1px solid var(--bd2);border-radius:var(--rs);padding:10px 12px;font-size:16px;outline:none;width:100%;-webkit-appearance:none}
+input:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--acg)}
 textarea{resize:vertical;min-height:72px}
 input[type="date"]{color-scheme:dark}
 input[type="file"]{display:none}
+input[type="range"]{-webkit-appearance:none;background:var(--bd2);height:4px;border-radius:2px;border:none;padding:0}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--ac);cursor:pointer}
 
 @keyframes pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:1}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-@keyframes slideIn{from{transform:translateX(-100%)}to{transform:none}}
 
 .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:16px}
-.loading-dot{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-light));animation:pulse 1.2s ease-in-out infinite}
-.loading-text{color:var(--text-muted);font-size:14px;letter-spacing:1px}
+.loading-dot{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--ac),var(--acl));animation:pulse 1.2s ease-in-out infinite}
+.loading-text{color:var(--t3);font-size:14px;letter-spacing:1px}
 
 /* Setup */
 .setup{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
-.setup-card{background:var(--bg-sidebar);border:1px solid var(--border);border-radius:20px;max-width:520px;width:100%;padding:32px 24px;box-shadow:0 24px 80px #00000060;animation:fadeIn .4s ease}
+.setup-card{background:var(--bg2);border:1px solid var(--bd);border-radius:20px;max-width:520px;width:100%;padding:32px 24px;box-shadow:0 24px 80px #00000060;animation:fadeIn .4s ease}
 .setup-logo{text-align:center;margin-bottom:28px}
-.setup-logo h1{font-size:24px;font-weight:700;margin:8px 0 4px;background:linear-gradient(135deg,var(--accent-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.setup-logo p{font-size:13px;color:var(--text-muted)}
-.progress-bar{display:flex;gap:6px;margin-bottom:24px}
-.progress-seg{flex:1;height:4px;border-radius:2px;background:var(--border-light);transition:background .3s}
-.progress-seg.active{background:var(--accent)}
-.step-card{background:var(--bg-root);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:16px}
-.step-num{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase}
-.step-title{font-size:16px;font-weight:700;margin:4px 0 12px}
-.step-content{font-size:13px;color:#bbb;line-height:1.7}
-.step-content p{margin:4px 0}
-.step-content strong{color:var(--text-primary)}
-.step-hint{font-size:12px;color:var(--text-muted);margin-top:4px}
-.warn-box{margin-top:10px;padding:8px 12px;background:#fa8c1610;border:1px solid #fa8c1630;border-radius:8px;font-size:12px;color:#ffa940}
-.code-block{background:var(--bg-card);border:1px solid var(--border-light);border-radius:8px;padding:12px;font-size:11px;color:var(--accent-light);overflow:auto;margin-top:8px;font-family:'SF Mono','Fira Code',monospace;white-space:pre;line-height:1.5}
-.error-box{background:#ff4d4f12;border:1px solid #ff4d4f30;border-radius:10px;padding:10px 14px;font-size:13px;color:#ff6b6b;margin-bottom:8px}
-.field-label{display:block;font-size:11px;font-weight:700;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px}
-.step-nav{display:flex;gap:8px;margin-top:8px}
+.setup-logo h1{font-size:24px;font-weight:700;margin:8px 0 4px;background:linear-gradient(135deg,var(--acl),var(--ac));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.setup-logo p{font-size:13px;color:var(--t3)}
+.pbar{display:flex;gap:6px;margin-bottom:24px}
+.pseg{flex:1;height:4px;border-radius:2px;background:var(--bd2);transition:background .3s}
+.pseg.on{background:var(--ac)}
+.scard{background:var(--bg);border:1px solid var(--bd);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+.snum{font-size:10px;font-weight:700;color:var(--ac);letter-spacing:1.5px;text-transform:uppercase}
+.stitle{font-size:16px;font-weight:700;margin:4px 0 12px}
+.scont{font-size:13px;color:#bbb;line-height:1.7}
+.scont p{margin:4px 0}
+.scont strong{color:var(--t1)}
+.shint{font-size:12px;color:var(--t3);margin-top:4px}
+.warnb{margin-top:10px;padding:8px 12px;background:#fa8c1610;border:1px solid #fa8c1630;border-radius:8px;font-size:12px;color:#ffa940}
+.codeb{background:var(--bg4);border:1px solid var(--bd2);border-radius:8px;padding:12px;font-size:11px;color:var(--acl);overflow:auto;margin-top:8px;font-family:'SF Mono','Fira Code',monospace;white-space:pre;line-height:1.5}
+.errb{background:#ff4d4f12;border:1px solid #ff4d4f30;border-radius:10px;padding:10px 14px;font-size:13px;color:#ff6b6b;margin-bottom:8px}
+.flbl{display:block;font-size:11px;font-weight:700;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px}
 
 /* Buttons */
-.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent-light));color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:14px;font-weight:700;box-shadow:0 2px 12px var(--accent-glow);transition:opacity .15s}
-.btn-primary:disabled{opacity:.4;cursor:default}
-.btn-secondary{background:transparent;border:1px solid var(--border-light);color:var(--text-secondary);padding:10px 16px;border-radius:var(--radius-sm);font-size:14px;transition:border-color .15s}
-.btn-secondary:hover{border-color:var(--accent)}
-.btn-danger{background:#ff4d4f15;border:1px solid #ff4d4f30;color:#ff6b6b;padding:10px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600}
+.bp{background:linear-gradient(135deg,var(--ac),var(--acl));color:#fff;padding:10px 20px;border-radius:var(--rs);font-size:14px;font-weight:700;box-shadow:0 2px 12px var(--acg)}
+.bp:disabled{opacity:.4;cursor:default}
+.bs{background:transparent;border:1px solid var(--bd2);color:var(--t2);padding:10px 16px;border-radius:var(--rs);font-size:14px}
+.bd{background:#ff4d4f15;border:1px solid #ff4d4f30;color:#ff6b6b;padding:10px 16px;border-radius:var(--rs);font-size:13px;font-weight:600}
 
 /* App */
 .app{display:flex;height:100vh;overflow:hidden}
-.overlay{position:fixed;inset:0;background:#00000088;z-index:90;backdrop-filter:blur(2px)}
+.ov{position:fixed;inset:0;background:#00000088;z-index:90;backdrop-filter:blur(2px)}
 
 /* Sidebar */
-.sidebar{width:260px;background:var(--bg-sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 12px;gap:4px;flex-shrink:0;z-index:100;position:relative;overflow-y:auto}
-.sidebar-header{display:flex;align-items:center;gap:10px;padding:4px 8px;margin-bottom:20px;cursor:pointer;border-radius:10px;transition:background .15s;-webkit-tap-highlight-color:transparent}
-.sidebar-header:hover{background:#ffffff06}
-.app-icon{width:28px;height:28px;border-radius:8px;object-fit:cover;flex-shrink:0}
-.app-icon-default{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent-light));display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;font-weight:700;flex-shrink:0}
-.logo-text{font-size:16px;font-weight:700;letter-spacing:-.5px;background:linear-gradient(135deg,var(--accent-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sync-dot{width:8px;height:8px;border-radius:50%;margin-left:auto;transition:background .3s;flex-shrink:0}
-.sidebar-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--text-muted);padding:12px 8px 6px;text-transform:uppercase}
-.sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background .15s;border:1px solid transparent;-webkit-tap-highlight-color:transparent}
-.sidebar-item:hover{background:#ffffff06}
-.sidebar-item.active{background:#ffffff08;border-color:#ffffff10}
-.sidebar-item .proj-icon{width:24px;height:24px;border-radius:6px;object-fit:cover;flex-shrink:0}
-.sidebar-item .proj-icon-emoji{font-size:18px;width:24px;text-align:center;flex-shrink:0}
-.sidebar-item .name{flex:1;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sidebar-item .count{font-size:11px;color:var(--text-muted);background:#ffffff08;padding:2px 8px;border-radius:10px}
-.new-project-btn{margin-top:8px;padding:12px;border:1px dashed #ffffff15;border-radius:10px;color:var(--text-muted);font-size:13px;text-align:left;transition:border-color .15s}
-.new-project-btn:hover{border-color:var(--accent)}
-.settings-btn{padding:12px;border:1px solid var(--border);border-radius:10px;color:var(--text-muted);font-size:13px;text-align:left}
+.sb{width:270px;background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:20px 12px;gap:3px;flex-shrink:0;z-index:100;overflow-y:auto}
+.sb-hdr{display:flex;align-items:center;gap:10px;padding:4px 8px;margin-bottom:20px;cursor:pointer;border-radius:10px;-webkit-tap-highlight-color:transparent}
+.sb-hdr:hover{background:#ffffff06}
+.app-ico{width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.app-ico-def{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--ac),var(--acl));display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0}
+.logo-t{font-size:16px;font-weight:700;letter-spacing:-.5px;background:linear-gradient(135deg,var(--acl),var(--ac));-webkit-background-clip:text;-webkit-text-fill-color:transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sdot{width:8px;height:8px;border-radius:50%;margin-left:auto;flex-shrink:0;transition:background .3s}
+.sb-lbl{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--t3);padding:12px 8px 6px;text-transform:uppercase}
+.sb-it{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid transparent;-webkit-tap-highlight-color:transparent;transition:background .1s}
+.sb-it:hover{background:#ffffff06}
+.sb-it.on{background:#ffffff08;border-color:#ffffff10}
+.sb-it .pi{width:28px;height:28px;border-radius:7px;object-fit:cover;flex-shrink:0}
+.sb-it .pe{font-size:20px;width:28px;text-align:center;flex-shrink:0}
+.sb-it .nm{flex:1;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-it .ct{font-size:11px;color:var(--t3);background:#ffffff08;padding:2px 8px;border-radius:10px}
+.sb-sub{padding-left:20px}
+.sb-sub .sb-it{padding:8px 10px}
+.sb-sub .sb-it .pe{font-size:16px;width:22px}
+.sb-sub .sb-it .pi{width:22px;height:22px;border-radius:5px}
+.npb{margin-top:6px;padding:12px;border:1px dashed #ffffff15;border-radius:10px;color:var(--t3);font-size:13px;text-align:left}
+.npb:hover{border-color:var(--ac)}
+.stb{padding:12px;border:1px solid var(--bd);border-radius:10px;color:var(--t3);font-size:13px;text-align:left}
 
-/* Mobile */
 @media(max-width:768px){
-  .sidebar{position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%);transition:transform .25s ease;width:280px}
-  .sidebar.open{transform:translateX(0)}
-  .menu-btn{display:flex!important}
-  .mobile-move{display:flex!important}
-  .top-stats{display:none!important}
-  .columns{padding:12px!important;gap:0!important;flex-direction:column!important;align-items:stretch!important}
-  .column{min-width:unset!important;max-width:unset!important;margin-bottom:12px}
-  .project-banner{height:100px!important}
-  .top-bar{padding:10px 14px!important}
+  .sb{position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%);transition:transform .25s ease;width:280px}
+  .sb.open{transform:translateX(0)}
+  .mb{display:flex!important}
+  .mmv{display:flex!important}
+  .tst{display:none!important}
+  .cols{padding:12px!important;gap:0!important;flex-direction:column!important;align-items:stretch!important}
+  .col{min-width:unset!important;max-width:unset!important;margin-bottom:12px}
+  .pban{height:120px!important}
+  .tbar{padding:10px 14px!important}
 }
 
-.touch-move{margin-top:16px;padding:12px;background:#ffffff06;border-radius:10px;display:flex;flex-direction:column;gap:6px}
-.touch-move-title{font-size:12px;color:var(--text-secondary);margin-bottom:4px}
-.touch-move-btn{padding:10px 12px;background:#7c5cfc20;border:1px solid #7c5cfc40;border-radius:8px;color:var(--accent-light);font-size:13px;text-align:left}
+.tmv{margin-top:12px;padding:12px;background:#ffffff06;border-radius:10px;display:flex;flex-direction:column;gap:6px}
+.tmv-t{font-size:12px;color:var(--t2);margin-bottom:4px}
+.tmv-b{padding:10px 12px;background:#7c5cfc20;border:1px solid #7c5cfc40;border-radius:8px;color:var(--acl);font-size:13px;text-align:left}
 
 /* Main */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-
-/* Banner */
-.project-banner{width:100%;height:140px;background:var(--bg-surface);border-bottom:1px solid var(--border);position:relative;overflow:hidden;flex-shrink:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.project-banner:hover .banner-overlay{opacity:1}
-.banner-img{width:100%;height:100%;object-fit:cover}
-.banner-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text-muted);font-size:13px;background:linear-gradient(135deg,#141620 0%,#1a1d2a 50%,#141620 100%)}
-.banner-overlay{position:absolute;inset:0;background:#00000060;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;color:#fff;font-size:13px;font-weight:600;gap:6px}
-
-.top-bar{display:flex;align-items:center;padding:14px 20px;gap:12px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
-.menu-btn{display:none;align-items:center;justify-content:center;background:none;border:none;color:var(--text-secondary);font-size:22px;padding:4px;-webkit-tap-highlight-color:transparent}
-.top-center{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
-.top-center .proj-icon{width:28px;height:28px;border-radius:8px;object-fit:cover}
-.top-center .proj-icon-emoji{font-size:22px}
-.top-center h1{font-size:18px;font-weight:700;letter-spacing:-.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.edit-project-btn{color:var(--text-muted);font-size:16px;padding:4px 8px;border-radius:6px;-webkit-tap-highlight-color:transparent}
-.top-stats{display:flex;gap:8px}
-.stat-badge{font-size:12px;color:var(--text-secondary);background:#ffffff06;padding:4px 10px;border-radius:8px}
+.mn{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.pban{width:100%;height:200px;background:var(--bg3);border-bottom:1px solid var(--bd);position:relative;overflow:hidden;flex-shrink:0;cursor:pointer}
+.pban:hover .pban-ov{opacity:1}
+.pban img{width:100%;height:100%;object-fit:cover}
+.pban-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--t3);font-size:13px;background:linear-gradient(135deg,#141620 0%,#1a1d2a 50%,#141620 100%)}
+.pban-ov{position:absolute;inset:0;background:#00000060;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;color:#fff;font-size:13px;font-weight:600}
+.tbar{display:flex;align-items:center;padding:14px 20px;gap:12px;border-bottom:1px solid var(--bd);flex-shrink:0;flex-wrap:wrap}
+.mb{display:none;align-items:center;justify-content:center;color:var(--t2);font-size:22px;padding:4px}
+.tc{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.tc .pi{width:32px;height:32px;border-radius:8px;object-fit:cover}
+.tc .pe{font-size:24px}
+.tc h1{font-size:18px;font-weight:700;letter-spacing:-.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.epb{color:var(--t3);font-size:16px;padding:4px 8px;border-radius:6px}
+.tst{display:flex;gap:8px}
+.stb2{font-size:12px;color:var(--t2);background:#ffffff06;padding:4px 10px;border-radius:8px}
 
 /* Columns */
-.columns{display:flex;flex:1;gap:16px;padding:16px 20px 20px;overflow:auto;align-items:flex-start}
-.column{flex:1;min-width:260px;max-width:380px;background:var(--bg-surface);border-radius:14px;border:1px solid var(--border);display:flex;flex-direction:column;max-height:100%;transition:border-color .2s,box-shadow .2s}
-.column.drag-over{border-color:#7c5cfc50;box-shadow:0 0 24px #7c5cfc15}
-.col-header{display:flex;align-items:center;gap:8px;padding:14px 16px 10px}
-.col-dot{width:8px;height:8px;border-radius:50%}
-.col-dot.todo{background:#7c5cfc;box-shadow:0 0 8px #7c5cfc60}
-.col-dot.progress{background:#f59e0b;box-shadow:0 0 8px #f59e0b60}
-.col-dot.done{background:#10b981;box-shadow:0 0 8px #10b98160}
-.col-title{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-secondary)}
-.col-count{font-size:11px;color:var(--text-muted);margin-left:auto;background:#ffffff08;padding:2px 8px;border-radius:10px}
-.col-body{padding:6px 10px 12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1}
-.add-card-btn{padding:12px;border:1px dashed #ffffff10;border-radius:8px;color:var(--text-muted);font-size:13px;text-align:center;transition:border-color .15s;-webkit-tap-highlight-color:transparent}
-.add-card-btn:hover{border-color:var(--accent);color:var(--accent-light)}
+.cols{display:flex;flex:1;gap:16px;padding:16px 20px 20px;overflow:auto;align-items:flex-start}
+.col{flex:1;min-width:260px;max-width:380px;background:var(--bg3);border-radius:14px;border:1px solid var(--bd);display:flex;flex-direction:column;max-height:100%;transition:border-color .2s,box-shadow .2s}
+.col.dov{border-color:#7c5cfc50;box-shadow:0 0 24px #7c5cfc15}
+.ch{display:flex;align-items:center;gap:8px;padding:14px 16px 10px}
+.cdot{width:8px;height:8px;border-radius:50%}
+.cdot.td{background:#7c5cfc;box-shadow:0 0 8px #7c5cfc60}
+.cdot.ip{background:#f59e0b;box-shadow:0 0 8px #f59e0b60}
+.cdot.dn{background:#10b981;box-shadow:0 0 8px #10b98160}
+.ctt{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t2)}
+.cct{font-size:11px;color:var(--t3);margin-left:auto;background:#ffffff08;padding:2px 8px;border-radius:10px}
+.cbod{padding:6px 10px 12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1}
+.acb{padding:12px;border:1px dashed #ffffff10;border-radius:8px;color:var(--t3);font-size:13px;text-align:center}
+.acb:hover{border-color:var(--ac);color:var(--acl)}
 
 /* Card */
-.card{background:var(--bg-card);border:1px solid #ffffff0a;border-radius:10px;padding:12px 14px;cursor:grab;user-select:none;transition:transform .15s,box-shadow .15s,border-color .15s;animation:fadeIn .25s ease;-webkit-tap-highlight-color:transparent}
-.card:hover{border-color:#ffffff15;box-shadow:0 4px 16px #00000030}
-.card.dragging{opacity:.4}
-.card-labels{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-.label-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;border:1px solid;letter-spacing:.3px}
-.card-title{font-size:14px;font-weight:600;line-height:1.4}
-.card-desc{font-size:12px;color:var(--text-secondary);line-height:1.4;margin-top:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
-.priority-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;letter-spacing:.3px}
-.due-badge{font-size:10px;color:var(--text-secondary);background:#ffffff08;padding:2px 8px;border-radius:6px}
-.due-badge.overdue{color:#ff6b6b;background:#ff4d4f15}
-.mobile-move{display:none;align-items:center;justify-content:center;margin-left:auto;background:#ffffff08;color:var(--text-muted);font-size:14px;border-radius:6px;padding:4px 10px;-webkit-tap-highlight-color:transparent}
+.crd{background:var(--bg4);border:1px solid #ffffff0a;border-radius:10px;padding:12px 14px;cursor:grab;user-select:none;transition:transform .15s,box-shadow .15s;animation:fadeIn .25s ease}
+.crd:hover{border-color:#ffffff15;box-shadow:0 4px 16px #00000030}
+.crd.drg{opacity:.4}
+.crd-lb{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.lpill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;border:1px solid;letter-spacing:.3px}
+.crd-t{font-size:14px;font-weight:600;line-height:1.4}
+.crd-d{font-size:12px;color:var(--t2);line-height:1.4;margin-top:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.crd-m{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+.pbdg{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;letter-spacing:.3px}
+.dbdg{font-size:10px;color:var(--t2);background:#ffffff08;padding:2px 8px;border-radius:6px}
+.dbdg.od{color:#ff6b6b;background:#ff4d4f15}
+.mmv{display:none;align-items:center;justify-content:center;margin-left:auto;background:#ffffff08;color:var(--t3);font-size:14px;border-radius:6px;padding:4px 10px}
 
 /* Modal */
-.modal-overlay{position:fixed;inset:0;background:#000000aa;backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
-.modal{background:var(--bg-card);border:1px solid var(--border-light);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow:auto;box-shadow:0 24px 80px #00000080;animation:fadeIn .2s ease}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px}
-.modal-header h2{font-size:16px;font-weight:700}
-.modal-close{color:var(--text-muted);font-size:20px;padding:6px;-webkit-tap-highlight-color:transparent}
-.modal-body{padding:8px 20px 16px;display:flex;flex-direction:column;gap:10px}
-.modal-footer{display:flex;align-items:center;gap:8px;padding:12px 20px 16px}
-.labels-grid{display:flex;flex-wrap:wrap;gap:6px}
-.label-opt{font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;border:1px solid #ffffff18;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
-.priority-row{display:flex;gap:6px;flex-wrap:wrap}
-.priority-opt{font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid #ffffff18;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
-.move-btn{font-size:12px;padding:8px 14px;border-radius:8px;border:1px solid #ffffff15;background:#ffffff06;color:var(--accent-light);cursor:pointer;-webkit-tap-highlight-color:transparent}
-.emoji-grid{display:flex;flex-wrap:wrap;gap:6px}
-.emoji-btn{font-size:20px;padding:8px 10px;border-radius:8px;border:1px solid var(--border-light);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
-.emoji-btn.active{background:#7c5cfc20;border-color:#7c5cfc60}
+.mo{position:fixed;inset:0;background:#000000aa;backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px}
+.md{background:var(--bg4);border:1px solid var(--bd2);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow:auto;box-shadow:0 24px 80px #00000080;animation:fadeIn .2s ease}
+.md-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px}
+.md-h h2{font-size:16px;font-weight:700}
+.md-x{color:var(--t3);font-size:20px;padding:6px}
+.md-b{padding:8px 20px 16px;display:flex;flex-direction:column;gap:10px}
+.md-f{display:flex;align-items:center;gap:8px;padding:12px 20px 16px}
+.lgrid{display:flex;flex-wrap:wrap;gap:6px}
+.lopt{font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;border:1px solid #ffffff18;cursor:pointer}
+.prow{display:flex;gap:6px;flex-wrap:wrap}
+.popt{font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid #ffffff18;cursor:pointer}
+.mvb{font-size:12px;padding:8px 14px;border-radius:8px;border:1px solid #ffffff15;background:#ffffff06;color:var(--acl);cursor:pointer}
+.egrid{display:flex;flex-wrap:wrap;gap:6px}
+.eb{font-size:20px;padding:8px 10px;border-radius:8px;border:1px solid var(--bd2);cursor:pointer}
+.eb.on{background:#7c5cfc20;border-color:#7c5cfc60}
 
 /* Image upload */
-.img-upload-area{display:flex;align-items:center;gap:12px}
-.img-preview{width:48px;height:48px;border-radius:10px;object-fit:cover;border:1px solid var(--border-light)}
-.img-preview-placeholder{width:48px;height:48px;border-radius:10px;background:var(--bg-input);border:1px dashed var(--border-light);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--text-muted)}
-.img-upload-btn{padding:8px 14px;border:1px solid var(--border-light);border-radius:var(--radius-sm);color:var(--text-secondary);font-size:12px;font-weight:600;cursor:pointer;transition:border-color .15s;-webkit-tap-highlight-color:transparent}
-.img-upload-btn:hover{border-color:var(--accent);color:var(--accent-light)}
-.img-remove-btn{padding:8px 10px;color:var(--text-muted);font-size:12px;cursor:pointer}
-.img-remove-btn:hover{color:var(--red)}
-.banner-upload-area{width:100%;height:100px;border:1px dashed var(--border-light);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;transition:border-color .15s;overflow:hidden;position:relative;-webkit-tap-highlight-color:transparent}
-.banner-upload-area:hover{border-color:var(--accent)}
-.banner-upload-area img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
-.banner-upload-area .bup-text{position:relative;z-index:1;font-size:12px;color:var(--text-muted);text-align:center}
-.banner-upload-area.has-img .bup-text{color:#fff;background:#00000080;padding:4px 12px;border-radius:6px}
+.iua{display:flex;align-items:center;gap:12px}
+.ipv{width:64px;height:64px;border-radius:12px;object-fit:cover;border:1px solid var(--bd2)}
+.iph{width:64px;height:64px;border-radius:12px;background:var(--bg5);border:1px dashed var(--bd2);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--t3)}
+.iub{padding:8px 14px;border:1px solid var(--bd2);border-radius:var(--rs);color:var(--t2);font-size:12px;font-weight:600;cursor:pointer}
+.iub:hover{border-color:var(--ac);color:var(--acl)}
+.irb{padding:8px 10px;color:var(--t3);font-size:12px;cursor:pointer}
+.irb:hover{color:var(--red)}
+.bua{width:100%;height:120px;border:1px dashed var(--bd2);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative}
+.bua:hover{border-color:var(--ac)}
+.bua img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.bua .bt{position:relative;z-index:1;font-size:12px;color:var(--t3)}
+.bua.hi .bt{color:#fff;background:#00000080;padding:4px 12px;border-radius:6px}
+
+/* Cropper */
+.crop-vp{overflow:hidden;border-radius:12px;border:2px solid var(--bd2);position:relative;cursor:grab;touch-action:none;background:var(--bg5);margin:0 auto}
+.crop-vp.grabbing{cursor:grabbing}
+.crop-vp img{position:absolute;transform-origin:0 0;pointer-events:none;will-change:transform}
+.crop-hint{font-size:11px;color:var(--t3);text-align:center;margin-top:8px}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <script>
-const COLUMNS=["To Do","In Progress","Done"];
-const PRIORITIES={high:"High",medium:"Medium",low:"Low"};
-const LABEL_COLORS=[
-  {name:"Red",bg:"#ff4d4f22",border:"#ff4d4f",text:"#ff4d4f"},
-  {name:"Orange",bg:"#fa8c1622",border:"#fa8c16",text:"#fa8c16"},
-  {name:"Gold",bg:"#fadb1422",border:"#fadb14",text:"#d4b106"},
-  {name:"Green",bg:"#52c41a22",border:"#52c41a",text:"#52c41a"},
-  {name:"Cyan",bg:"#13c2c222",border:"#13c2c2",text:"#13c2c2"},
-  {name:"Blue",bg:"#1890ff22",border:"#1890ff",text:"#1890ff"},
-  {name:"Purple",bg:"#722ed122",border:"#722ed1",text:"#722ed1"},
-  {name:"Pink",bg:"#eb2f9622",border:"#eb2f96",text:"#eb2f96"},
+const COLS=["To Do","In Progress","Done"];
+const PRIS={high:"High",medium:"Medium",low:"Low"};
+const LCOLS=[
+  {n:"Red",bg:"#ff4d4f22",bd:"#ff4d4f",t:"#ff4d4f"},
+  {n:"Orange",bg:"#fa8c1622",bd:"#fa8c16",t:"#fa8c16"},
+  {n:"Gold",bg:"#fadb1422",bd:"#fadb14",t:"#d4b106"},
+  {n:"Green",bg:"#52c41a22",bd:"#52c41a",t:"#52c41a"},
+  {n:"Cyan",bg:"#13c2c222",bd:"#13c2c2",t:"#13c2c2"},
+  {n:"Blue",bg:"#1890ff22",bd:"#1890ff",t:"#1890ff"},
+  {n:"Purple",bg:"#722ed122",bd:"#722ed1",t:"#722ed1"},
+  {n:"Pink",bg:"#eb2f9622",bd:"#eb2f96",t:"#eb2f96"},
 ];
-const PRIORITY_COLORS={
-  high:{bg:"#ff4d4f20",text:"#ff6b6b",icon:"▲"},
-  medium:{bg:"#fa8c1620",text:"#ffa940",icon:"◆"},
-  low:{bg:"#52c41a20",text:"#73d13d",icon:"▼"},
-};
-const EMOJIS=["🚀","📋","💡","🎮","🎨","🔧","📱","🌟","⚡","🏠","📚","🎯"];
+const PCOLS={high:{bg:"#ff4d4f20",t:"#ff6b6b",i:"▲"},medium:{bg:"#fa8c1620",t:"#ffa940",i:"◆"},low:{bg:"#52c41a20",t:"#73d13d",i:"▼"}};
+const EMOJIS=["🚀","📋","💡","🎮","🎨","🔧","📱","🌟","⚡","🏠","📚","🎯","🔥","💎","🌊","🍀"];
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
-let state={
-  appName:"Kanban Flow",
-  appIcon:null,
-  projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,tasks:[]}],
-  activeProjectId:"default",
-};
-let firebase=null;
-let syncStatus="synced";
-let saveTimer=null;
-
-/* ── Image helpers ── */
-function resizeImage(file,maxW,maxH){
-  return new Promise(resolve=>{
-    const reader=new FileReader();
-    reader.onload=e=>{
-      const img=new Image();
-      img.onload=()=>{
-        const canvas=document.createElement("canvas");
-        let w=img.width,h=img.height;
-        if(w>maxW||h>maxH){const r=Math.min(maxW/w,maxH/h);w=Math.round(w*r);h=Math.round(h*r);}
-        canvas.width=w;canvas.height=h;
-        canvas.getContext("2d").drawImage(img,0,0,w,h);
-        resolve(canvas.toDataURL("image/jpeg",0.75));
-      };
-      img.src=e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-function pickFile(accept,cb){
-  const inp=document.createElement("input");
-  inp.type="file";inp.accept=accept;
-  inp.onchange=()=>{if(inp.files[0])cb(inp.files[0]);};
-  inp.click();
-}
-
-/* ── Firebase REST — persists credentials per DB URL ── */
-class FirebaseSync {
-  constructor(apiKey,dbUrl){
-    this.apiKey=apiKey;
-    this.dbUrl=dbUrl.replace(/\/$/,"");
-    this.idToken=null;
-    this.localId=null;
-    this.refreshToken=null;
-    // Storage key unique to this database URL
-    this.storageKey="kanban-auth-"+this._hash(this.dbUrl);
-  }
-
-  _hash(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h).toString(36);}
-
-  // Save auth credentials to localStorage
-  _saveAuth(){
-    localStorage.setItem(this.storageKey,JSON.stringify({
-      localId:this.localId,
-      refreshToken:this.refreshToken,
-      idToken:this.idToken
-    }));
-  }
-
-  // Load saved auth credentials
-  _loadAuth(){
-    try{
-      const saved=JSON.parse(localStorage.getItem(this.storageKey));
-      if(saved&&saved.localId&&saved.refreshToken){
-        this.localId=saved.localId;
-        this.refreshToken=saved.refreshToken;
-        this.idToken=saved.idToken;
-        return true;
-      }
-    }catch(e){}
-    return false;
-  }
-
-  // Try to restore existing session, or create new one
-  async connect(){
-    if(this._loadAuth()){
-      try{
-        await this._refreshIdToken();
-        this._saveAuth();
-        return;
-      }catch(e){
-        // Refresh failed, fall through to create new anonymous user
-        console.warn("Token refresh failed, creating new session");
-      }
-    }
-    // No saved session or refresh failed — sign up new anonymous user
-    await this._signUpAnonymous();
-    this._saveAuth();
-  }
-
-  async _signUpAnonymous(){
-    const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.apiKey}`,
-      {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({returnSecureToken:true})});
-    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||"Auth failed");}
-    const d=await r.json();
-    this.idToken=d.idToken;this.localId=d.localId;this.refreshToken=d.refreshToken;
-  }
-
-  async _refreshIdToken(){
-    if(!this.refreshToken)throw new Error("No refresh token");
-    const r=await fetch(`https://securetoken.googleapis.com/v1/token?key=${this.apiKey}`,
-      {method:"POST",headers:{"Content-Type":"application/json"},
-       body:JSON.stringify({grant_type:"refresh_token",refresh_token:this.refreshToken})});
-    if(!r.ok)throw new Error("Token refresh failed");
-    const d=await r.json();
-    this.idToken=d.id_token;this.refreshToken=d.refresh_token;
-    // localId stays the same
-  }
-
-  async req(path,method="GET",body=null){
-    let url=`${this.dbUrl}/users/${this.localId}/${path}.json?auth=${this.idToken}`;
-    const opts={method,headers:{"Content-Type":"application/json"}};
-    if(body!==null)opts.body=JSON.stringify(body);
-    let r=await fetch(url,opts);
-    if(r.status===401){
-      await this._refreshIdToken();
-      this._saveAuth();
-      r=await fetch(`${this.dbUrl}/users/${this.localId}/${path}.json?auth=${this.idToken}`,opts);
-    }
-    if(!r.ok)throw new Error(`Firebase ${method}: ${r.status}`);
-    return r.json();
-  }
-
-  getData(){return this.req("kanban");}
-  setData(d){return this.req("kanban","PUT",d);}
-
-  clearAuth(){localStorage.removeItem(this.storageKey);}
-}
+let S={appName:"Kanban Flow",appIcon:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,tasks:[],subs:[]}],activeId:"default",activeSubId:null};
+let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null;
 
 /* ── Helpers ── */
 const $=(s,p)=>(p||document).querySelector(s);
 const $$=(s,p)=>[...(p||document).querySelectorAll(s)];
-const el=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html)e.innerHTML=html;return e;};
-const proj=()=>state.projects.find(p=>p.id===state.activeProjectId)||state.projects[0];
-const tasksIn=col=>(proj()?.tasks||[]).filter(t=>t.column===col).sort((a,b)=>(a.order??0)-(b.order??0));
-function fmtDate(d){if(!d)return"";const dt=new Date(d),n=new Date(),df=Math.ceil((dt-n)/864e5);if(df<0)return"Overdue";if(df===0)return"Today";if(df===1)return"Tomorrow";return dt.toLocaleDateString("en-US",{month:"short",day:"numeric"});}
-function isOverdue(d){return d&&new Date(d)<new Date();}
-function dotCls(c){return c==="To Do"?"todo":c==="In Progress"?"progress":"done";}
-function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML;}
-function projIcon(p,sz){
-  if(p.icon)return`<img class="proj-icon" src="${p.icon}" style="width:${sz}px;height:${sz}px;border-radius:${Math.round(sz*.25)}px">`;
-  return`<span class="proj-icon-emoji" style="font-size:${Math.round(sz*.75)}px;width:${sz}px;text-align:center">${p.emoji||"📋"}</span>`;
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h)e.innerHTML=h;return e;};
+const esc=s=>{const d=document.createElement("div");d.textContent=s;return d.innerHTML;};
+function getProj(){return S.projects.find(p=>p.id===S.activeId)||S.projects[0];}
+function getActiveTasks(){
+  const p=getProj();
+  if(S.activeSubId){const sp=(p.subs||[]).find(s=>s.id===S.activeSubId);return sp?.tasks||[];}
+  return p.tasks||[];
+}
+function getActiveItem(){
+  const p=getProj();
+  if(S.activeSubId)return(p.subs||[]).find(s=>s.id===S.activeSubId)||p;
+  return p;
+}
+const tasksIn=col=>getActiveTasks().filter(t=>t.column===col).sort((a,b)=>(a.order??0)-(b.order??0));
+function fmtD(d){if(!d)return"";const dt=new Date(d),n=new Date(),df=Math.ceil((dt-n)/864e5);if(df<0)return"Overdue";if(df===0)return"Today";if(df===1)return"Tomorrow";return dt.toLocaleDateString("en-US",{month:"short",day:"numeric"});}
+function isOD(d){return d&&new Date(d)<new Date();}
+function dotC(c){return c==="To Do"?"td":c==="In Progress"?"ip":"dn";}
+function pIcon(p,sz){
+  if(p.icon)return`<img class="pi" src="${p.icon}" style="width:${sz}px;height:${sz}px;border-radius:${Math.round(sz*.25)}px">`;
+  return`<span class="pe" style="font-size:${Math.round(sz*.8)}px;width:${sz}px;text-align:center">${p.emoji||"📋"}</span>`;
+}
+function pickFile(acc,cb){const i=document.createElement("input");i.type="file";i.accept=acc;i.onchange=()=>{if(i.files[0])cb(i.files[0]);};i.click();}
+
+/* ── Image Cropper ── */
+function showCropper(file,aspect,outW,outH,cb){
+  const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="500px";
+  const img=new Image(),reader=new FileReader();
+  reader.onload=e=>{
+    img.onload=()=>{
+      const maxVpW=Math.min(420,window.innerWidth-80);
+      const vpW=maxVpW,vpH=Math.round(vpW/aspect);
+      let scX=vpW/img.width,scY=vpH/img.height;
+      let minSc=Math.max(scX,scY),sc=minSc,ox=(vpW-img.width*sc)/2,oy=(vpH-img.height*sc)/2;
+      let drag=false,sx,sy,sox,soy,pinchD=0;
+      md.innerHTML=`
+        <div class="md-h"><h2>Crop Image</h2><button class="md-x" id="cx">✕</button></div>
+        <div class="md-b" style="align-items:center">
+          <div class="crop-vp" id="cvp" style="width:${vpW}px;height:${vpH}px">
+            <img id="cim" src="${img.src}">
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;width:100%;margin-top:4px">
+            <span style="font-size:12px;color:var(--t3)">−</span>
+            <input type="range" id="czm" min="100" max="400" value="100" style="flex:1">
+            <span style="font-size:12px;color:var(--t3)">+</span>
+          </div>
+          <p class="crop-hint">Drag to reposition · Scroll or slider to zoom</p>
+        </div>
+        <div class="md-f"><div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="cs">Crop & Save</button></div>`;
+      const vp=$("#cvp",md),ci=$("#cim",md),zm=$("#czm",md);
+      function upd(){
+        const iw=img.width*sc,ih=img.height*sc;
+        if(ox>0)ox=0;if(oy>0)oy=0;if(ox<vpW-iw)ox=vpW-iw;if(oy<vpH-ih)oy=vpH-ih;
+        ci.style.transform=`translate(${ox}px,${oy}px) scale(${sc})`;
+        ci.style.width=img.width+"px";ci.style.height=img.height+"px";
+      }
+      upd();
+      function doZoom(newSc,cx,cy){
+        const oldSc=sc;
+        sc=Math.max(minSc,Math.min(minSc*4,newSc));
+        ox=cx-(cx-ox)*(sc/oldSc);
+        oy=cy-(cy-oy)*(sc/oldSc);
+        zm.value=Math.round((sc/minSc)*100);
+        upd();
+      }
+      vp.onmousedown=e=>{e.preventDefault();drag=true;sx=e.clientX;sy=e.clientY;sox=ox;soy=oy;vp.classList.add("grabbing");};
+      window.addEventListener("mousemove",e=>{if(!drag)return;ox=sox+(e.clientX-sx);oy=soy+(e.clientY-sy);upd();});
+      window.addEventListener("mouseup",()=>{drag=false;vp.classList.remove("grabbing");});
+      vp.onwheel=e=>{e.preventDefault();const rect=vp.getBoundingClientRect();doZoom(sc*(e.deltaY>0?.92:1.08),e.clientX-rect.left,e.clientY-rect.top);};
+      vp.ontouchstart=e=>{
+        if(e.touches.length===1){drag=true;sx=e.touches[0].clientX;sy=e.touches[0].clientY;sox=ox;soy=oy;}
+        if(e.touches.length===2){drag=false;pinchD=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);}
+      };
+      vp.ontouchmove=e=>{
+        e.preventDefault();
+        if(e.touches.length===1&&drag){ox=sox+(e.touches[0].clientX-sx);oy=soy+(e.touches[0].clientY-sy);upd();}
+        if(e.touches.length===2){
+          const d=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);
+          const rect=vp.getBoundingClientRect();
+          const cx=(e.touches[0].clientX+e.touches[1].clientX)/2-rect.left;
+          const cy=(e.touches[0].clientY+e.touches[1].clientY)/2-rect.top;
+          doZoom(sc*(d/pinchD),cx,cy);pinchD=d;
+        }
+      };
+      vp.ontouchend=()=>{drag=false;pinchD=0;};
+      zm.oninput=()=>{const rect=vp.getBoundingClientRect();doZoom(minSc*(zm.value/100),vpW/2,vpH/2);};
+      $("#cs",md).onclick=()=>{
+        const cv=document.createElement("canvas");cv.width=outW;cv.height=outH;
+        cv.getContext("2d").drawImage(img,-ox/sc,-oy/sc,vpW/sc,vpH/sc,0,0,outW,outH);
+        cb(cv.toDataURL("image/jpeg",.85));ov.remove();
+      };
+      $("#cx",md).onclick=$("#cc",md).onclick=()=>ov.remove();
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  ov.appendChild(md);document.body.appendChild(ov);
 }
 
-function save(){
-  if(!firebase)return;
-  syncStatus="saving";updateDot();
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(async()=>{
-    try{await firebase.setData({appName:state.appName,appIcon:state.appIcon,projects:state.projects,activeProjectId:state.activeProjectId});syncStatus="synced";}
-    catch(e){console.error("Save:",e);syncStatus="error";}
-    updateDot();
-  },800);
+/* ── Firebase ── */
+class FBSync{
+  constructor(k,u){this.key=k;this.url=u.replace(/\/$/,"");this.tok=null;this.ref=null;this.sk="kanban-auth-"+this._h(u);}
+  _h(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h).toString(36);}
+  _save(){localStorage.setItem(this.sk,JSON.stringify({tok:this.tok,ref:this.ref}));}
+  _load(){try{const s=JSON.parse(localStorage.getItem(this.sk));if(s?.ref){this.tok=s.tok;this.ref=s.ref;return true;}}catch(e){}return false;}
+  async connect(){
+    if(this._load()){try{await this._refresh();this._save();return;}catch(e){}}
+    await this._signup();this._save();
+  }
+  async _signup(){
+    const r=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${this.key}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({returnSecureToken:true})});
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||"Auth failed");}
+    const d=await r.json();this.tok=d.idToken;this.ref=d.refreshToken;
+  }
+  async _refresh(){
+    if(!this.ref)throw new Error("No token");
+    const r=await fetch(`https://securetoken.googleapis.com/v1/token?key=${this.key}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({grant_type:"refresh_token",refresh_token:this.ref})});
+    if(!r.ok)throw new Error("Refresh failed");
+    const d=await r.json();this.tok=d.id_token;this.ref=d.refresh_token;
+  }
+  async req(p,m="GET",b=null){
+    let u=`${this.url}/${p}.json?auth=${this.tok}`;
+    const o={method:m,headers:{"Content-Type":"application/json"}};
+    if(b!==null)o.body=JSON.stringify(b);
+    let r=await fetch(u,o);
+    if(r.status===401){await this._refresh();this._save();r=await fetch(`${this.url}/${p}.json?auth=${this.tok}`,o);}
+    if(!r.ok)throw new Error(`Firebase ${m}: ${r.status}`);
+    return r.json();
+  }
+  get(){return this.req("kanban");}
+  set(d){return this.req("kanban","PUT",d);}
+  clear(){localStorage.removeItem(this.sk);}
+
+  // SSE real-time listener
+  listen(onData){
+    if(sse){sse.close();sse=null;}
+    const u=`${this.url}/kanban.json?auth=${this.tok}`;
+    sse=new EventSource(u);
+    sse.addEventListener("put",e=>{
+      try{
+        const msg=JSON.parse(e.data);
+        if(Date.now()-lastSaveT<2000)return; // skip own echo
+        if(msg.path==="/"&&msg.data){onData(msg.data);}
+      }catch(err){}
+    });
+    sse.addEventListener("patch",e=>{
+      try{
+        const msg=JSON.parse(e.data);
+        if(Date.now()-lastSaveT<2000)return;
+        // re-fetch full data on patch for simplicity
+        this.get().then(d=>{if(d)onData(d);});
+      }catch(err){}
+    });
+    sse.onerror=()=>{
+      sse.close();sse=null;
+      setTimeout(async()=>{
+        try{await this._refresh();this._save();this.listen(onData);}
+        catch(e){setTimeout(()=>this.listen(onData),10000);}
+      },3000);
+    };
+  }
+  stopListening(){if(sse){sse.close();sse=null;}}
 }
-function updateDot(){const d=$(".sync-dot");if(d)d.style.background=syncStatus==="synced"?"var(--green)":syncStatus==="saving"?"var(--amber)":"var(--red)";}
+
+/* ── Save/Sync ── */
+function save(){
+  if(!fb)return;
+  syncSt="saving";uDot();
+  clearTimeout(saveT);
+  saveT=setTimeout(async()=>{
+    lastSaveT=Date.now();
+    try{await fb.set({appName:S.appName,appIcon:S.appIcon,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});syncSt="synced";}
+    catch(e){console.error("Save:",e);syncSt="error";}
+    uDot();
+  },600);
+}
+function uDot(){const d=$(".sdot");if(d)d.style.background=syncSt==="synced"?"var(--grn)":syncSt==="saving"?"var(--amb)":"var(--red)";}
+
+function onRemoteData(d){
+  S.appName=d.appName||S.appName;
+  S.appIcon=d.appIcon||null;
+  S.projects=d.projects||S.projects;
+  // Don't overwrite active selection from remote
+  document.title=S.appName;
+  renderBoard();
+}
 
 /* ── Setup ── */
 function renderSetup(error){
-  const saved=JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
+  const sv=JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
   let step=0;
   function draw(){
     const steps=[
-      {title:"Create Firebase Project",html:`<p>1. Go to <strong>console.firebase.google.com</strong></p><p>2. Click <strong>"Add project"</strong></p><p>3. Name it something like <strong>"kanban-board"</strong></p><p>4. Disable Google Analytics (optional) → Create</p>`},
-      {title:"Enable Anonymous Auth",html:`<p>1. Go to <strong>Build → Authentication</strong></p><p>2. Click <strong>"Get started"</strong></p><p>3. Under Sign-in providers, click <strong>"Anonymous"</strong></p><p>4. Toggle <strong>Enable</strong> → Save</p>`},
-      {title:"Create Realtime Database",html:`<p>1. Go to <strong>Build → Realtime Database</strong></p><p>2. Click <strong>"Create Database"</strong></p><p>3. Choose your region → Next</p><p>4. Select <strong>"Start in test mode"</strong> → Enable</p><div class="warn-box">⚠️ <strong>Immediately</strong> go to the <strong>Rules</strong> tab and replace with:</div><pre class="code-block">{
+      {t:"Create Firebase Project",h:`<p>1. Go to <strong>console.firebase.google.com</strong></p><p>2. Click <strong>"Add project"</strong></p><p>3. Name it (e.g. <strong>"kanban-board"</strong>)</p><p>4. Disable Google Analytics → Create</p>`},
+      {t:"Enable Anonymous Auth",h:`<p>1. Go to <strong>Build → Authentication</strong></p><p>2. Click <strong>"Get started"</strong></p><p>3. Click <strong>"Anonymous"</strong> → toggle <strong>Enable</strong> → Save</p>`},
+      {t:"Create Realtime Database",h:`<p>1. Go to <strong>Build → Realtime Database</strong></p><p>2. Click <strong>"Create Database"</strong> → choose region → Next</p><p>3. Select <strong>"Start in test mode"</strong> → Enable</p><div class="warnb">⚠️ <strong>Immediately</strong> go to the <strong>Rules</strong> tab and replace with:</div><pre class="codeb">{
   "rules": {
-    "users": {
-      "$uid": {
-        ".read": "$uid === auth.uid",
-        ".write": "$uid === auth.uid"
-      }
+    "kanban": {
+      ".read": "auth != null",
+      ".write": "auth != null"
     }
   }
-}</pre><p class="step-hint">Permanent rules — no 30-day expiry. Click Publish.</p>`},
-      {title:"Enter Your Credentials",html:`<p>1. Click <strong>⚙️ gear → Project settings</strong></p><p>2. Copy your <strong>Web API Key</strong></p><p>3. Go to Realtime Database and copy the <strong>URL</strong> from the top</p><p class="step-hint">Looks like: https://your-project-default-rtdb.firebaseio.com</p><label class="field-label">Web API Key</label><input id="inp-key" placeholder="AIzaSy..." value="${saved?.apiKey||""}"><label class="field-label">Database URL</label><input id="inp-url" placeholder="https://your-project-default-rtdb.firebaseio.com" value="${saved?.dbUrl||""}">`},
+}</pre><p class="shint">Anyone with your API key can read/write. This enables cross-device sync. Keep your key private. Click Publish.</p>`},
+      {t:"Enter Your Credentials",h:`<p>1. Click <strong>⚙️ gear → Project settings</strong> → copy <strong>Web API Key</strong></p><p>2. Go to Realtime Database → copy the <strong>URL</strong> from the top bar</p><p class="shint">Looks like: https://your-project-default-rtdb.firebaseio.com</p><label class="flbl">Web API Key</label><input id="ik" placeholder="AIzaSy..." value="${sv?.apiKey||""}"><label class="flbl">Database URL</label><input id="iu" placeholder="https://your-project-default-rtdb.firebaseio.com" value="${sv?.dbUrl||""}">`},
     ];
     const s=steps[step];
     $("#app").innerHTML=`<div class="setup"><div class="setup-card">
-      <div class="setup-logo"><div style="font-size:32px">⬡</div><h1>Kanban Flow</h1><p>Connect Firebase to sync across all your devices</p></div>
-      <div class="progress-bar">${steps.map((_,i)=>`<div class="progress-seg ${i<=step?"active":""}"></div>`).join("")}</div>
-      <div class="step-card"><div class="step-num">Step ${step+1} of ${steps.length}</div><div class="step-title">${s.title}</div><div class="step-content">${s.html}</div></div>
-      ${error?`<div class="error-box">⚠️ ${error}</div>`:""}
-      <div class="step-nav">${step>0?`<button class="btn-secondary" id="bb">← Back</button>`:""}<div style="flex:1"></div>${step<steps.length-1?`<button class="btn-primary" id="bn">Next →</button>`:`<button class="btn-primary" id="bc">Connect & Start →</button>`}</div>
+      <div class="setup-logo"><div style="font-size:32px">⬡</div><h1>Kanban Flow</h1><p>Connect Firebase for real-time sync across all devices</p></div>
+      <div class="pbar">${steps.map((_,i)=>`<div class="pseg ${i<=step?"on":""}"></div>`).join("")}</div>
+      <div class="scard"><div class="snum">Step ${step+1} of ${steps.length}</div><div class="stitle">${s.t}</div><div class="scont">${s.h}</div></div>
+      ${error?`<div class="errb">⚠️ ${error}</div>`:""}
+      <div class="step-nav" style="display:flex;gap:8px;margin-top:8px">${step>0?`<button class="bs" id="bb">← Back</button>`:""}<div style="flex:1"></div>${step<steps.length-1?`<button class="bp" id="bn">Next →</button>`:`<button class="bp" id="bc">Connect & Start →</button>`}</div>
     </div></div>`;
     if($("#bb"))$("#bb").onclick=()=>{step--;draw();};
     if($("#bn"))$("#bn").onclick=()=>{step++;draw();};
     if($("#bc"))$("#bc").onclick=async()=>{
-      const apiKey=$("#inp-key").value.trim(),dbUrl=$("#inp-url").value.trim();
-      if(!apiKey||!dbUrl)return;
+      const k=$("#ik").value.trim(),u=$("#iu").value.trim();
+      if(!k||!u)return;
       $("#bc").textContent="Connecting...";$("#bc").disabled=true;
       try{
-        const fb=new FirebaseSync(apiKey,dbUrl);
-        await fb.connect();
-        firebase=fb;
-        localStorage.setItem("kanban-fb-config",JSON.stringify({apiKey,dbUrl}));
-        const data=await fb.getData();
-        if(data){state.appName=data.appName||state.appName;state.appIcon=data.appIcon||null;state.projects=data.projects||state.projects;state.activeProjectId=data.activeProjectId||state.projects[0].id;}
-        document.title=state.appName;
+        const f=new FBSync(k,u);await f.connect();fb=f;
+        localStorage.setItem("kanban-fb-config",JSON.stringify({apiKey:k,dbUrl:u}));
+        const d=await f.get();
+        if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;}
+        document.title=S.appName;
+        fb.listen(onRemoteData);
         renderBoard();
       }catch(e){error=e.message;draw();}
     };
@@ -423,131 +457,162 @@ function renderSetup(error){
 let dragId=null;
 
 function renderBoard(){
-  const p=proj();
-  document.title=state.appName;
+  const p=getProj(),item=getActiveItem();
+  document.title=S.appName;
   $("#app").innerHTML=`<div class="app">
-    <div class="overlay" id="ov" style="display:none"></div>
-    <aside class="sidebar" id="sb">
-      <div class="sidebar-header" id="app-hdr">
-        ${state.appIcon?`<img class="app-icon" src="${state.appIcon}">`:`<div class="app-icon-default">⬡</div>`}
-        <span class="logo-text">${esc(state.appName)}</span>
-        <span class="sync-dot" style="background:var(--green)"></span>
+    <div class="ov" id="ov" style="display:none"></div>
+    <aside class="sb" id="sb">
+      <div class="sb-hdr" id="ahdr">
+        ${S.appIcon?`<img class="app-ico" src="${S.appIcon}">`:`<div class="app-ico-def">⬡</div>`}
+        <span class="logo-t">${esc(S.appName)}</span>
+        <span class="sdot" style="background:var(--grn)"></span>
       </div>
-      <div class="sidebar-label">PROJECTS</div>
-      <div id="plist"></div>
-      <button class="new-project-btn" id="np">+ New Project</button>
+      <div class="sb-lbl">PROJECTS</div>
+      <div id="pl"></div>
+      <button class="npb" id="np">+ New Project</button>
       <div id="tma"></div>
       <div style="flex:1"></div>
-      <button class="settings-btn" id="bs">⚙ Settings</button>
+      <button class="stb" id="bst">⚙ Settings</button>
     </aside>
-    <main class="main">
-      <div class="project-banner" id="pban">
-        ${p.banner?`<img class="banner-img" src="${p.banner}"><div class="banner-overlay">📷 Change banner</div>`:`<div class="banner-placeholder">📷 Click to add a banner</div>`}
+    <main class="mn">
+      <div class="pban" id="pbn">
+        ${p.banner?`<img src="${p.banner}"><div class="pban-ov">📷 Change banner</div>`:`<div class="pban-ph">📷 Click to add a banner</div>`}
       </div>
-      <header class="top-bar">
-        <button class="menu-btn" id="bm">☰</button>
-        <div class="top-center">${projIcon(p,28)}<h1>${esc(p.name)}</h1><button class="edit-project-btn" id="be">✎</button></div>
-        <div class="top-stats">${COLUMNS.map(c=>`<span class="stat-badge">${tasksIn(c).length} ${c==="To Do"?"📝":c==="In Progress"?"⚡":"✅"}</span>`).join("")}</div>
+      <header class="tbar">
+        <button class="mb" id="bm">☰</button>
+        <div class="tc">${pIcon(item,32)}<h1>${esc(item.name)}</h1><button class="epb" id="be">✎</button></div>
+        <div class="tst">${COLS.map(c=>`<span class="stb2">${tasksIn(c).length} ${c==="To Do"?"📝":c==="In Progress"?"⚡":"✅"}</span>`).join("")}</div>
       </header>
-      <div class="columns" id="cols"></div>
+      <div class="cols" id="cls"></div>
     </main>
   </div>`;
-  renderProjects();renderCols();updateDot();
-  $("#app-hdr").onclick=()=>showAppModal();
+  renderProjs();renderCols();uDot();
+  $("#ahdr").onclick=()=>showAppModal();
   $("#bm").onclick=()=>togSb(true);
   $("#ov").onclick=()=>togSb(false);
-  $("#np").onclick=()=>showProjModal();
-  $("#be").onclick=()=>showProjModal(p);
-  $("#bs").onclick=showSettings;
-  $("#pban").onclick=()=>pickFile("image/*",async f=>{const d=await resizeImage(f,1200,400);proj().banner=d;save();renderBoard();});
+  $("#np").onclick=()=>showProjModal(null,false);
+  $("#be").onclick=()=>{if(S.activeSubId)showSubModal(S.activeSubId);else showProjModal(p,false);};
+  $("#bst").onclick=showSettings;
+  $("#pbn").onclick=()=>pickFile("image/*",f=>showCropper(f,3.5,1400,400,d=>{getProj().banner=d;save();renderBoard();}));
 }
 
-function togSb(open){const sb=$("#sb"),ov=$("#ov");if(open){sb.classList.add("open");ov.style.display="block";}else{sb.classList.remove("open");ov.style.display="none";}}
+function togSb(o){const s=$("#sb"),v=$("#ov");if(o){s.classList.add("open");v.style.display="block";}else{s.classList.remove("open");v.style.display="none";}}
 
-function renderProjects(){
-  const list=$("#plist");if(!list)return;list.innerHTML="";
-  state.projects.forEach(p=>{
-    const d=el("div","sidebar-item"+(p.id===state.activeProjectId?" active":""));
-    d.innerHTML=`${projIcon(p,24)}<span class="name">${esc(p.name)}</span><span class="count">${(p.tasks||[]).length}</span>`;
-    d.onclick=()=>{state.activeProjectId=p.id;save();renderBoard();};
-    list.appendChild(d);
+function renderProjs(){
+  const l=$("#pl");if(!l)return;l.innerHTML="";
+  S.projects.forEach(p=>{
+    const isAct=p.id===S.activeId&&!S.activeSubId;
+    const d=el("div","sb-it"+(isAct?" on":""));
+    d.innerHTML=`${pIcon(p,28)}<span class="nm">${esc(p.name)}</span><span class="ct">${(p.tasks||[]).length+(p.subs||[]).reduce((a,s)=>(a+(s.tasks||[]).length),0)}</span>`;
+    d.onclick=()=>{S.activeId=p.id;S.activeSubId=null;save();renderBoard();};
+    l.appendChild(d);
+    // Sub-projects
+    if(p.subs?.length){
+      const sw=el("div","sb-sub");
+      p.subs.forEach(sp=>{
+        const isSubAct=p.id===S.activeId&&S.activeSubId===sp.id;
+        const sd=el("div","sb-it"+(isSubAct?" on":""));
+        sd.innerHTML=`${pIcon(sp,22)}<span class="nm">${esc(sp.name)}</span><span class="ct">${(sp.tasks||[]).length}</span>`;
+        sd.onclick=()=>{S.activeId=p.id;S.activeSubId=sp.id;save();renderBoard();};
+        sw.appendChild(sd);
+      });
+      l.appendChild(sw);
+    }
+    // Add sub-project button
+    if(p.id===S.activeId){
+      const ab=el("div","sb-sub");
+      const asb=el("button","sb-it","<span class='pe' style='font-size:14px;width:22px;text-align:center;color:var(--t3)'>+</span><span class='nm' style='color:var(--t3);font-size:12px'>Add sub-project</span>");
+      asb.onclick=()=>showSubModal(null);
+      ab.appendChild(asb);
+      l.appendChild(ab);
+    }
   });
 }
 
 function renderCols(){
-  const wrap=$("#cols");if(!wrap)return;wrap.innerHTML="";
-  COLUMNS.forEach(col=>{
+  const w=$("#cls");if(!w)return;w.innerHTML="";
+  COLS.forEach(col=>{
     const tasks=tasksIn(col);
-    const div=el("div","column");
-    div.innerHTML=`<div class="col-header"><span class="col-dot ${dotCls(col)}"></span><span class="col-title">${col}</span><span class="col-count">${tasks.length}</span></div><div class="col-body"></div>`;
-    const body=$(".col-body",div);
-    tasks.forEach(t=>body.appendChild(mkCard(t)));
-    const ab=el("button","add-card-btn","+ Add card");ab.onclick=()=>showTaskModal(null,col);body.appendChild(ab);
-    div.addEventListener("dragover",e=>{e.preventDefault();div.classList.add("drag-over");});
-    div.addEventListener("dragleave",()=>div.classList.remove("drag-over"));
-    div.addEventListener("drop",e=>{e.preventDefault();div.classList.remove("drag-over");if(dragId)moveTask(dragId,col);});
-    wrap.appendChild(div);
+    const d=el("div","col");
+    d.innerHTML=`<div class="ch"><span class="cdot ${dotC(col)}"></span><span class="ctt">${col}</span><span class="cct">${tasks.length}</span></div><div class="cbod"></div>`;
+    const bd=$(".cbod",d);
+    tasks.forEach(t=>bd.appendChild(mkCard(t)));
+    const ab=el("button","acb","+ Add card");ab.onclick=()=>showTaskModal(null,col);bd.appendChild(ab);
+    d.addEventListener("dragover",e=>{e.preventDefault();d.classList.add("dov");});
+    d.addEventListener("dragleave",()=>d.classList.remove("dov"));
+    d.addEventListener("drop",e=>{e.preventDefault();d.classList.remove("dov");if(dragId)moveTask(dragId,col);});
+    w.appendChild(d);
   });
 }
 
 function mkCard(t){
-  const c=el("div","card");c.draggable=true;
+  const c=el("div","crd");c.draggable=true;
   let h="";
-  if(t.labels?.length)h+=`<div class="card-labels">${t.labels.map(l=>{const lc=LABEL_COLORS.find(c=>c.name===l);return lc?`<span class="label-pill" style="background:${lc.bg};border-color:${lc.border};color:${lc.text}">${l}</span>`:""}).join("")}</div>`;
-  h+=`<div class="card-title">${esc(t.title)}</div>`;
-  if(t.description)h+=`<div class="card-desc">${esc(t.description)}</div>`;
+  if(t.labels?.length)h+=`<div class="crd-lb">${t.labels.map(l=>{const lc=LCOLS.find(c=>c.n===l);return lc?`<span class="lpill" style="background:${lc.bg};border-color:${lc.bd};color:${lc.t}">${l}</span>`:""}).join("")}</div>`;
+  h+=`<div class="crd-t">${esc(t.title)}</div>`;
+  if(t.description)h+=`<div class="crd-d">${esc(t.description)}</div>`;
   let m="";
-  if(t.priority){const pc=PRIORITY_COLORS[t.priority];m+=`<span class="priority-badge" style="background:${pc.bg};color:${pc.text}">${pc.icon} ${PRIORITIES[t.priority]}</span>`;}
-  if(t.dueDate){const od=isOverdue(t.dueDate)&&t.column!=="Done";m+=`<span class="due-badge ${od?"overdue":""}">📅 ${fmtDate(t.dueDate)}</span>`;}
-  m+=`<button class="mobile-move" data-mv="1">⇄</button>`;
-  if(m)h+=`<div class="card-meta">${m}</div>`;
+  if(t.priority){const pc=PCOLS[t.priority];m+=`<span class="pbdg" style="background:${pc.bg};color:${pc.t}">${pc.i} ${PRIS[t.priority]}</span>`;}
+  if(t.dueDate){const od=isOD(t.dueDate)&&t.column!=="Done";m+=`<span class="dbdg ${od?"od":""}">📅 ${fmtD(t.dueDate)}</span>`;}
+  m+=`<button class="mmv" data-mv="1">⇄</button>`;
+  if(m)h+=`<div class="crd-m">${m}</div>`;
   c.innerHTML=h;
   c.onclick=e=>{if(e.target.closest("[data-mv]"))return;showTaskModal(t);};
   const mb=$("[data-mv]",c);if(mb)mb.onclick=e=>{e.stopPropagation();showTouchMove(t);};
-  c.addEventListener("dragstart",e=>{dragId=t.id;c.classList.add("dragging");e.dataTransfer.effectAllowed="move";});
-  c.addEventListener("dragend",()=>{dragId=null;c.classList.remove("dragging");});
+  c.addEventListener("dragstart",e=>{dragId=t.id;c.classList.add("drg");e.dataTransfer.effectAllowed="move";});
+  c.addEventListener("dragend",()=>{dragId=null;c.classList.remove("drg");});
   return c;
 }
 
 function showTouchMove(t){
-  togSb(true);
-  const a=$("#tma");
-  a.innerHTML=`<div class="touch-move"><div class="touch-move-title">Move "${esc(t.title)}" to:</div>${COLUMNS.filter(c=>c!==t.column).map(c=>`<button class="touch-move-btn" data-to="${c}">${c}</button>`).join("")}<button class="touch-move-btn" style="background:#ffffff10" id="tc">Cancel</button></div>`;
+  togSb(true);const a=$("#tma");
+  a.innerHTML=`<div class="tmv"><div class="tmv-t">Move "${esc(t.title)}" to:</div>${COLS.filter(c=>c!==t.column).map(c=>`<button class="tmv-b" data-to="${c}">${c}</button>`).join("")}<button class="tmv-b" style="background:#ffffff10" id="tc">Cancel</button></div>`;
   $$("[data-to]",a).forEach(b=>b.onclick=()=>{moveTask(t.id,b.dataset.to);a.innerHTML="";togSb(false);});
   $("#tc",a).onclick=()=>{a.innerHTML="";};
 }
 
 /* ── Data ops ── */
-function addTask(col,d){proj().tasks.push({id:uid(),column:col,order:tasksIn(col).length,title:d.title,description:d.description||"",labels:d.labels||[],priority:d.priority||null,dueDate:d.dueDate||null,createdAt:Date.now()});save();renderBoard();}
-function updTask(id,d){const t=proj().tasks.find(t=>t.id===id);if(t)Object.assign(t,d);save();renderBoard();}
-function delTask(id){proj().tasks=proj().tasks.filter(t=>t.id!==id);save();renderBoard();}
-function moveTask(id,to){const t=proj().tasks.find(t=>t.id===id);if(t){t.column=to;t.order=tasksIn(to).length;}dragId=null;save();renderBoard();}
-function addProj(name,emoji,icon,banner){state.projects.push({id:uid(),name,emoji:emoji||"📋",icon:icon||null,banner:banner||null,tasks:[]});state.activeProjectId=state.projects[state.projects.length-1].id;save();renderBoard();}
-function updProj(id,d){const p=state.projects.find(p=>p.id===id);if(p)Object.assign(p,d);save();renderBoard();}
-function delProj(id){if(state.projects.length<=1)return;state.projects=state.projects.filter(p=>p.id!==id);state.activeProjectId=state.projects[0].id;save();renderBoard();}
+function curTasks(){return getActiveTasks();}
+function setCurTasks(tasks){
+  const p=getProj();
+  if(S.activeSubId){const sp=(p.subs||[]).find(s=>s.id===S.activeSubId);if(sp)sp.tasks=tasks;}
+  else p.tasks=tasks;
+}
+function addTask(col,d){const tasks=curTasks();tasks.push({id:uid(),column:col,order:tasksIn(col).length,title:d.title,description:d.description||"",labels:d.labels||[],priority:d.priority||null,dueDate:d.dueDate||null,createdAt:Date.now()});save();renderBoard();}
+function updTask(id,d){const t=curTasks().find(t=>t.id===id);if(t)Object.assign(t,d);save();renderBoard();}
+function delTask(id){setCurTasks(curTasks().filter(t=>t.id!==id));save();renderBoard();}
+function moveTask(id,to){const t=curTasks().find(t=>t.id===id);if(t){t.column=to;t.order=tasksIn(to).length;}dragId=null;save();renderBoard();}
 
-/* ── App Branding Modal ── */
+function addProj(n,e,ico,ban){S.projects.push({id:uid(),name:n,emoji:e||"📋",icon:ico||null,banner:ban||null,tasks:[],subs:[]});S.activeId=S.projects[S.projects.length-1].id;S.activeSubId=null;save();renderBoard();}
+function updProj(id,d){const p=S.projects.find(p=>p.id===id);if(p)Object.assign(p,d);save();renderBoard();}
+function delProj(id){if(S.projects.length<=1)return;S.projects=S.projects.filter(p=>p.id!==id);S.activeId=S.projects[0].id;S.activeSubId=null;save();renderBoard();}
+
+function addSub(n,e,ico){const p=getProj();if(!p.subs)p.subs=[];const sp={id:uid(),name:n,emoji:e||"📋",icon:ico||null,tasks:[]};p.subs.push(sp);S.activeSubId=sp.id;save();renderBoard();}
+function updSub(id,d){const p=getProj();const sp=(p.subs||[]).find(s=>s.id===id);if(sp)Object.assign(sp,d);save();renderBoard();}
+function delSub(id){const p=getProj();p.subs=(p.subs||[]).filter(s=>s.id!==id);if(S.activeSubId===id)S.activeSubId=null;save();renderBoard();}
+
+/* ── App Modal ── */
 function showAppModal(){
-  const ov=el("div","modal-overlay"),md=el("div","modal");md.style.maxWidth="400px";
-  let icon=state.appIcon;
+  const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="420px";
+  let ico=S.appIcon;
   function render(){
     md.innerHTML=`
-      <div class="modal-header"><h2>Customize App</h2><button class="modal-close" id="mc">✕</button></div>
-      <div class="modal-body">
-        <label class="field-label">App Icon</label>
-        <div class="img-upload-area">
-          ${icon?`<img class="img-preview" src="${icon}">`:`<div class="img-preview-placeholder">⬡</div>`}
-          <button class="img-upload-btn" id="ui">Upload Image</button>
-          ${icon?`<button class="img-remove-btn" id="ri">✕ Remove</button>`:""}
+      <div class="md-h"><h2>Customize App</h2><button class="md-x" id="cx">✕</button></div>
+      <div class="md-b">
+        <label class="flbl">App Icon</label>
+        <div class="iua">
+          ${ico?`<img class="ipv" src="${ico}">`:`<div class="iph">⬡</div>`}
+          <button class="iub" id="ui">Upload Image</button>
+          ${ico?`<button class="irb" id="ri">✕ Remove</button>`:""}
         </div>
-        <label class="field-label">App Name</label>
-        <input id="an" value="${esc(state.appName)}" placeholder="My Kanban">
+        <label class="flbl">App Name</label>
+        <input id="an" value="${esc(S.appName)}" placeholder="My Kanban">
       </div>
-      <div class="modal-footer"><div style="flex:1"></div><button class="btn-secondary" id="cc">Cancel</button><button class="btn-primary" id="sv">Save</button></div>`;
-    $("#mc",md).onclick=close;$("#cc",md).onclick=close;
-    $("#ui",md).onclick=()=>pickFile("image/*",async f=>{icon=await resizeImage(f,128,128);render();});
-    if($("#ri",md))$("#ri",md).onclick=()=>{icon=null;render();};
-    $("#sv",md).onclick=()=>{const n=$("#an",md).value.trim();if(!n)return;state.appName=n;state.appIcon=icon;save();close();renderBoard();};
+      <div class="md-f"><div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">Save</button></div>`;
+    $("#cx",md).onclick=$("#cc",md).onclick=close;
+    $("#ui",md).onclick=()=>pickFile("image/*",f=>showCropper(f,1,256,256,d=>{ico=d;render();}));
+    if($("#ri",md))$("#ri",md).onclick=()=>{ico=null;render();};
+    $("#sv",md).onclick=()=>{const n=$("#an",md).value.trim();if(!n)return;S.appName=n;S.appIcon=ico;save();close();renderBoard();};
   }
   const close=()=>ov.remove();
   ov.onclick=e=>{if(e.target===ov)close();};
@@ -556,80 +621,72 @@ function showAppModal(){
 
 /* ── Task Modal ── */
 function showTaskModal(task,col){
-  const ov=el("div","modal-overlay"),md=el("div","modal");
+  const ov=el("div","mo"),md=el("div","md");
   const isE=!!task;if(task)col=task.column;
   let labels=task?.labels?.slice()||[],priority=task?.priority||null;
   md.innerHTML=`
-    <div class="modal-header"><h2>${isE?"Edit Card":`New Card — ${col}`}</h2><button class="modal-close" id="mc">✕</button></div>
-    <div class="modal-body">
-      <label class="field-label">Title *</label><input id="mt" placeholder="What needs to be done?" value="${esc(task?.title||"")}">
-      <label class="field-label">Description</label><textarea id="md" placeholder="Add details...">${esc(task?.description||"")}</textarea>
-      <label class="field-label">Labels</label><div class="labels-grid" id="ml"></div>
-      <label class="field-label">Priority</label><div class="priority-row" id="mp"></div>
-      <label class="field-label">Due Date</label><input type="date" id="mdu" value="${task?.dueDate||""}">
-      ${isE?`<label class="field-label">Move to</label><div class="priority-row" id="mm"></div>`:""}
+    <div class="md-h"><h2>${isE?"Edit Card":`New Card — ${col}`}</h2><button class="md-x" id="cx">✕</button></div>
+    <div class="md-b">
+      <label class="flbl">Title *</label><input id="mt" placeholder="What needs to be done?" value="${esc(task?.title||"")}">
+      <label class="flbl">Description</label><textarea id="mds" placeholder="Add details...">${esc(task?.description||"")}</textarea>
+      <label class="flbl">Labels</label><div class="lgrid" id="ml"></div>
+      <label class="flbl">Priority</label><div class="prow" id="mp"></div>
+      <label class="flbl">Due Date</label><input type="date" id="mdu" value="${task?.dueDate||""}">
+      ${isE?`<label class="flbl">Move to</label><div class="prow" id="mm"></div>`:""}
     </div>
-    <div class="modal-footer">${isE?`<button class="btn-danger" id="mdl">Delete</button>`:""}<div style="flex:1"></div><button class="btn-secondary" id="cc">Cancel</button><button class="btn-primary" id="sv">${isE?"Save":"Create"}</button></div>`;
-  function rL(){
-    const g=$("#ml",md);
-    g.innerHTML=LABEL_COLORS.map(lc=>{const on=labels.includes(lc.name);return`<button class="label-opt" data-l="${lc.name}" style="background:${on?lc.bg:"transparent"};border-color:${on?lc.border:"#ffffff18"};color:${on?lc.text:"#888"}">${lc.name}</button>`;}).join("");
-    $$("[data-l]",g).forEach(b=>b.onclick=()=>{const n=b.dataset.l;labels=labels.includes(n)?labels.filter(l=>l!==n):[...labels,n];rL();});
-  }
-  function rP(){
-    const g=$("#mp",md);
-    g.innerHTML=Object.entries(PRIORITIES).map(([k,v])=>{const pc=PRIORITY_COLORS[k],on=priority===k;return`<button class="priority-opt" data-p="${k}" style="background:${on?pc.bg:"transparent"};border-color:${on?pc.text:"#ffffff18"};color:${on?pc.text:"#888"}">${pc.icon} ${v}</button>`;}).join("");
-    $$("[data-p]",g).forEach(b=>b.onclick=()=>{priority=priority===b.dataset.p?null:b.dataset.p;rP();});
-  }
+    <div class="md-f">${isE?`<button class="bd" id="mdl">Delete</button>`:""}<div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${isE?"Save":"Create"}</button></div>`;
+  function rL(){const g=$("#ml",md);g.innerHTML=LCOLS.map(l=>{const on=labels.includes(l.n);return`<button class="lopt" data-l="${l.n}" style="background:${on?l.bg:"transparent"};border-color:${on?l.bd:"#ffffff18"};color:${on?l.t:"#888"}">${l.n}</button>`;}).join("");$$("[data-l]",g).forEach(b=>b.onclick=()=>{const n=b.dataset.l;labels=labels.includes(n)?labels.filter(l=>l!==n):[...labels,n];rL();});}
+  function rP(){const g=$("#mp",md);g.innerHTML=Object.entries(PRIS).map(([k,v])=>{const pc=PCOLS[k],on=priority===k;return`<button class="popt" data-p="${k}" style="background:${on?pc.bg:"transparent"};border-color:${on?pc.t:"#ffffff18"};color:${on?pc.t:"#888"}">${pc.i} ${v}</button>`;}).join("");$$("[data-p]",g).forEach(b=>b.onclick=()=>{priority=priority===b.dataset.p?null:b.dataset.p;rP();});}
   rL();rP();
-  if(isE){const mv=$("#mm",md);mv.innerHTML=COLUMNS.filter(c=>c!==task.column).map(c=>`<button class="move-btn" data-mc="${c}">→ ${c}</button>`).join("");$$("[data-mc]",mv).forEach(b=>b.onclick=()=>{moveTask(task.id,b.dataset.mc);ov.remove();});}
+  if(isE){const mv=$("#mm",md);mv.innerHTML=COLS.filter(c=>c!==task.column).map(c=>`<button class="mvb" data-mc="${c}">→ ${c}</button>`).join("");$$("[data-mc]",mv).forEach(b=>b.onclick=()=>{moveTask(task.id,b.dataset.mc);ov.remove();});}
   const close=()=>ov.remove();
   ov.onclick=e=>{if(e.target===ov)close();};
-  $("#mc",md).onclick=close;$("#cc",md).onclick=close;
+  $("#cx",md).onclick=$("#cc",md).onclick=close;
   if($("#mdl",md))$("#mdl",md).onclick=()=>{delTask(task.id);close();};
-  $("#sv",md).onclick=()=>{const t=$("#mt",md).value.trim();if(!t)return;const d={title:t,description:$("#md",md).value,labels,priority,dueDate:$("#mdu",md).value};if(isE)updTask(task.id,d);else addTask(col,d);close();};
+  $("#sv",md).onclick=()=>{const t=$("#mt",md).value.trim();if(!t)return;const d={title:t,description:$("#mds",md).value,labels,priority,dueDate:$("#mdu",md).value};if(isE)updTask(task.id,d);else addTask(col,d);close();};
   ov.appendChild(md);document.body.appendChild(ov);$("#mt",md).focus();
 }
 
 /* ── Project Modal ── */
 function showProjModal(project){
-  const ov=el("div","modal-overlay"),md=el("div","modal");md.style.maxWidth="440px";
-  let emoji=project?.emoji||"📋",icon=project?.icon||null,banner=project?.banner||null;
+  const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="460px";
+  let emoji=project?.emoji||"📋",ico=project?.icon||null,ban=project?.banner||null;
   function render(){
     md.innerHTML=`
-      <div class="modal-header"><h2>${project?"Edit Project":"New Project"}</h2><button class="modal-close" id="mc">✕</button></div>
-      <div class="modal-body">
-        <label class="field-label">Project Icon</label>
-        <div class="img-upload-area">
-          ${icon?`<img class="img-preview" src="${icon}">`:`<div class="img-preview-placeholder">${emoji}</div>`}
-          <button class="img-upload-btn" id="ui">Upload Image</button>
-          ${icon?`<button class="img-remove-btn" id="ri">✕ Remove</button>`:""}
+      <div class="md-h"><h2>${project?"Edit Project":"New Project"}</h2><button class="md-x" id="cx">✕</button></div>
+      <div class="md-b">
+        <label class="flbl">Project Icon</label>
+        <div class="iua">
+          ${ico?`<img class="ipv" src="${ico}">`:`<div class="iph">${emoji}</div>`}
+          <button class="iub" id="ui">Upload Image</button>
+          ${ico?`<button class="irb" id="ri">✕ Remove</button>`:""}
         </div>
-        ${!icon?`<label class="field-label">Or pick an emoji</label><div class="emoji-grid" id="eg"></div>`:""}
-        <label class="field-label">Project Name</label>
+        ${!ico?`<label class="flbl">Or pick an emoji</label><div class="egrid" id="eg"></div>`:""}
+        <label class="flbl">Project Name</label>
         <input id="pn" placeholder="e.g. Website Redesign" value="${esc(project?.name||"")}">
-        <label class="field-label">Banner Image</label>
-        <div class="banner-upload-area ${banner?"has-img":""}" id="ba">
-          ${banner?`<img src="${banner}">`:""}
-          <span class="bup-text">${banner?"📷 Change":"📷 Upload banner"}</span>
+        <label class="flbl">Banner Image</label>
+        <div class="bua ${ban?"hi":""}" id="ba">
+          ${ban?`<img src="${ban}">`:""}
+          <span class="bt">${ban?"📷 Change":"📷 Upload banner"}</span>
         </div>
-        ${banner?`<button class="img-remove-btn" id="rb" style="margin-top:4px">✕ Remove banner</button>`:""}
+        ${ban?`<button class="irb" id="rb" style="margin-top:2px">✕ Remove banner</button>`:""}
       </div>
-      <div class="modal-footer">
-        ${project&&state.projects.length>1?`<button class="btn-danger" id="dl">Delete</button>`:""}
-        <div style="flex:1"></div><button class="btn-secondary" id="cc">Cancel</button><button class="btn-primary" id="sv">${project?"Save":"Create"}</button>
+      <div class="md-f">
+        ${project&&S.projects.length>1?`<button class="bd" id="dl">Delete</button>`:""}
+        <div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${project?"Save":"Create"}</button>
       </div>`;
-    $("#mc",md).onclick=close;$("#cc",md).onclick=close;
+    $("#cx",md).onclick=$("#cc",md).onclick=close;
     if($("#dl",md))$("#dl",md).onclick=()=>{delProj(project.id);close();};
     const eg=$("#eg",md);
-    if(eg){eg.innerHTML=EMOJIS.map(e=>`<button class="emoji-btn ${emoji===e?"active":""}" data-e="${e}">${e}</button>`).join("");$$("[data-e]",eg).forEach(b=>b.onclick=()=>{emoji=b.dataset.e;render();});}
-    $("#ui",md).onclick=()=>pickFile("image/*",async f=>{icon=await resizeImage(f,128,128);render();});
-    if($("#ri",md))$("#ri",md).onclick=()=>{icon=null;render();};
-    $("#ba",md).onclick=()=>pickFile("image/*",async f=>{banner=await resizeImage(f,1200,400);render();});
-    if($("#rb",md))$("#rb",md).onclick=()=>{banner=null;render();};
+    if(eg){eg.innerHTML=EMOJIS.map(e=>`<button class="eb ${emoji===e?"on":""}" data-e="${e}">${e}</button>`).join("");$$("[data-e]",eg).forEach(b=>b.onclick=()=>{emoji=b.dataset.e;render();});}
+    $("#ui",md).onclick=()=>pickFile("image/*",f=>showCropper(f,1,192,192,d=>{ico=d;render();}));
+    if($("#ri",md))$("#ri",md).onclick=()=>{ico=null;render();};
+    $("#ba",md).onclick=()=>pickFile("image/*",f=>showCropper(f,3.5,1400,400,d=>{ban=d;render();}));
+    if($("#rb",md))$("#rb",md).onclick=()=>{ban=null;render();};
     $("#sv",md).onclick=()=>{
-      const name=$("#pn",md).value.trim();if(!name)return;
-      if(project){updProj(project.id,{name,emoji,icon,banner});}
-      else{addProj(name,emoji,icon,banner);}
+      const n=$("#pn",md).value.trim();if(!n)return;
+      if(project){updProj(project.id,{name:n,emoji,icon:ico,banner:ban});}
+      else{addProj(n,emoji,ico,ban);}
       close();
     };
   }
@@ -639,54 +696,88 @@ function showProjModal(project){
   setTimeout(()=>{const i=$("#pn",md);if(i)i.focus();},50);
 }
 
+/* ── Sub-Project Modal ── */
+function showSubModal(subId){
+  const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="420px";
+  const p=getProj();
+  const sub=subId?(p.subs||[]).find(s=>s.id===subId):null;
+  let emoji=sub?.emoji||"📋",ico=sub?.icon||null;
+  function render(){
+    md.innerHTML=`
+      <div class="md-h"><h2>${sub?"Edit Sub-project":"New Sub-project"}</h2><button class="md-x" id="cx">✕</button></div>
+      <div class="md-b">
+        <label class="flbl">Icon</label>
+        <div class="iua">
+          ${ico?`<img class="ipv" src="${ico}" style="width:48px;height:48px">`:`<div class="iph" style="width:48px;height:48px;font-size:20px">${emoji}</div>`}
+          <button class="iub" id="ui">Upload</button>
+          ${ico?`<button class="irb" id="ri">✕</button>`:""}
+        </div>
+        ${!ico?`<label class="flbl">Emoji</label><div class="egrid" id="eg"></div>`:""}
+        <label class="flbl">Name</label>
+        <input id="sn" placeholder="e.g. Frontend" value="${esc(sub?.name||"")}">
+      </div>
+      <div class="md-f">
+        ${sub?`<button class="bd" id="dl">Delete</button>`:""}
+        <div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${sub?"Save":"Create"}</button>
+      </div>`;
+    $("#cx",md).onclick=$("#cc",md).onclick=close;
+    if($("#dl",md))$("#dl",md).onclick=()=>{delSub(sub.id);close();};
+    const eg=$("#eg",md);
+    if(eg){eg.innerHTML=EMOJIS.map(e=>`<button class="eb ${emoji===e?"on":""}" data-e="${e}">${e}</button>`).join("");$$("[data-e]",eg).forEach(b=>b.onclick=()=>{emoji=b.dataset.e;render();});}
+    $("#ui",md).onclick=()=>pickFile("image/*",f=>showCropper(f,1,128,128,d=>{ico=d;render();}));
+    if($("#ri",md))$("#ri",md).onclick=()=>{ico=null;render();};
+    $("#sv",md).onclick=()=>{
+      const n=$("#sn",md).value.trim();if(!n)return;
+      if(sub)updSub(sub.id,{name:n,emoji,icon:ico});
+      else addSub(n,emoji,ico);
+      close();
+    };
+  }
+  const close=()=>ov.remove();
+  ov.onclick=e=>{if(e.target===ov)close();};
+  render();ov.appendChild(md);document.body.appendChild(ov);
+  setTimeout(()=>{const i=$("#sn",md);if(i)i.focus();},50);
+}
+
 /* ── Settings ── */
 function showSettings(){
-  const ov=el("div","modal-overlay"),md=el("div","modal");md.style.maxWidth="400px";
+  const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="400px";
   md.innerHTML=`
-    <div class="modal-header"><h2>Settings</h2><button class="modal-close" id="mc">✕</button></div>
-    <div class="modal-body">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0"><div><div style="font-weight:600;font-size:14px">Firebase Sync</div><div style="font-size:12px;color:var(--text-secondary);margin-top:2px">Connected · UID: ${firebase?.localId?.slice(0,8)||"?"}…</div></div><span style="width:10px;height:10px;border-radius:50%;background:var(--green)"></span></div>
-      <div style="border-top:1px solid var(--border);margin:8px 0"></div>
+    <div class="md-h"><h2>Settings</h2><button class="md-x" id="cx">✕</button></div>
+    <div class="md-b">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0"><div><div style="font-weight:600;font-size:14px">Firebase Real-time Sync</div><div style="font-size:12px;color:var(--t2);margin-top:2px">Connected · Live updates enabled</div></div><span style="width:10px;height:10px;border-radius:50%;background:var(--grn)"></span></div>
+      <div style="border-top:1px solid var(--bd);margin:8px 0"></div>
       <div id="sa"></div>
     </div>`;
   function showBtn(){
     const a=$("#sa",md);
-    a.innerHTML=`<button class="btn-danger" style="width:100%;text-align:center" id="sd">Disconnect Firebase</button>`;
+    a.innerHTML=`<button class="bd" style="width:100%;text-align:center" id="sd">Disconnect</button>`;
     $("#sd",md).onclick=()=>{
-      a.innerHTML=`<p style="font-size:12px;color:#ff6b6b;margin:0 0 8px">Your data stays in Firebase. Reconnect with the same DB URL to get it back.</p><div style="display:flex;gap:8px"><button class="btn-secondary" id="sn">Cancel</button><button class="btn-danger" style="flex:1;text-align:center" id="sy">Confirm</button></div>`;
+      a.innerHTML=`<p style="font-size:12px;color:#ff6b6b;margin:0 0 8px">Data stays in Firebase. Reconnect with same DB URL to get it back.</p><div style="display:flex;gap:8px"><button class="bs" id="sn">Cancel</button><button class="bd" style="flex:1;text-align:center" id="sy">Confirm</button></div>`;
       $("#sn",md).onclick=showBtn;
-      $("#sy",md).onclick=()=>{
-        if(firebase)firebase.clearAuth();
-        firebase=null;
-        localStorage.removeItem("kanban-fb-config");
-        ov.remove();renderSetup();
-      };
+      $("#sy",md).onclick=()=>{if(fb){fb.stopListening();fb.clear();}fb=null;localStorage.removeItem("kanban-fb-config");ov.remove();renderSetup();};
     };
   }
   showBtn();
   const close=()=>ov.remove();
   ov.onclick=e=>{if(e.target===ov)close();};
-  $("#mc",md).onclick=close;
+  $("#cx",md).onclick=close;
   ov.appendChild(md);document.body.appendChild(ov);
 }
 
 /* ── Init ── */
 async function init(){
   $("#app").innerHTML=`<div class="loading"><div class="loading-dot"></div><p class="loading-text">Loading...</p></div>`;
-  const saved=JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
-  if(saved){
+  const sv=JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
+  if(sv){
     try{
-      const fb=new FirebaseSync(saved.apiKey,saved.dbUrl);
-      await fb.connect(); // Reuses existing UID if available
-      firebase=fb;
-      const data=await fb.getData();
-      if(data){
-        state.appName=data.appName||state.appName;
-        state.appIcon=data.appIcon||null;
-        state.projects=data.projects||state.projects;
-        state.activeProjectId=data.activeProjectId||state.projects[0].id;
-      }
-      document.title=state.appName;
+      const f=new FBSync(sv.apiKey,sv.dbUrl);await f.connect();fb=f;
+      const d=await f.get();
+      if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;}
+      // Ensure all projects have subs array
+      S.projects.forEach(p=>{if(!p.subs)p.subs=[];});
+      document.title=S.appName;
+      fb.listen(onRemoteData);
       renderBoard();
     }catch(e){renderSetup(e.message);}
   }else{renderSetup();}
