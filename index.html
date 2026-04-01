@@ -135,7 +135,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .tc{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
 .tc .pi{width:32px;height:32px;border-radius:8px;object-fit:cover}
 .tc .pe{font-size:24px}
-.tc h1{font-size:18px;font-weight:700;letter-spacing:-.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 2px 16px rgba(0,0,0,0.5)}
+.tc h1{font-size:18px;font-weight:700;letter-spacing:-.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .epb{color:var(--t3);font-size:14px;padding:6px;border-radius:6px;transition:0.2s;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;width:30px;height:30px;}
 .epb:hover{background:rgba(0,0,0,0.6);color:var(--t1)}
 .tst{display:flex;gap:8px}
@@ -151,7 +151,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .cdot.ip{background:#f59e0b;box-shadow:0 0 8px #f59e0b60}
 .cdot.dn{background:#10b981;box-shadow:0 0 8px #10b98160}
 .ctt{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t2)}
-.cct{font-size:11px;color:var(--t3);margin-left:auto;background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:10px}
+.cct{font-size:11px;color:var(--t3);margin-left:auto;background:#ffffff08;padding:2px 8px;border-radius:10px}
 .cbod{padding:6px 10px 12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1}
 .acb{padding:12px;border:1px dashed rgba(255,255,255,0.1);border-radius:8px;color:var(--t3);font-size:13px;text-align:center;background:transparent;transition:0.2s}
 .acb:hover{border-color:var(--ac);color:var(--acl);background:rgba(255,255,255,0.02)}
@@ -164,6 +164,8 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .lpill{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid;letter-spacing:.3px;display:inline-flex;align-items:center;gap:4px;transition:0.15s}
 .crd-t{font-size:14px;font-weight:600;line-height:1.4}
 .crd-d{font-size:12px;color:var(--t2);line-height:1.4;margin-top:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.crd-d a{color:var(--acl);text-decoration:underline;pointer-events:auto;transition:0.2s}
+.crd-d a:hover{color:var(--ac)}
 .crd-m{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
 .pbdg{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px;letter-spacing:.3px}
 .dbdg{font-size:10px;color:var(--t2);background:#ffffff08;padding:2px 8px;border-radius:6px}
@@ -290,6 +292,19 @@ const $=(s,p)=>(p||document).querySelector(s);
 const $$=(s,p)=>[...(p||document).querySelectorAll(s)];
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h)e.innerHTML=h;return e;};
 const esc=s=>{const d=document.createElement("div");d.textContent=s;return d.innerHTML;};
+
+function linkify(text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, function(url) {
+        let cleanUrl = url;
+        let punct = "";
+        if (/[.,;!?]$/.test(url)) {
+            punct = url.slice(-1);
+            cleanUrl = url.slice(0, -1);
+        }
+        return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${cleanUrl}</a>${punct}`;
+    });
+}
 
 function getProj(){return S.projects.find(p=>p.id===S.activeId)||S.projects[0];}
 function getActiveTasks(){
@@ -447,12 +462,14 @@ function showCropper(file,aspect,outW,outH,cb){
         cv.getContext("2d").drawImage(img,-ox/sc,-oy/sc,vpW/sc,vpH/sc,0,0,outW,outH);
         cb(cv.toDataURL("image/jpeg",.85));ov.remove();
       };
+      
+      ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
+      ov.onmouseup = e => { if(ov._md && e.target===ov) ov.remove(); ov._md = false; };
       $("#cx",md).onclick=$("#cc",md).onclick=()=>ov.remove();
     };
     img.src=e.target.result;
   };
   reader.readAsDataURL(file);
-  ov.onclick=e=>{if(e.target===ov)ov.remove();};
   ov.appendChild(md);document.body.appendChild(ov);
 }
 
@@ -647,14 +664,16 @@ function renderBoard(){
       <button class="stb" id="bst">⚙ Settings</button>
     </aside>
     <main class="mn">
-      <div class="pban" id="pbn">
-        ${p.banner?`
-            <img src="${p.banner}">
-            <div class="pban-ov">📷 Change banner</div>
-        `:`
-            <div class="pban-ph">📷 Click to add a banner</div>
-        `}
-      </div>
+      ${p.banner?`
+          <div class="pban" id="pbn">
+              <img src="${p.banner}">
+              <div class="pban-ov">📷 Change banner</div>
+          </div>
+      `:`
+          <div class="pban" id="pbn">
+              <div class="pban-ph">📷 Click to add a banner</div>
+          </div>
+      `}
       <header class="tbar">
         <button class="mb" id="bm">☰</button>
         <div class="tc">
@@ -682,7 +701,8 @@ function renderBoard(){
   renderProjs();renderCols();uDot();
   $("#ahdr").onclick=()=>showAppModal();
   $("#bm").onclick=()=>togSb(true);
-  $("#ov").onclick=()=>togSb(false);
+  $("#ov").onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
+  $("#ov").onmouseup = e => { if(ov._md && e.target===ov) togSb(false); ov._md = false; };
   $("#np").onclick=()=>showProjModal(null,false);
   $("#be").onclick=()=>{if(S.activeSubId)showSubModal(S.activeSubId);else showProjModal(p,false);};
   $("#bst").onclick=showSettings;
@@ -846,14 +866,18 @@ function mkCard(t){
       }).join("")}</div>`;
   }
   h+=`<div class="crd-t">${esc(t.title)}</div>`;
-  if(t.description)h+=`<div class="crd-d">${esc(t.description)}</div>`;
+  if(t.description){
+      const safeDesc = esc(t.description);
+      const linkedDesc = linkify(safeDesc);
+      h+=`<div class="crd-d">${linkedDesc}</div>`;
+  }
   let m="";
   if(t.priority){const pc=PCOLS[t.priority];m+=`<span class="pbdg" style="background:${pc.bg};color:${pc.t}">${pc.i} ${PRIS[t.priority]}</span>`;}
   if(t.dueDate){const od=isOD(t.dueDate)&&t.column!=="Done";m+=`<span class="dbdg ${od?"od":""}">📅 ${fmtD(t.dueDate)}</span>`;}
   m+=`<button class="mmv" data-mv="1">⇄</button>`;
   if(m)h+=`<div class="crd-m">${m}</div>`;
   c.innerHTML=h;
-  c.onclick=e=>{if(e.target.closest("[data-mv]"))return;showTaskModal(t);};
+  c.onclick=e=>{if(e.target.closest("[data-mv]") || e.target.closest("a"))return;showTaskModal(t);};
   const mb=$("[data-mv]",c);if(mb)mb.onclick=e=>{e.stopPropagation();showTouchMove(t);};
   c.addEventListener("dragstart",e=>{dragId=t.id;c.classList.add("drg");e.dataTransfer.effectAllowed="move";});
   c.addEventListener("dragend",()=>{dragId=null;c.classList.remove("drg");});
@@ -911,7 +935,8 @@ function showAppModal(){
     $("#sv",md).onclick=()=>{const n=$("#an",md).value.trim();if(!n)return;S.appName=n;S.appIcon=ico;save();close();renderBoard();};
   }
   const close=()=>ov.remove();
-  ov.onclick=e=>{if(e.target===ov)close();};
+  ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
+  ov.onmouseup = e => { if(ov._md && e.target===ov) close(); ov._md = false; };
   render();ov.appendChild(md);document.body.appendChild(ov);
 }
 
@@ -1007,7 +1032,8 @@ function showTaskModal(task,col){
   
   if(isE){const mv=$("#mm",md);mv.innerHTML=COLS.filter(c=>c!==task.column).map(c=>`<button class="mvb" data-mc="${c}">→ ${c}</button>`).join("");$$("[data-mc]",mv).forEach(b=>b.onclick=()=>{moveTask(task.id,b.dataset.mc);ov.remove();});}
   const close=()=>ov.remove();
-  ov.onclick=e=>{if(e.target===ov)close();};
+  ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
+  ov.onmouseup = e => { if(ov._md && e.target===ov) close(); ov._md = false; };
   $("#cx",md).onclick=$("#cc",md).onclick=close;
   if($("#mdl",md))$("#mdl",md).onclick=()=>{delTask(task.id);close();};
   $("#sv",md).onclick=()=>{
@@ -1072,7 +1098,8 @@ function showProjModal(project){
     };
   }
   const close=()=>ov.remove();
-  ov.onclick=e=>{if(e.target===ov)close();};
+  ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
+  ov.onmouseup = e => { if(ov._md && e.target===ov) close(); ov._md = false; };
   render();ov.appendChild(md);document.body.appendChild(ov);
   setTimeout(()=>{const i=$("#pn",md);if(i)i.focus();},50);
 }
@@ -1115,7 +1142,8 @@ function showSubModal(subId){
     };
   }
   const close=()=>ov.remove();
-  ov.onclick=e=>{if(e.target===ov)close();};
+  ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
+  ov.onmouseup = e => { if(ov._md && e.target===ov) close(); ov._md = false; };
   render();ov.appendChild(md);document.body.appendChild(ov);
   setTimeout(()=>{const i=$("#sn",md);if(i)i.focus();},50);
 }
@@ -1143,7 +1171,8 @@ function showSettings(){
   }
   showBtn();
   const close=()=>ov.remove();
-  ov.onclick=e=>{if(e.target===ov)close();};
+  ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
+  ov.onmouseup = e => { if(ov._md && e.target===ov) close(); ov._md = false; };
   $("#cx",md).onclick=close;
   
   $("#s_clean",md).onclick=()=>{
