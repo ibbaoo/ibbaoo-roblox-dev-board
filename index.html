@@ -629,7 +629,18 @@ function renderSetup(error){
         const f=new FBSync(k,u);await f.connect();fb=f;
         localStorage.setItem("kanban-fb-config",JSON.stringify({apiKey:k,dbUrl:u}));
         const d=await f.get();
-        if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;S.sortBy=d.sortBy||"default";S.filterLabel=d.filterLabel||"all";}
+        S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null};
+        if(d){
+            S.appName=d.appName||S.appName;
+            S.appIcon=d.appIcon!==undefined?d.appIcon:S.appIcon;
+            S.projects=d.projects||S.projects;
+            S.activeId=d.activeId||S.projects[0].id;
+            S.activeSubId=d.activeSubId||null;
+            S.sortBy=d.sortBy||"default";
+            S.filterLabel=d.filterLabel||"all";
+        } else {
+            save();
+        }
         runMigration();
         document.title=S.appName;
         fb.listen(onRemoteData);
@@ -1166,7 +1177,15 @@ function showSettings(){
     $("#sd",md).onclick=()=>{
       a.innerHTML=`<p style="font-size:12px;color:#ff6b6b;margin:0 0 8px">Data stays in Firebase. Reconnect with same DB URL to get it back.</p><div style="display:flex;gap:8px"><button class="bs" id="sn">Cancel</button><button class="bd" style="flex:1;text-align:center" id="sy">Confirm</button></div>`;
       $("#sn",md).onclick=showBtn;
-      $("#sy",md).onclick=()=>{if(fb){fb.stopListening();fb.clear();}fb=null;localStorage.removeItem("kanban-fb-config");ov.remove();renderSetup();};
+      $("#sy",md).onclick=()=>{
+          if(fb){fb.stopListening();fb.clear();}
+          fb=null;
+          localStorage.removeItem("kanban-fb-config");
+          S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null};
+          collapsedProjs.clear();
+          ov.remove();
+          renderSetup();
+      };
     };
   }
   showBtn();
@@ -1207,7 +1226,18 @@ async function init(){
     try{
       const f=new FBSync(sv.apiKey,sv.dbUrl);await f.connect();fb=f;
       const d=await f.get();
-      if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;S.sortBy=d.sortBy||"default";S.filterLabel=d.filterLabel||"all";}
+      S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null};
+      if(d){
+          S.appName=d.appName||S.appName;
+          S.appIcon=d.appIcon!==undefined?d.appIcon:S.appIcon;
+          S.projects=d.projects||S.projects;
+          S.activeId=d.activeId||S.projects[0].id;
+          S.activeSubId=d.activeSubId||null;
+          S.sortBy=d.sortBy||"default";
+          S.filterLabel=d.filterLabel||"all";
+      } else {
+          save();
+      }
       S.projects.forEach(p=>{if(!p.subs)p.subs=[];});
       runMigration();
       document.title=S.appName;
