@@ -500,7 +500,11 @@ class FBSync{
     if(b!==null)o.body=JSON.stringify(b);
     let r=await fetch(u,o);
     if(r.status===401){await this._refresh();this._save();r=await fetch(`${this.url}/${p}.json?auth=${this.tok}`,o);}
-    if(!r.ok)throw new Error(`Firebase ${m}: ${r.status}`);
+    if(!r.ok){
+      let msg = `Firebase ${m}: ${r.status}`;
+      try{ const ed = await r.json(); if(ed && ed.error) msg += ` - ${ed.error}`; }catch(e){}
+      throw new Error(msg);
+    }
     return r.json();
   }
   get(){return this.req("kanban");}
