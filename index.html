@@ -58,6 +58,10 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .rte-ed a, .rich-text a{color:var(--acl);text-decoration:underline;cursor:pointer}
 .rte-ed p, .rich-text p{margin-bottom:8px}
 
+/* Custom Card Links */
+.crd-link{display:inline-flex;align-items:center;padding:1px 6px;background:var(--acg);color:var(--acl);border-radius:6px;border:1px solid var(--ac);font-size:12px;cursor:pointer;font-weight:700;text-decoration:none;margin:0 2px;transition:all 0.2s}
+.crd-link:hover{background:var(--ac);color:#fff;box-shadow:0 2px 8px var(--acg)}
+
 /* Setup */
 .setup{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
 .setup-card{background:var(--bg2);border:1px solid var(--bd);border-radius:20px;max-width:520px;width:100%;padding:32px 24px;box-shadow:0 24px 80px #00000060;animation:fadeIn .4s ease}
@@ -314,6 +318,23 @@ function showToast(msg, isErr=false) {
     setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 3000);
 }
 
+/* ── Custom Confirm Modal (Replacing default confirm) ── */
+function customConfirm(msg, onConfirm) {
+    const ov = el("div", "mo"), md = el("div", "md");
+    md.style.maxWidth = "400px";
+    md.innerHTML = `
+        <div class="md-h"><h2>Confirm Action</h2><button class="md-x" id="cx">✕</button></div>
+        <div class="md-b"><p style="font-size:14px;color:var(--t1);line-height:1.5">${esc(msg)}</p></div>
+        <div class="md-f"><div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bd" id="cy">Confirm</button></div>
+    `;
+    const close = () => ov.remove();
+    $("#cx",md).onclick = $("#cc",md).onclick = close;
+    $("#cy",md).onclick = () => { close(); onConfirm(); };
+    ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
+    ov.onmouseup = e => { if(ov._md && e.target===ov) close(); ov._md = false; };
+    ov.appendChild(md); document.body.appendChild(ov);
+}
+
 /* ── Copy Share Link Helper ── */
 function copyShareLink(inputId) {
     const el = $(inputId);
@@ -370,6 +391,33 @@ function linkify(text) {
             cleanUrl = url.slice(0, -1);
         }
         return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${cleanUrl}</a>${punct}`;
+    });
+}
+
+/* ── Card Word Linking Engine ── */
+function getAllTasks() {
+    const all = [];
+    S.projects.forEach(p => {
+        if(!p._deleted) {
+            (p.tasks||[]).forEach(t => { if(!t._deleted) all.push(t); });
+            (p.subs||[]).forEach(s => {
+                if(!s._deleted) (s.tasks||[]).forEach(t => { if(!t._deleted) all.push(t); });
+            });
+        }
+    });
+    return all;
+}
+
+function processCardLinks(html) {
+    if(!html) return "";
+    const allTasks = getAllTasks();
+    return html.replace(/\*([^*<]+)\*/g, (match, p1) => {
+        const title = p1.trim().toLowerCase();
+        const target = allTasks.find(t => t.title.toLowerCase() === title);
+        if (target) {
+            return `<span class="crd-link" data-link-tid="${target.id}">🔗 ${esc(target.title)}</span>`;
+        }
+        return match;
     });
 }
 
@@ -1117,7 +1165,9 @@ function mkCard(t){
   h+=`<div class="crd-t">${esc(t.title)}</div>`;
   if(t.description){
       const plainDesc = stripHtml(t.description);
-      h+=`<div class="crd-d">${esc(plainDesc)}</div>`;
+      let dHtml = linkify(esc(plainDesc));
+      dHtml = processCardLinks(dHtml);
+      h+=`<div class="crd-d">${dHtml}</div>`;
   }
   let m="";
   if(t.priority){const pc=PCOLS[t.priority];m+=`<span class="pbdg" style="background:${pc.bg};color:${pc.t}">${pc.i} ${PRIS[t.priority]}</span>`;}
@@ -1128,6 +1178,15 @@ function mkCard(t){
   
   c.onclick=e=>{
       if(e.target.closest('[data-lb]')) { showLightbox(t.attachments, 0); return; }
+      
+      const linkTid = e.target.closest("[data-link-tid]");
+      if(linkTid) {
+          e.stopPropagation();
+          const targetTask = getAllTasks().find(x => x.id === linkTid.dataset.linkTid);
+          if(targetTask) showTaskPreview(targetTask);
+          return;
+      }
+      
       if(e.target.closest("a")) return;
       if(!S.isReadOnly && e.target.closest("[data-mv]")) return;
       if(!S.isReadOnly && e.target.closest("[data-edit]")) { showTaskModal(t); return; }
@@ -1155,6 +1214,7 @@ function showTaskPreview(task) {
   if (!/<[a-z][\s\S]*>/i.test(descHtml)) {
       descHtml = linkify(esc(descHtml)).replace(/\n/g, '<br>');
   }
+  descHtml = processCardLinks(descHtml);
 
   md.innerHTML = `
     <div class="md-h"><h2>Task Details</h2><button class="md-x" id="cx">✕</button></div>
@@ -1192,6 +1252,18 @@ function showTaskPreview(task) {
       $$(".att-item", g).forEach(b => b.onclick = (e) => { showLightbox(task.attachments, parseInt(b.dataset.aidx)); });
       applyVideoBlobs(g);
   }
+
+  md.addEventListener('click', e => {
+      const linkTid = e.target.closest("[data-link-tid]");
+      if(linkTid) {
+          const targetId = linkTid.dataset.linkTid;
+          const targetTask = getAllTasks().find(x => x.id === targetId);
+          if(targetTask) {
+              ov.remove(); // Close current preview
+              showTaskPreview(targetTask); // Open new preview
+          }
+      }
+  });
 
   const close=()=>ov.remove();
   ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
@@ -1321,9 +1393,12 @@ function showTaskModal(task,col){
       </div>
       <div id="v_prog_txt" style="display:none; font-size:11px; color:var(--t2); margin-bottom:8px; text-align:right;">0%</div>
 
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-         <button class="bs" id="b_addi" style="padding:6px 12px;font-size:12px;">📷 Add Image</button>
-         <button class="bs" id="b_addv" style="padding:6px 12px;font-size:12px;">🎬 Add Video</button>
+      <div id="drop_zone" style="border:1px dashed var(--bd2); border-radius:8px; padding:16px; text-align:center; color:var(--t3); font-size:12px; margin-bottom:8px; transition:0.2s;">
+          <div style="margin-bottom:8px; font-weight:600;">Drag & Drop files here or Paste (Ctrl+V)</div>
+          <div style="display:flex;gap:8px;justify-content:center;">
+             <button class="bs" id="b_addi" style="padding:6px 12px;font-size:12px;">📷 Upload Image</button>
+             <button class="bs" id="b_addv" style="padding:6px 12px;font-size:12px;">🎬 Upload Video</button>
+          </div>
       </div>
 
       <label class="flbl" style="margin-top:8px">Labels</label>
@@ -1353,8 +1428,71 @@ function showTaskModal(task,col){
   const ed = $("#mds", md);
   ed.innerHTML = descHtml;
   
+  function handleFile(f) {
+      if (!f) return;
+      if (f.type.startsWith('image/')) {
+          showCropper(f, 0, 1200, 1200, d => { atts.push({ id: uid(), type: 'image', data: d }); rA(); });
+      } else if (f.type.startsWith('video/')) {
+          if(f.size > 200 * 1024 * 1024) { showToast("Video too large! Max 200MB.", true); return; }
+          const wrap = $("#v_prog_wrap", md);
+          const bar = $("#v_prog", md);
+          const txt = $("#v_prog_txt", md);
+          wrap.style.display = "block";
+          txt.style.display = "block";
+          bar.style.width = "0%";
+          txt.textContent = "Processing... 0%";
+          const r = new FileReader();
+          r.onprogress = (e) => {
+              if (e.lengthComputable) {
+                  const p = Math.round((e.loaded / e.total) * 100);
+                  bar.style.width = p + "%";
+                  txt.textContent = `Processing... ${p}%`;
+              }
+          };
+          r.onload = e => { 
+              wrap.style.display = "none";
+              txt.style.display = "none";
+              atts.push({ id: uid(), type: 'video', data: e.target.result }); 
+              rA(); 
+          };
+          r.readAsDataURL(f);
+      }
+  }
+
+  // Handle Drag & Drop
+  const dz = $("#drop_zone", md);
+  if(dz) {
+      dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = "var(--ac)"; dz.style.background = "var(--acg)"; });
+      dz.addEventListener('dragleave', e => { e.preventDefault(); dz.style.borderColor = "var(--bd2)"; dz.style.background = "transparent"; });
+      dz.addEventListener('drop', e => {
+          e.preventDefault();
+          dz.style.borderColor = "var(--bd2)"; dz.style.background = "transparent";
+          if(e.dataTransfer.files) Array.from(e.dataTransfer.files).forEach(handleFile);
+      });
+  }
+
+  // Handle global paste in modal
+  md.addEventListener('paste', e => {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      let hasFile = false;
+      for (let i = 0; i < items.length; i++) {
+          if (items[i].kind === 'file') {
+              handleFile(items[i].getAsFile());
+              hasFile = true;
+          }
+      }
+      if (hasFile && e.target !== ed) e.preventDefault();
+  });
+
   // Clean paste handler to prevent nasty CSS injection
   ed.addEventListener("paste", e => {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      let hasFile = false;
+      for (let i = 0; i < items.length; i++) {
+          if (items[i].kind === 'file') hasFile = true;
+      }
+      if (hasFile) { e.preventDefault(); return; } // Handled by md paste listener
+      
       e.preventDefault();
       const text = (e.originalEvent || e).clipboardData.getData('text/plain');
       document.execCommand('insertText', false, text);
@@ -1436,41 +1574,8 @@ function showTaskModal(task,col){
     $$("[data-sc]",md).forEach(b=>b.onclick=()=>{selC=b.dataset.sc;rForm();});
   }
 
-  $("#b_addi", md).onclick = () => {
-      pickFile("image/*", f => {
-          showCropper(f, 0, 1200, 1200, d => { atts.push({ id: uid(), type: 'image', data: d }); rA(); });
-      });
-  };
-
-  $("#b_addv", md).onclick = () => {
-      pickFile("video/*", f => {
-          if(f.size > 200 * 1024 * 1024) { showToast("Video too large! Max 200MB.", true); return; }
-          
-          const wrap = $("#v_prog_wrap", md);
-          const bar = $("#v_prog", md);
-          const txt = $("#v_prog_txt", md);
-          wrap.style.display = "block";
-          txt.style.display = "block";
-          bar.style.width = "0%";
-          txt.textContent = "Processing... 0%";
-
-          const r = new FileReader();
-          r.onprogress = (e) => {
-              if (e.lengthComputable) {
-                  const p = Math.round((e.loaded / e.total) * 100);
-                  bar.style.width = p + "%";
-                  txt.textContent = `Processing... ${p}%`;
-              }
-          };
-          r.onload = e => { 
-              wrap.style.display = "none";
-              txt.style.display = "none";
-              atts.push({ id: uid(), type: 'video', data: e.target.result }); 
-              rA(); 
-          };
-          r.readAsDataURL(f);
-      });
-  };
+  $("#b_addi", md).onclick = () => pickFile("image/*", handleFile);
+  $("#b_addv", md).onclick = () => pickFile("video/*", handleFile);
 
   $("#lf_sv",md).onclick=()=>{
     const n=$("#lf_n", md).value.trim();if(!n)return;
@@ -1499,7 +1604,12 @@ function showTaskModal(task,col){
   ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
   ov.onmouseup = e => { if(ov._md && e.target===ov) close(); ov._md = false; };
   $("#cx",md).onclick=$("#cc",md).onclick=close;
-  if($("#mdl",md))$("#mdl",md).onclick=()=>{delTask(task.id);close();};
+  if($("#mdl",md))$("#mdl",md).onclick=()=>{
+      customConfirm("Are you sure you want to delete this task?", () => {
+          delTask(task.id);
+          close();
+      });
+  };
   $("#sv",md).onclick=()=>{
       const t=$("#mt",md).value.trim();if(!t)return;
       const d={title:t,description:$("#mds",md).innerHTML,labelIds:selLids,attachments:atts,priority,dueDate:$("#mdu",md).value};
@@ -1540,7 +1650,12 @@ function showProjModal(project){
         <div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${project?"Save":"Create"}</button>
       </div>`;
     $("#cx",md).onclick=$("#cc",md).onclick=close;
-    if($("#dl",md))$("#dl",md).onclick=()=>{delProj(project.id);close();};
+    if($("#dl",md))$("#dl",md).onclick=()=>{
+        customConfirm("Are you sure you want to permanently delete this project?", () => {
+            delProj(project.id);
+            close();
+        });
+    };
     if($("#ar",md))$("#ar",md).onclick=()=>{
         project.archived = !project.archived; project._ts = ts();
         if(project.archived && project.id === S.activeId){
@@ -1593,7 +1708,12 @@ function showSubModal(subId){
         <div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${sub?"Save":"Create"}</button>
       </div>`;
     $("#cx",md).onclick=$("#cc",md).onclick=close;
-    if($("#dl",md))$("#dl",md).onclick=()=>{delSub(sub.id);close();};
+    if($("#dl",md))$("#dl",md).onclick=()=>{
+        customConfirm("Are you sure you want to permanently delete this sub-project?", () => {
+            delSub(sub.id);
+            close();
+        });
+    };
     const eg=$("#eg",md);
     if(eg){eg.innerHTML=EMOJIS.map(e=>`<button class="eb ${emoji===e?"on":""}" data-e="${e}">${e}</button>`).join("");$$("[data-e]",eg).forEach(b=>b.onclick=()=>{emoji=b.dataset.e;render();});}
     $("#ui",md).onclick=()=>pickFile("image/*",f=>showCropper(f,1,128,128,d=>{ico=d;render();}));
@@ -1648,24 +1768,25 @@ function showSettings(){
   $("#cx",md).onclick=close;
   
   $("#s_clean",md).onclick=()=>{
-      if(!confirm("Are you sure? This will delete all labels across all projects that aren't currently attached to any tasks.")) return;
-      let usedLids = new Set();
-      S.projects.forEach(p => {
-          if (p._deleted) return;
-          const allTasks=[...(p.tasks||[])];
-          (p.subs||[]).forEach(s=>{ if(!s._deleted) allTasks.push(...(s.tasks||[])) });
-          allTasks.forEach(t => {
-             if(t._deleted) return;
-             (t.labelIds||[]).forEach(id => usedLids.add(id))
+      customConfirm("Are you sure? This will delete all labels across all projects that aren't currently attached to any tasks.", () => {
+          let usedLids = new Set();
+          S.projects.forEach(p => {
+              if (p._deleted) return;
+              const allTasks=[...(p.tasks||[])];
+              (p.subs||[]).forEach(s=>{ if(!s._deleted) allTasks.push(...(s.tasks||[])) });
+              allTasks.forEach(t => {
+                 if(t._deleted) return;
+                 (t.labelIds||[]).forEach(id => usedLids.add(id))
+              });
+              if(p.labels) {
+                  const beforeCount = p.labels.length;
+                  p.labels = p.labels.filter(l => usedLids.has(l.id));
+                  if (p.labels.length !== beforeCount) p._ts = ts();
+              }
           });
-          if(p.labels) {
-              const beforeCount = p.labels.length;
-              p.labels = p.labels.filter(l => usedLids.has(l.id));
-              if (p.labels.length !== beforeCount) p._ts = ts();
-          }
+          save(); renderBoard();
+          close();
       });
-      save(); renderBoard();
-      close();
   };
 
   ov.appendChild(md);document.body.appendChild(ov);
