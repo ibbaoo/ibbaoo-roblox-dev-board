@@ -256,6 +256,12 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 /* Toast */
 .toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%, 20px);opacity:0;background:var(--ac);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;transition:0.3s;pointer-events:none;box-shadow:0 10px 30px #0005;text-align:center;}
 .toast.show{transform:translate(-50%, 0);opacity:1;}
+
+/* Mention Dropdown */
+.mention-dd{position:absolute;background:var(--bg4);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 10px 30px #00000080;max-height:200px;overflow-y:auto;z-index:9999;display:none;min-width:180px;padding:4px}
+.mention-it{padding:8px 12px;font-size:13px;color:var(--t1);cursor:pointer;border-radius:4px;display:flex;align-items:center;gap:8px}
+.mention-it:hover, .mention-it.active{background:var(--acg);color:var(--acl)}
+.mention-ic{font-size:12px;opacity:0.7}
 </style>
 </head>
 <body>
@@ -1360,6 +1366,9 @@ function showTaskModal(task,col){
   let pLabels=JSON.parse(JSON.stringify(getProj().labels||[])); 
   let atts=[...(task?.attachments||[])];
   let editLid=null, selC="Red";
+  
+  // Mention State
+  let mShow = false, mTerm = "", mIdx = 0, mNode = null, mOffset = 0, mList = [];
 
   md.innerHTML=`
     <div class="md-h"><h2>${isE?"Edit Card":`New Card — ${col}`}</h2><button class="md-x" id="cx">✕</button></div>
@@ -1383,7 +1392,10 @@ function showTaskModal(task,col){
           </select>
           <input type="color" class="rte-col" data-cmd="foreColor" title="Text Color" value="#e2e4ec">
       </div>
-      <div class="rte-ed" id="mds" contenteditable="true"></div>
+      <div style="position:relative">
+          <div class="rte-ed" id="mds" contenteditable="true"></div>
+          <div id="mdd" class="mention-dd"></div>
+      </div>
       
       <label class="flbl">Attachments</label>
       <div class="att-grid" id="m_atts"></div>
@@ -1524,6 +1536,114 @@ function showTaskModal(task,col){
       document.execCommand('foreColor', false, e.target.value);
       ed.focus();
   };
+  
+  // Mention Dropdown Logic
+  const mdd = $("#mdd", md);
+  const allTasks = getAllTasks();
+  
+  function getCaretCoords() {
+      const sel = window.getSelection();
+      if(sel.rangeCount) {
+          const r = sel.getRangeAt(0).cloneRange();
+          r.collapse(true);
+          const rect = r.getClientRects()[0];
+          if(rect) {
+              const edRect = ed.getBoundingClientRect();
+              return { top: rect.bottom - edRect.top + ed.scrollTop, left: rect.left - edRect.left };
+          }
+      }
+      return null;
+  }
+  
+  function updateMDD() {
+      if(!mShow) { mdd.style.display = "none"; return; }
+      
+      mList = allTasks.filter(t => t.title.toLowerCase().includes(mTerm.toLowerCase()));
+      if(mList.length === 0) { mdd.style.display = "none"; return; }
+      
+      mdd.innerHTML = mList.map((t, i) => `
+          <div class="mention-it ${i===mIdx ? 'active':''}" data-mi="${i}">
+              <span class="mention-ic">${t.column==="Done"?'✅':t.column==="In Progress"?'⚡':'📝'}</span>
+              <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.title)}</span>
+          </div>
+      `).join("");
+      
+      $$('.mention-it', mdd).forEach(b => b.onmousedown = (e) => { e.preventDefault(); selectMention(parseInt(b.dataset.mi)); });
+      
+      const coords = getCaretCoords();
+      if(coords) {
+          mdd.style.left = coords.left + "px";
+          mdd.style.top = coords.top + 4 + "px";
+      }
+      mdd.style.display = "block";
+  }
+  
+  function selectMention(idx) {
+      if(!mList[idx] || !mNode) return;
+      const t = mList[idx];
+      
+      // We need to replace the exactly typed "*term" with "*Card Title*"
+      const txt = mNode.textContent;
+      const before = txt.substring(0, mOffset - mTerm.length - 1); // -1 for the asterisk
+      const after = txt.substring(mOffset);
+      const insert = `*${t.title}* `;
+      
+      mNode.textContent = before + insert + after;
+      
+      // Restore cursor position
+      const sel = window.getSelection();
+      const range = document.createRange();
+      range.setStart(mNode, before.length + insert.length);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      
+      closeMention();
+  }
+  
+  function closeMention() {
+      mShow = false; mTerm = ""; mIdx = 0; mNode = null; mOffset = 0;
+      updateMDD();
+  }
+
+  ed.addEventListener('keydown', e => {
+      if(mShow) {
+          if(e.key === 'ArrowDown') { e.preventDefault(); mIdx = (mIdx + 1) % mList.length; updateMDD(); }
+          else if(e.key === 'ArrowUp') { e.preventDefault(); mIdx = (mIdx - 1 + mList.length) % mList.length; updateMDD(); }
+          else if(e.key === 'Enter') { e.preventDefault(); selectMention(mIdx); }
+          else if(e.key === 'Escape') { closeMention(); }
+      }
+  });
+
+  ed.addEventListener('input', () => {
+      const sel = window.getSelection();
+      if(!sel.rangeCount) return;
+      const range = sel.getRangeAt(0);
+      if(range.startContainer.nodeType !== Node.TEXT_NODE) { closeMention(); return; }
+      
+      const txt = range.startContainer.textContent;
+      const offset = range.startOffset;
+      const upToCursor = txt.substring(0, offset);
+      
+      const lastAstIdx = upToCursor.lastIndexOf('*');
+      
+      if(lastAstIdx !== -1) {
+          // Check if there is already a closing asterisk or a space immediately before
+          const afterAst = upToCursor.substring(lastAstIdx + 1);
+          if(!afterAst.includes('*')) {
+             mShow = true;
+             mTerm = afterAst;
+             mNode = range.startContainer;
+             mOffset = offset;
+             mIdx = 0;
+             updateMDD();
+             return;
+          }
+      }
+      closeMention();
+  });
+  
+  ed.addEventListener('blur', closeMention);
 
   function rA() {
       const g = $("#m_atts", md);
