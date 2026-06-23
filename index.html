@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0a0c13">
-<title>Kanban Flow</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5cfc'/><rect x='20' y='25' width='16' height='50' rx='6' fill='white'/><rect x='42' y='25' width='16' height='30' rx='6' fill='white'/><rect x='64' y='25' width='16' height='40' rx='6' fill='white'/></svg>">
+  e-color" content="#0a0c13">
+  ow</title>
+   href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c5cfc'/><rect x='20' y='25' width='16' height='50' rx='6' fill='white'/><rect x='42' y='25' width='16' height='30' rx='6' fill='white'/><rect x='64' y='25' width='16' height='40' rx='6' fill='white'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -157,9 +157,12 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .acb:hover{border-color:var(--ac);color:var(--acl);background:rgba(255,255,255,0.02)}
 
 /* Card & Attachments */
-.crd{background:var(--bg4);border:1px solid #ffffff0a;border-radius:10px;padding:12px 14px;cursor:grab;user-select:none;transition:transform .15s,box-shadow .15s;animation:fadeIn .25s ease}
+.crd{position:relative;background:var(--bg4);border:1px solid #ffffff0a;border-radius:10px;padding:12px 14px;cursor:grab;user-select:none;transition:transform .15s,box-shadow .15s;animation:fadeIn .25s ease}
 .crd:hover{border-color:#ffffff15;box-shadow:0 4px 16px #00000030}
 .crd.drg{opacity:.4}
+.crd-edit{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:8px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.1);color:#fff;display:flex;align-items:center;justify-content:center;opacity:0;transition:0.2s;z-index:10;}
+.crd:hover .crd-edit{opacity:1;}
+.crd-edit:hover{background:var(--ac);border-color:var(--ac);}
 .crd-cover-wrap{position:relative;margin:-12px -14px 12px;width:calc(100% + 28px);height:140px;border-radius:10px 10px 0 0;overflow:hidden;background:var(--bg2)}
 .crd-cover{width:100%;height:100%;object-fit:cover;display:block;}
 .crd-vid-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#00000040;color:#fff;font-size:32px;pointer-events:none;}
@@ -989,7 +992,7 @@ function renderCols(){
 function mkCard(t){
   const c=el("div","crd");c.draggable=true;
   const p=getProj();
-  let h="";
+  let h=`<button class="crd-edit" data-edit="1" title="Edit Task">✎</button>`;
   
   if(t.attachments && t.attachments.length > 0) {
       const a = t.attachments[0];
@@ -1026,13 +1029,69 @@ function mkCard(t){
   c.onclick=e=>{
       if(e.target.closest('[data-lb]')) { showLightbox(t.attachments, 0); return; }
       if(e.target.closest("[data-mv]") || e.target.closest("a")) return;
-      showTaskModal(t);
+      if(e.target.closest("[data-edit]")) { showTaskModal(t); return; }
+      showTaskPreview(t);
   };
   
   const mb=$("[data-mv]",c);if(mb)mb.onclick=e=>{e.stopPropagation();showTouchMove(t);};
   c.addEventListener("dragstart",e=>{dragId=t.id;c.classList.add("drg");e.dataTransfer.effectAllowed="move";});
   c.addEventListener("dragend",()=>{dragId=null;c.classList.remove("drg");});
   return c;
+}
+
+function showTaskPreview(task) {
+  const ov = el("div", "mo"), md = el("div", "md");
+  const p = getProj();
+  let selLids = task.labelIds || [];
+  let m = "";
+  if(task.priority){const pc=PCOLS[task.priority];m+=`<span class="pbdg" style="background:${pc.bg};color:${pc.t};padding:6px 10px;font-size:12px;">${pc.i} ${PRIS[task.priority]}</span>`;}
+  if(task.dueDate){const od=isOD(task.dueDate)&&task.column!=="Done";m+=`<span class="dbdg ${od?"od":""}" style="padding:6px 10px;font-size:12px;">📅 ${fmtD(task.dueDate)}</span>`;}
+
+  md.innerHTML = `
+    <div class="md-h"><h2>Task Details</h2><button class="md-x" id="cx">✕</button></div>
+    <div class="md-b" style="padding-top:4px;">
+      <h3 style="font-size:20px; font-weight:700; margin-bottom:14px; color:#fff; line-height:1.3; word-break:break-word;">${esc(task.title)}</h3>
+      
+      ${selLids.length ? `<div class="crd-lb" style="margin-bottom:20px;">${selLids.map(lid=>{
+          const lDef=(p.labels||[]).find(x=>x.id===lid);
+          if(!lDef) return "";
+          const lc=LCOLS.find(c=>c.n===lDef.c)||LCOLS[0];
+          return `<span class="lpill" style="background:${lc.bg};border-color:${lc.bd};color:${lc.t}">${esc(lDef.n)}</span>`;
+      }).join("")}</div>` : ''}
+      
+      <label class="flbl">Description</label>
+      <div style="background:var(--bg5); padding:16px; border-radius:10px; border:1px solid var(--bd2); white-space:pre-wrap; font-size:14px; line-height:1.6; color:var(--t1); max-height:45vh; overflow-y:auto; margin-bottom:16px; word-break:break-word;">${task.description ? linkify(esc(task.description)) : '<span style="color:var(--t3);font-style:italic">No description provided.</span>'}</div>
+      
+      ${task.attachments?.length ? `<label class="flbl">Attachments</label><div class="att-grid" id="p_atts" style="margin-bottom:16px;"></div>` : ''}
+
+      ${m ? `<div style="display:flex; gap:8px; margin-top:4px;">${m}</div>` : ''}
+    </div>
+    <div class="md-f">
+        <div style="flex:1"></div>
+        <button class="bs" id="cc">Close</button>
+        <button class="bp" id="pe">✎ Edit Task</button>
+    </div>
+  `;
+
+  if(task.attachments?.length) {
+      const g = $("#p_atts", md);
+      g.innerHTML = task.attachments.map((a, i) => `
+          <div class="att-item" data-aidx="${i}">
+             ${a.type === 'video' ? `<video data-video-b64="${a.data}" muted playsinline></video><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;background:#00000040;pointer-events:none;font-size:24px;">▶</div>` : `<img src="${a.data}">`}
+          </div>
+      `).join("");
+      $$(".att-item", g).forEach(b => b.onclick = (e) => { showLightbox(task.attachments, parseInt(b.dataset.aidx)); });
+      applyVideoBlobs(g);
+  }
+
+  const close=()=>ov.remove();
+  ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
+  ov.onmouseup = e => { if(ov._md && e.target===ov) close(); ov._md = false; };
+  $("#cx",md).onclick=$("#cc",md).onclick=close;
+  $("#pe",md).onclick=()=>{ close(); showTaskModal(task); };
+
+  ov.appendChild(md);
+  document.body.appendChild(ov);
 }
 
 function showTouchMove(t){
