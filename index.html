@@ -287,8 +287,8 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const ts=()=>Date.now();
 const KANBAN_ICON_SVG = `<svg width="50%" height="50%" viewBox="0 0 100 100"><rect x="18" y="20" width="16" height="60" rx="6" fill="white"/><rect x="42" y="20" width="16" height="35" rx="6" fill="white"/><rect x="66" y="20" width="16" height="48" rx="6" fill="white"/></svg>`;
 
-let S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
-let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null;
+let S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",shareId:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
+let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null,decodedShare=null;
 let collapsedProjs=new Set();
 let _scrollState = { cols: {}, mainX: 0, mainY: 0, sb: 0 };
 
@@ -741,7 +741,7 @@ function save(){
   clearTimeout(saveT);
   saveT=setTimeout(async()=>{
     lastSaveT=Date.now();
-    try{await fb.set({appName:S.appName,appIcon:S.appIcon,sortBy:S.sortBy,filterLabel:S.filterLabel,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});syncSt="synced";}
+    try{await fb.set({appName:S.appName,appIcon:S.appIcon,sortBy:S.sortBy,filterLabel:S.filterLabel,shareId:S.shareId,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});syncSt="synced";}
     catch(e){console.error("Save:",e);syncSt="error";}
     uDot();
   },600);
@@ -753,6 +753,13 @@ function onRemoteData(d){
   if(d.appIcon!==undefined) S.appIcon=d.appIcon;
   if(d.sortBy) S.sortBy=d.sortBy;
   if(d.filterLabel) S.filterLabel=d.filterLabel;
+  if(d.shareId) S.shareId=d.shareId;
+  
+  if (S.isReadOnly && d.shareId && (!decodedShare || decodedShare.sid !== d.shareId)) {
+      if(fb) fb.stopListening();
+      $("#app").innerHTML=`<div class="setup"><div class="setup-card"><div class="errb">⚠️ The owner has revoked this share link. Access ended.</div></div></div>`;
+      return;
+  }
   
   if(d.projects){
      const lpm=new Map(S.projects.map(p=>[p.id,p]));
@@ -808,14 +815,19 @@ function showShareModal() {
         return;
     }
     
+    if (!S.shareId) {
+        S.shareId = uid();
+        save();
+    }
+    
     const baseUrl = window.location.origin + window.location.pathname;
-    const allLink = baseUrl + '#share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl})));
-    const projLink = baseUrl + '#share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl, p: p.id})));
+    const allLink = baseUrl + '#share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl, sid: S.shareId})));
+    const projLink = baseUrl + '#share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl, p: p.id, sid: S.shareId})));
 
     md.innerHTML=`
       <div class="md-h"><h2>Share Board</h2><button class="md-x" id="cx">✕</button></div>
       <div class="md-b">
-        <p style="font-size:13px; color:var(--t2); margin-bottom:16px;">Generate a view-only link to share your workflow with others. They won't be able to edit tasks or layout.</p>
+        <p style="font-size:13px; color:var(--t2); margin-bottom:16px;">Generate a view-only link to share your workflow with others. They won't be able to edit cards or layout.</p>
         
         <label class="flbl">Share Entire Board</label>
         <div style="display:flex; gap:8px; margin-bottom:16px;">
@@ -828,12 +840,23 @@ function showShareModal() {
             <input type="text" id="sh_proj" readonly value="${projLink}" style="font-size:12px; color:var(--t2); padding:8px;">
             <button class="bp" id="cp_proj" style="padding:8px 16px;">Copy</button>
         </div>
+        
+        <div style="border-top:1px solid var(--bd); margin:16px 0 8px;"></div>
+        <button class="bs" id="b_revoke" style="width:100%; color:#ff6b6b; border-color:#ff4d4f30; background:#ff4d4f10;">🔄 Generate New Links (Expires Old Ones)</button>
       </div>
     `;
     
     $("#cx",md).onclick = () => ov.remove();
     $("#cp_all",md).onclick = () => copyShareLink("#sh_all");
     $("#cp_proj",md).onclick = () => copyShareLink("#sh_proj");
+    $("#b_revoke",md).onclick = () => {
+        customConfirm("Are you sure? Anyone currently using an old share link will instantly lose access.", () => {
+            S.shareId = uid();
+            save();
+            ov.remove();
+            showShareModal(); // Re-open with new links generated
+        });
+    };
     
     ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
     ov.onmouseup = e => { if(ov._md && e.target===ov) ov.remove(); ov._md = false; };
@@ -1950,6 +1973,7 @@ async function init(){
   
   // Parse hash securely
   let shareData = null;
+  decodedShare = null;
   const hash = window.location.hash;
   if (hash.startsWith('#share=')) {
       shareData = decodeURIComponent(hash.substring(7));
@@ -1957,14 +1981,14 @@ async function init(){
 
   let sv = null;
 
-  S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
+  S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",shareId:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
 
   if (shareData) {
       try {
-          const decoded = JSON.parse(atob(shareData));
-          sv = { apiKey: decoded.k, dbUrl: decoded.u };
+          decodedShare = JSON.parse(atob(shareData));
+          sv = { apiKey: decodedShare.k, dbUrl: decodedShare.u };
           S.isReadOnly = true;
-          if (decoded.p) S.sharedProjectId = decoded.p;
+          if (decodedShare.p) S.sharedProjectId = decodedShare.p;
       } catch(e) {
           console.error("Invalid share link");
       }
@@ -1976,6 +2000,11 @@ async function init(){
     try{
       const f=new FBSync(sv.apiKey,sv.dbUrl);await f.connect();fb=f;
       const d=await f.get();
+      
+      if (S.isReadOnly && d && d.shareId && (!decodedShare || decodedShare.sid !== d.shareId)) {
+          throw new Error("This share link has expired or been revoked by the owner.");
+      }
+
       if(d){
           S.appName=d.appName||S.appName;
           S.appIcon=d.appIcon!==undefined?d.appIcon:S.appIcon;
