@@ -44,10 +44,17 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .rte-tb{display:flex;gap:4px;padding:6px;background:var(--bg2);border:1px solid var(--bd2);border-bottom:none;border-radius:var(--rs) var(--rs) 0 0;overflow-x:auto}
 .rte-tb button{padding:6px 10px;border-radius:6px;color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;background:transparent;transition:0.2s}
 .rte-tb button:hover{background:var(--bd2);color:var(--t1)}
+.rte-sel { width:auto; padding:2px 6px; font-size:13px; font-weight:600; height:28px; border-radius:6px; border:1px solid transparent; background:transparent; color:var(--t2); cursor:pointer; outline:none; -webkit-appearance:none; }
+.rte-sel:hover { background:var(--bd2); color:var(--t1); }
+.rte-sel option { background:var(--bg5); color:var(--t1); }
+.rte-col { width:28px; height:28px; padding:0; border:none; border-radius:6px; cursor:pointer; background:transparent; flex-shrink:0; }
+.rte-col::-webkit-color-swatch-wrapper { padding:2px; }
+.rte-col::-webkit-color-swatch { border:1px solid var(--bd2); border-radius:4px; }
 .rte-ed{background:var(--bg5);border:1px solid var(--bd2);border-radius:0 0 var(--rs) var(--rs);padding:12px;font-size:14px;min-height:120px;max-height:300px;overflow-y:auto;color:var(--t1);line-height:1.6;outline:none}
 .rte-ed:focus{border-color:var(--ac)}
-.rte-ed ul, .rich-text ul{list-style:disc;margin-left:24px;margin-bottom:8px}
-.rte-ed ol, .rich-text ol{list-style:decimal;margin-left:24px;margin-bottom:8px}
+.rte-ed ul, .rich-text ul{list-style:disc;padding-left:28px;margin-bottom:8px;margin-top:4px;}
+.rte-ed ol, .rich-text ol{list-style:decimal;padding-left:28px;margin-bottom:8px;margin-top:4px;}
+.rte-ed li, .rich-text li{margin-bottom:4px;padding-left:2px;}
 .rte-ed a, .rich-text a{color:var(--acl);text-decoration:underline;cursor:pointer}
 .rte-ed p, .rich-text p{margin-bottom:8px}
 
@@ -1206,13 +1213,22 @@ function showTaskModal(task,col){
     <div class="md-b">
       <label class="flbl">Title *</label><input id="mt" placeholder="What needs to be done?" value="${esc(task?.title||"")}">
       <label class="flbl">Description</label>
-      <div class="rte-tb">
+      <div class="rte-tb" style="align-items:center;">
           <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
           <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
           <button type="button" data-cmd="underline" title="Underline"><u>U</u></button>
           <button type="button" data-cmd="insertUnorderedList" title="Bullet List">• UL</button>
           <button type="button" data-cmd="insertOrderedList" title="Numbered List">1. OL</button>
           <button type="button" data-cmd="createLink" title="Link">🔗 Link</button>
+          <div style="width:1px;height:16px;background:var(--bd2);margin:0 4px;"></div>
+          <select class="rte-sel" data-cmd="fontSize" title="Text Size">
+              <option value="3">Size</option>
+              <option value="1">Small</option>
+              <option value="3">Normal</option>
+              <option value="5">Large</option>
+              <option value="7">Huge</option>
+          </select>
+          <input type="color" class="rte-col" data-cmd="foreColor" title="Text Color" value="#e2e4ec">
       </div>
       <div class="rte-ed" id="mds" contenteditable="true"></div>
       
@@ -1276,6 +1292,19 @@ function showTaskModal(task,col){
           ed.focus();
       };
   });
+
+  const selSize = $("[data-cmd='fontSize']", md);
+  if(selSize) selSize.onchange = (e) => {
+      document.execCommand('fontSize', false, e.target.value);
+      ed.focus();
+      selSize.value = "3"; // Reset dropdown
+  };
+
+  const selCol = $("[data-cmd='foreColor']", md);
+  if(selCol) selCol.oninput = (e) => {
+      document.execCommand('foreColor', false, e.target.value);
+      ed.focus();
+  };
 
   function rA() {
       const g = $("#m_atts", md);
