@@ -750,9 +750,9 @@ function showShareModal() {
         return;
     }
     
-    const baseUrl = window.location.href.split('?')[0].split('#')[0];
-    const allLink = baseUrl + '?share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl})));
-    const projLink = baseUrl + '?share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl, p: p.id})));
+    const baseUrl = window.location.origin + window.location.pathname;
+    const allLink = baseUrl + '#share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl})));
+    const projLink = baseUrl + '#share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl, p: p.id})));
 
     md.innerHTML=`
       <div class="md-h"><h2>Share Board</h2><button class="md-x" id="cx">✕</button></div>
@@ -892,7 +892,6 @@ function renderBoard(){
             <h1>${esc(item.name)}</h1>
             ${!S.isReadOnly ? `
                 <button class="epb" id="be" title="Edit Project Settings">✎</button>
-                <button class="epb" id="bbn" title="${p.banner?'Change Banner':'Add Banner'}">🖼️</button>
                 <button class="epb" id="bsh" title="Share Link">🔗</button>
             ` : ''}
         </div>
@@ -1675,15 +1674,21 @@ function showSettings(){
 /* ── Init ── */
 async function init(){
   $("#app").innerHTML=`<div class="loading"><div class="loading-dot"></div><p class="loading-text">Loading...</p></div>`;
-  const urlParams = new URLSearchParams(window.location.search);
-  const shareData = urlParams.get('share');
+  
+  // Parse hash securely
+  let shareData = null;
+  const hash = window.location.hash;
+  if (hash.startsWith('#share=')) {
+      shareData = decodeURIComponent(hash.substring(7));
+  }
+
   let sv = null;
 
   S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
 
   if (shareData) {
       try {
-          const decoded = JSON.parse(atob(decodeURIComponent(shareData)));
+          const decoded = JSON.parse(atob(shareData));
           sv = { apiKey: decoded.k, dbUrl: decoded.u };
           S.isReadOnly = true;
           if (decoded.p) S.sharedProjectId = decoded.p;
