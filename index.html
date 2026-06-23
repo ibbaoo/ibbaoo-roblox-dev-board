@@ -40,6 +40,17 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .loading-dot{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--ac),var(--acl));animation:pulse 1.2s ease-in-out infinite}
 .loading-text{color:var(--t3);font-size:14px;letter-spacing:1px}
 
+/* Rich Text Editor */
+.rte-tb{display:flex;gap:4px;padding:6px;background:var(--bg2);border:1px solid var(--bd2);border-bottom:none;border-radius:var(--rs) var(--rs) 0 0;overflow-x:auto}
+.rte-tb button{padding:6px 10px;border-radius:6px;color:var(--t2);font-size:13px;font-weight:600;cursor:pointer;background:transparent;transition:0.2s}
+.rte-tb button:hover{background:var(--bd2);color:var(--t1)}
+.rte-ed{background:var(--bg5);border:1px solid var(--bd2);border-radius:0 0 var(--rs) var(--rs);padding:12px;font-size:14px;min-height:120px;max-height:300px;overflow-y:auto;color:var(--t1);line-height:1.6;outline:none}
+.rte-ed:focus{border-color:var(--ac)}
+.rte-ed ul, .rich-text ul{list-style:disc;margin-left:24px;margin-bottom:8px}
+.rte-ed ol, .rich-text ol{list-style:decimal;margin-left:24px;margin-bottom:8px}
+.rte-ed a, .rich-text a{color:var(--acl);text-decoration:underline;cursor:pointer}
+.rte-ed p, .rich-text p{margin-bottom:8px}
+
 /* Setup */
 .setup{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
 .setup-card{background:var(--bg2);border:1px solid var(--bd);border-radius:20px;max-width:520px;width:100%;padding:32px 24px;box-shadow:0 24px 80px #00000060;animation:fadeIn .4s ease}
@@ -328,6 +339,11 @@ const $=(s,p)=>(p||document).querySelector(s);
 const $$=(s,p)=>[...(p||document).querySelectorAll(s)];
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h)e.innerHTML=h;return e;};
 const esc=s=>{const d=document.createElement("div");d.textContent=s;return d.innerHTML;};
+
+function stripHtml(html) {
+    if(!html) return "";
+    return new DOMParser().parseFromString(html, 'text/html').body.textContent || "";
+}
 
 function linkify(text) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -1015,9 +1031,8 @@ function mkCard(t){
   }
   h+=`<div class="crd-t">${esc(t.title)}</div>`;
   if(t.description){
-      const safeDesc = esc(t.description);
-      const linkedDesc = linkify(safeDesc);
-      h+=`<div class="crd-d">${linkedDesc}</div>`;
+      const plainDesc = stripHtml(t.description);
+      h+=`<div class="crd-d">${esc(plainDesc)}</div>`;
   }
   let m="";
   if(t.priority){const pc=PCOLS[t.priority];m+=`<span class="pbdg" style="background:${pc.bg};color:${pc.t}">${pc.i} ${PRIS[t.priority]}</span>`;}
@@ -1047,6 +1062,12 @@ function showTaskPreview(task) {
   if(task.priority){const pc=PCOLS[task.priority];m+=`<span class="pbdg" style="background:${pc.bg};color:${pc.t};padding:6px 10px;font-size:12px;">${pc.i} ${PRIS[task.priority]}</span>`;}
   if(task.dueDate){const od=isOD(task.dueDate)&&task.column!=="Done";m+=`<span class="dbdg ${od?"od":""}" style="padding:6px 10px;font-size:12px;">📅 ${fmtD(task.dueDate)}</span>`;}
 
+  let descHtml = task.description || "";
+  // Check if it's legacy plain text (no html tags) and format it properly
+  if (!/<[a-z][\s\S]*>/i.test(descHtml)) {
+      descHtml = linkify(esc(descHtml)).replace(/\n/g, '<br>');
+  }
+
   md.innerHTML = `
     <div class="md-h"><h2>Task Details</h2><button class="md-x" id="cx">✕</button></div>
     <div class="md-b" style="padding-top:4px;">
@@ -1060,7 +1081,7 @@ function showTaskPreview(task) {
       }).join("")}</div>` : ''}
       
       <label class="flbl">Description</label>
-      <div style="background:var(--bg5); padding:16px; border-radius:10px; border:1px solid var(--bd2); white-space:pre-wrap; font-size:14px; line-height:1.6; color:var(--t1); max-height:45vh; overflow-y:auto; margin-bottom:16px; word-break:break-word;">${task.description ? linkify(esc(task.description)) : '<span style="color:var(--t3);font-style:italic">No description provided.</span>'}</div>
+      <div class="rich-text" style="background:var(--bg5); padding:16px; border-radius:10px; border:1px solid var(--bd2); font-size:14px; line-height:1.6; color:var(--t1); max-height:45vh; overflow-y:auto; margin-bottom:16px; word-break:break-word;">${descHtml || '<span style="color:var(--t3);font-style:italic">No description provided.</span>'}</div>
       
       ${task.attachments?.length ? `<label class="flbl">Attachments</label><div class="att-grid" id="p_atts" style="margin-bottom:16px;"></div>` : ''}
 
@@ -1184,7 +1205,16 @@ function showTaskModal(task,col){
     <div class="md-h"><h2>${isE?"Edit Card":`New Card — ${col}`}</h2><button class="md-x" id="cx">✕</button></div>
     <div class="md-b">
       <label class="flbl">Title *</label><input id="mt" placeholder="What needs to be done?" value="${esc(task?.title||"")}">
-      <label class="flbl">Description</label><textarea id="mds" placeholder="Add details...">${esc(task?.description||"")}</textarea>
+      <label class="flbl">Description</label>
+      <div class="rte-tb">
+          <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
+          <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
+          <button type="button" data-cmd="underline" title="Underline"><u>U</u></button>
+          <button type="button" data-cmd="insertUnorderedList" title="Bullet List">• UL</button>
+          <button type="button" data-cmd="insertOrderedList" title="Numbered List">1. OL</button>
+          <button type="button" data-cmd="createLink" title="Link">🔗 Link</button>
+      </div>
+      <div class="rte-ed" id="mds" contenteditable="true"></div>
       
       <label class="flbl">Attachments</label>
       <div class="att-grid" id="m_atts"></div>
@@ -1218,6 +1248,35 @@ function showTaskModal(task,col){
     </div>
     <div class="md-f">${isE?`<button class="bd" id="mdl">Delete</button>`:""}<div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${isE?"Save":"Create"}</button></div>`;
   
+  // Setup Rich Text Editor
+  let descHtml = task?.description || "";
+  if (descHtml && !/<[a-z][\s\S]*>/i.test(descHtml)) {
+      descHtml = descHtml.replace(/\n/g, '<br>');
+  }
+  const ed = $("#mds", md);
+  ed.innerHTML = descHtml;
+  
+  // Clean paste handler to prevent nasty CSS injection
+  ed.addEventListener("paste", e => {
+      e.preventDefault();
+      const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+      document.execCommand('insertText', false, text);
+  });
+
+  $$(".rte-tb button", md).forEach(b => {
+      b.onclick = (e) => {
+          e.preventDefault();
+          const cmd = b.dataset.cmd;
+          if (cmd === 'createLink') {
+              const url = prompt('Enter link URL:', 'https://');
+              if(url) document.execCommand(cmd, false, url);
+          } else {
+              document.execCommand(cmd, false, null);
+          }
+          ed.focus();
+      };
+  });
+
   function rA() {
       const g = $("#m_atts", md);
       if(!g) return;
@@ -1333,7 +1392,7 @@ function showTaskModal(task,col){
   if($("#mdl",md))$("#mdl",md).onclick=()=>{delTask(task.id);close();};
   $("#sv",md).onclick=()=>{
       const t=$("#mt",md).value.trim();if(!t)return;
-      const d={title:t,description:$("#mds",md).value,labelIds:selLids,attachments:atts,priority,dueDate:$("#mdu",md).value};
+      const d={title:t,description:$("#mds",md).innerHTML,labelIds:selLids,attachments:atts,priority,dueDate:$("#mdu",md).value};
       getProj().labels=pLabels; getProj()._ts = ts();
       if(isE)updTask(task.id,d);else addTask(col,d);
       close();
