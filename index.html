@@ -290,6 +290,7 @@ const KANBAN_ICON_SVG = `<svg width="50%" height="50%" viewBox="0 0 100 100"><re
 let S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
 let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null;
 let collapsedProjs=new Set();
+let _scrollState = { cols: {}, mainX: 0, mainY: 0, sb: 0 };
 
 /* ── PWA Generation ── */
 function setupPWA(){
@@ -912,6 +913,15 @@ function renderBoard(){
       S.filterLabel = "all";
   }
 
+  const cls = $("#cls");
+  if (cls) {
+      _scrollState.mainX = cls.scrollLeft;
+      _scrollState.mainY = cls.scrollTop;
+      $$('.cbod', cls).forEach((b, i) => _scrollState.cols[COLS[i]] = b.scrollTop);
+  }
+  const sbEl = $("#sb");
+  if (sbEl) _scrollState.sb = sbEl.scrollTop;
+
   document.title=S.appName;
   $("#app").innerHTML=`<div class="app">
     <div class="ov" id="ov" style="display:none"></div>
@@ -969,7 +979,11 @@ function renderBoard(){
       <div class="cols" id="cls"></div>
     </main>
   </div>`;
-  renderProjs();renderCols();uDot();
+  renderProjs();renderCols(true);uDot();
+  
+  const nSb = $("#sb");
+  if(nSb && _scrollState.sb) nSb.scrollTop = _scrollState.sb;
+
   if(!S.isReadOnly) $("#ahdr").onclick=()=>showAppModal();
   $("#bm").onclick=()=>togSb(true);
   $("#ov").onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
@@ -1119,8 +1133,16 @@ function renderProjs(){
   }
 }
 
-function renderCols(){
-  const w=$("#cls");if(!w)return;w.innerHTML="";
+function renderCols(skipCapture = false){
+  const w=$("#cls");if(!w)return;
+  
+  if(skipCapture !== true) {
+      _scrollState.mainX = w.scrollLeft;
+      _scrollState.mainY = w.scrollTop;
+      $$('.cbod', w).forEach((b, i) => _scrollState.cols[COLS[i]] = b.scrollTop);
+  }
+  
+  w.innerHTML="";
   
   const hFilter = $("#filterSel");
   if(hFilter && S.filterLabel){ hFilter.value = S.filterLabel; }
@@ -1134,7 +1156,6 @@ function renderCols(){
     const bd=$(".cbod",d);
     tasks.forEach(t=>bd.appendChild(mkCard(t)));
     if (!S.isReadOnly) {
-        const ab=$(".ccadd",d);if(ab)ab.onclick=()=>showTaskModal(null,col);
         d.addEventListener("dragover",e=>{e.preventDefault();d.classList.add("dov");});
         d.addEventListener("dragleave",()=>d.classList.remove("dov"));
         d.addEventListener("drop",e=>{e.preventDefault();d.classList.remove("dov");if(dragId)moveTask(dragId,col);});
@@ -1143,6 +1164,12 @@ function renderCols(){
   });
   
   applyVideoBlobs(w);
+  
+  w.scrollLeft = _scrollState.mainX || 0;
+  w.scrollTop = _scrollState.mainY || 0;
+  $$('.cbod', w).forEach((b, i) => {
+      if(_scrollState.cols[COLS[i]]) b.scrollTop = _scrollState.cols[COLS[i]];
+  });
 }
 
 function mkCard(t){
