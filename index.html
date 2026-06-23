@@ -478,7 +478,7 @@ const tasksIn=col=>{
 
 function dotC(c){return c==="To Do"?"td":c==="In Progress"?"ip":"dn";}
 function pIcon(p,sz){
-  if(p.icon)return`<img class="pi" src="${p.icon}" style="width:${sz}px;height:${sz}px;border-radius:${Math.round(sz*.25)}px">`;
+  if(p.icon)return`<img class="pi" src="${p.icon}" stylewidth:${sz}px;height:${sz}px;border-radius:${Math.round(sz*.25)}px">`;
   return`<span class="pe" style="font-size:${Math.round(sz*.8)}px;width:${sz}px;text-align:center">${p.emoji||"📋"}</span>`;
 }
 function pickFile(acc,cb){const i=document.createElement("input");i.type="file";i.accept=acc;i.onchange=()=>{if(i.files[0])cb(i.files[0]);};i.click();}
@@ -1728,7 +1728,7 @@ function showTaskModal(task,col){
   ov.onmouseup = e => { if(ov._md && e.target===ov) close(); ov._md = false; };
   $("#cx",md).onclick=$("#cc",md).onclick=close;
   if($("#mdl",md))$("#mdl",md).onclick=()=>{
-      customConfirm("Are you sure you want to delete this task?", () => {
+      customConfirm("Are you sure you want to delete this card?", () => {
           delTask(task.id);
           close();
       });
@@ -1891,9 +1891,9 @@ function showSettings(){
   $("#cx",md).onclick=close;
   
   $("#s_clean",md).onclick=()=>{
-      if(!confirm("Are you sure? This will delete all labels across all projects that aren't currently attached to any cards.")) return;
-      let usedLids = new Set();
-      S.projects.forEach(p => {
+      customConfirm("Are you sure? This will delete all labels across all projects that aren't currently attached to any cards.", () => {
+          let usedLids = new Set();
+          S.projects.forEach(p => {
               if (p._deleted) return;
               const allTasks=[...(p.tasks||[])];
               (p.subs||[]).forEach(s=>{ if(!s._deleted) allTasks.push(...(s.tasks||[])) });
