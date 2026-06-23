@@ -174,6 +174,8 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .cdot.dn{background:#10b981;box-shadow:0 0 8px #10b98160}
 .ctt{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t2)}
 .cct{font-size:11px;color:var(--t3);margin-left:auto;background:#ffffff08;padding:2px 8px;border-radius:10px}
+.ccadd{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:#ffffff0a;color:var(--t2);font-size:16px;transition:0.2s}
+.ccadd:hover{background:var(--ac);color:#fff}
 .cbod{padding:6px 10px 12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1}
 .acb{padding:12px;border:1px dashed rgba(255,255,255,0.1);border-radius:8px;color:var(--t3);font-size:13px;text-align:center;background:transparent;transition:0.2s}
 .acb:hover{border-color:var(--ac);color:var(--acl);background:rgba(255,255,255,0.02)}
@@ -1036,7 +1038,7 @@ function renderProjs(){
         
         let h=`${pIcon(p,28)}<span class="nm">${esc(p.name)}</span>`;
         if (totalDue > 0) {
-            h += `<div style="width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red);margin-right:4px;" title="${totalDue} task(s) due soon"></div>`;
+            h += `<div style="width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red);margin-right:4px;" title="${totalDue} card(s) due soon"></div>`;
         }
         h += `<span class="ct">${(p.tasks||[]).filter(t=>!t._deleted).length+validSubs.reduce((a,s)=>(a+(s.tasks||[]).filter(t=>!t._deleted).length),0)}</span>`;
         
@@ -1072,7 +1074,7 @@ function renderProjs(){
                 const subDue = countDue(sp.tasks);
                 let sdh = `${pIcon(sp,22)}<span class="nm">${esc(sp.name)}</span>`;
                 if (subDue > 0) {
-                    sdh += `<div style="width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red);margin-right:4px;" title="${subDue} task(s) due soon"></div>`;
+                    sdh += `<div style="width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red);margin-right:4px;" title="${subDue} card(s) due soon"></div>`;
                 }
                 sdh += `<span class="ct">${(sp.tasks||[]).filter(t=>!t._deleted).length}</span>`;
                 
@@ -1127,11 +1129,11 @@ function renderCols(){
   COLS.forEach(col=>{
     const tasks=tasksIn(col);
     const d=el("div","col");
-    d.innerHTML=`<div class="ch"><span class="cdot ${dotC(col)}"></span><span class="ctt">${col}</span><span class="cct">${tasks.length}</span></div><div class="cbod"></div>`;
+    d.innerHTML=`<div class="ch"><span class="cdot ${dotC(col)}"></span><span class="ctt">${col}</span><span class="cct">${tasks.length}</span>${!S.isReadOnly?`<button class="ccadd" title="Add Card">+</button>`:''}</div><div class="cbod"></div>`;
     const bd=$(".cbod",d);
     tasks.forEach(t=>bd.appendChild(mkCard(t)));
     if (!S.isReadOnly) {
-        const ab=el("button","acb","+ Add card");ab.onclick=()=>showTaskModal(null,col);bd.appendChild(ab);
+        const ab=$(".ccadd",d);if(ab)ab.onclick=()=>showTaskModal(null,col);
         d.addEventListener("dragover",e=>{e.preventDefault();d.classList.add("dov");});
         d.addEventListener("dragleave",()=>d.classList.remove("dov"));
         d.addEventListener("drop",e=>{e.preventDefault();d.classList.remove("dov");if(dragId)moveTask(dragId,col);});
@@ -1147,7 +1149,7 @@ function mkCard(t){
   if(!S.isReadOnly) c.draggable=true;
   const p=getProj();
   let h = "";
-  if(!S.isReadOnly) h += `<button class="crd-edit" data-edit="1" title="Edit Task">✎</button>`;
+  if(!S.isReadOnly) h += `<button class="crd-edit" data-edit="1" title="Edit Card">✎</button>`;
   
   if(t.attachments && t.attachments.length > 0) {
       const a = t.attachments[0];
@@ -1220,10 +1222,9 @@ function showTaskPreview(task) {
   if (!/<[a-z][\s\S]*>/i.test(descHtml)) {
       descHtml = linkify(esc(descHtml)).replace(/\n/g, '<br>');
   }
-  descHtml = processCardLinks(descHtml);
 
   md.innerHTML = `
-    <div class="md-h"><h2>Task Details</h2><button class="md-x" id="cx">✕</button></div>
+    <div class="md-h"><h2>Card Details</h2><button class="md-x" id="cx">✕</button></div>
     <div class="md-b" style="padding-top:4px;">
       <h3 style="font-size:20px; font-weight:700; margin-bottom:14px; color:#fff; line-height:1.3; word-break:break-word;">${esc(task.title)}</h3>
       
@@ -1244,7 +1245,7 @@ function showTaskPreview(task) {
     <div class="md-f">
         <div style="flex:1"></div>
         <button class="bs" id="cc">Close</button>
-        ${!S.isReadOnly ? `<button class="bp" id="pe">✎ Edit Task</button>` : ''}
+        ${!S.isReadOnly ? `<button class="bp" id="pe">✎ Edit Card</button>` : ''}
     </div>
   `;
 
@@ -1890,9 +1891,9 @@ function showSettings(){
   $("#cx",md).onclick=close;
   
   $("#s_clean",md).onclick=()=>{
-      customConfirm("Are you sure? This will delete all labels across all projects that aren't currently attached to any tasks.", () => {
-          let usedLids = new Set();
-          S.projects.forEach(p => {
+      if(!confirm("Are you sure? This will delete all labels across all projects that aren't currently attached to any cards.")) return;
+      let usedLids = new Set();
+      S.projects.forEach(p => {
               if (p._deleted) return;
               const allTasks=[...(p.tasks||[])];
               (p.subs||[]).forEach(s=>{ if(!s._deleted) allTasks.push(...(s.tasks||[])) });
