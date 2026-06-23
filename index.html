@@ -1156,6 +1156,7 @@ function renderCols(skipCapture = false){
     const bd=$(".cbod",d);
     tasks.forEach(t=>bd.appendChild(mkCard(t)));
     if (!S.isReadOnly) {
+        const addBtn=$(".ccadd",d);if(addBtn)addBtn.onclick=()=>showTaskModal(null,col);
         d.addEventListener("dragover",e=>{e.preventDefault();d.classList.add("dov");});
         d.addEventListener("dragleave",()=>d.classList.remove("dov"));
         d.addEventListener("drop",e=>{e.preventDefault();d.classList.remove("dov");if(dragId)moveTask(dragId,col);});
