@@ -58,9 +58,13 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .rte-ed a, .rich-text a{color:var(--acl);text-decoration:underline;cursor:pointer}
 .rte-ed p, .rich-text p{margin-bottom:8px}
 
-/* Custom Card Links */
+/* Custom Card Links & Mentions */
 .crd-link{display:inline-flex;align-items:center;padding:1px 6px;background:var(--acg);color:var(--acl);border-radius:6px;border:1px solid var(--ac);font-size:12px;cursor:pointer;font-weight:700;text-decoration:none;margin:0 2px;transition:all 0.2s}
 .crd-link:hover{background:var(--ac);color:#fff;box-shadow:0 2px 8px var(--acg)}
+.mention-dd{position:absolute;background:var(--bg4);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 10px 30px #00000080;max-height:200px;overflow-y:auto;z-index:9999;display:none;min-width:180px;padding:4px}
+.mention-it{padding:8px 12px;font-size:13px;color:var(--t1);cursor:pointer;border-radius:4px;display:flex;align-items:center;gap:8px}
+.mention-it:hover, .mention-it.active{background:var(--acg);color:var(--acl)}
+.mention-ic{font-size:12px;opacity:0.7}
 
 /* Setup */
 .setup{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
@@ -177,8 +181,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .ccadd{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:#ffffff0a;color:var(--t2);font-size:16px;transition:0.2s}
 .ccadd:hover{background:var(--ac);color:#fff}
 .cbod{padding:6px 10px 12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1}
-.acb{padding:12px;border:1px dashed rgba(255,255,255,0.1);border-radius:8px;color:var(--t3);font-size:13px;text-align:center;background:transparent;transition:0.2s}
-.acb:hover{border-color:var(--ac);color:var(--acl);background:rgba(255,255,255,0.02)}
 
 /* Card & Attachments */
 .crd{position:relative;background:var(--bg4);border:1px solid #ffffff0a;border-radius:10px;padding:12px 14px;cursor:grab;user-select:none;transition:transform .15s,box-shadow .15s;animation:fadeIn .25s ease}
@@ -258,12 +260,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 /* Toast */
 .toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%, 20px);opacity:0;background:var(--ac);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;transition:0.3s;pointer-events:none;box-shadow:0 10px 30px #0005;text-align:center;}
 .toast.show{transform:translate(-50%, 0);opacity:1;}
-
-/* Mention Dropdown */
-.mention-dd{position:absolute;background:var(--bg4);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 10px 30px #00000080;max-height:200px;overflow-y:auto;z-index:9999;display:none;min-width:180px;padding:4px}
-.mention-it{padding:8px 12px;font-size:13px;color:var(--t1);cursor:pointer;border-radius:4px;display:flex;align-items:center;gap:8px}
-.mention-it:hover, .mention-it.active{background:var(--acg);color:var(--acl)}
-.mention-ic{font-size:12px;opacity:0.7}
 </style>
 </head>
 <body>
@@ -419,10 +415,10 @@ function getAllTasks() {
 
 function processCardLinks(html) {
     if(!html) return "";
+    let cleanHtml = html.replace(/&nbsp;/g, ' ');
     const allTasks = getAllTasks();
-    return html.replace(/\*([^*<]+)\*/g, (match, p1) => {
-        // Clean out rich-text spaces/entities that might break the exact name match
-        const title = p1.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim().toLowerCase();
+    return cleanHtml.replace(/\*([^*<]+)\*/g, (match, p1) => {
+        const title = p1.trim().toLowerCase();
         const target = allTasks.find(t => t.title.toLowerCase() === title);
         if (target) {
             return `<span class="crd-link" data-link-tid="${target.id}">🔗 ${esc(target.title)}</span>`;
@@ -480,10 +476,22 @@ const tasksIn=col=>{
 
 function dotC(c){return c==="To Do"?"td":c==="In Progress"?"ip":"dn";}
 function pIcon(p,sz){
-  if(p.icon)return`<img class="pi" src="${p.icon}" stylewidth:${sz}px;height:${sz}px;border-radius:${Math.round(sz*.25)}px">`;
+  if(p.icon)return`<img class="pi" src="${p.icon}" style="width:${sz}px;height:${sz}px;border-radius:${Math.round(sz*.25)}px">`;
   return`<span class="pe" style="font-size:${Math.round(sz*.8)}px;width:${sz}px;text-align:center">${p.emoji||"📋"}</span>`;
 }
 function pickFile(acc,cb){const i=document.createElement("input");i.type="file";i.accept=acc;i.onchange=()=>{if(i.files[0])cb(i.files[0]);};i.click();}
+
+/* ── Scroll State Memory ── */
+function saveScroll() {
+  const mn = $(".mn"); if(mn) { _scrollState.mainX = mn.scrollLeft; _scrollState.mainY = mn.scrollTop; }
+  const sb = $(".sb"); if(sb) { _scrollState.sb = sb.scrollTop; }
+  $$(".cbod").forEach((c, i) => _scrollState.cols[i] = c.scrollTop);
+}
+function restoreScroll() {
+  const mn = $(".mn"); if(mn) { mn.scrollLeft = _scrollState.mainX; mn.scrollTop = _scrollState.mainY; }
+  const sb = $(".sb"); if(sb) { sb.scrollTop = _scrollState.sb; }
+  $$(".cbod").forEach((c, i) => c.scrollTop = _scrollState.cols[i] || 0);
+}
 
 /* ── Async Video Blob Handling (Solves Browser Base64 Length Limits) ── */
 const b64BlobCache = new Map();
@@ -744,7 +752,7 @@ function save(){
     try{await fb.set({appName:S.appName,appIcon:S.appIcon,sortBy:S.sortBy,filterLabel:S.filterLabel,shareId:S.shareId,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});syncSt="synced";}
     catch(e){console.error("Save:",e);syncSt="error";}
     uDot();
-  },600);
+  },50);
 }
 function uDot(){const d=$(".sdot");if(d)d.style.background=syncSt==="synced"?"var(--grn)":syncSt==="saving"?"var(--amb)":"var(--red)";}
 
@@ -902,7 +910,7 @@ function renderSetup(error){
         const f=new FBSync(k,u);await f.connect();fb=f;
         localStorage.setItem("kanban-fb-config",JSON.stringify({apiKey:k,dbUrl:u}));
         const d=await f.get();
-        S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
+        S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",shareId:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
         if(d){
             S.appName=d.appName||S.appName;
             S.appIcon=d.appIcon!==undefined?d.appIcon:S.appIcon;
@@ -911,6 +919,7 @@ function renderSetup(error){
             S.activeSubId=d.activeSubId||null;
             S.sortBy=d.sortBy||"default";
             S.filterLabel=d.filterLabel||"all";
+            S.shareId=d.shareId||null;
         } else {
             save();
         }
@@ -928,6 +937,7 @@ function renderSetup(error){
 let dragId=null;
 
 function renderBoard(){
+  saveScroll();
   S.sortBy = S.sortBy || "default";
   S.filterLabel = S.filterLabel || "all";
   const p=getProj(),item=getActiveItem();
@@ -935,15 +945,6 @@ function renderBoard(){
   if (S.filterLabel !== "all" && !(p.labels||[]).some(l => l.id === S.filterLabel)) {
       S.filterLabel = "all";
   }
-
-  const cls = $("#cls");
-  if (cls) {
-      _scrollState.mainX = cls.scrollLeft;
-      _scrollState.mainY = cls.scrollTop;
-      $$('.cbod', cls).forEach((b, i) => _scrollState.cols[COLS[i]] = b.scrollTop);
-  }
-  const sbEl = $("#sb");
-  if (sbEl) _scrollState.sb = sbEl.scrollTop;
 
   document.title=S.appName;
   $("#app").innerHTML=`<div class="app">
@@ -1002,11 +1003,7 @@ function renderBoard(){
       <div class="cols" id="cls"></div>
     </main>
   </div>`;
-  renderProjs();renderCols(true);uDot();
-  
-  const nSb = $("#sb");
-  if(nSb && _scrollState.sb) nSb.scrollTop = _scrollState.sb;
-
+  renderProjs();renderCols();uDot();
   if(!S.isReadOnly) $("#ahdr").onclick=()=>showAppModal();
   $("#bm").onclick=()=>togSb(true);
   $("#ov").onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
@@ -1022,6 +1019,7 @@ function renderBoard(){
   }
   $("#sortSel").onchange=(e)=>{S.sortBy=e.target.value; save(); renderCols();};
   $("#filterSel").onchange=(e)=>{S.filterLabel=e.target.value; save(); renderCols();};
+  restoreScroll();
 }
 
 function renderIPTasks(container, tasks, pid, spid, isSub) {
@@ -1156,16 +1154,9 @@ function renderProjs(){
   }
 }
 
-function renderCols(skipCapture = false){
-  const w=$("#cls");if(!w)return;
-  
-  if(skipCapture !== true) {
-      _scrollState.mainX = w.scrollLeft;
-      _scrollState.mainY = w.scrollTop;
-      $$('.cbod', w).forEach((b, i) => _scrollState.cols[COLS[i]] = b.scrollTop);
-  }
-  
-  w.innerHTML="";
+function renderCols(){
+  saveScroll();
+  const w=$("#cls");if(!w)return;w.innerHTML="";
   
   const hFilter = $("#filterSel");
   if(hFilter && S.filterLabel){ hFilter.value = S.filterLabel; }
@@ -1179,7 +1170,7 @@ function renderCols(skipCapture = false){
     const bd=$(".cbod",d);
     tasks.forEach(t=>bd.appendChild(mkCard(t)));
     if (!S.isReadOnly) {
-        const addBtn=$(".ccadd",d);if(addBtn)addBtn.onclick=()=>showTaskModal(null,col);
+        const ab=$(".ccadd",d);if(ab)ab.onclick=()=>showTaskModal(null,col);
         d.addEventListener("dragover",e=>{e.preventDefault();d.classList.add("dov");});
         d.addEventListener("dragleave",()=>d.classList.remove("dov"));
         d.addEventListener("drop",e=>{e.preventDefault();d.classList.remove("dov");if(dragId)moveTask(dragId,col);});
@@ -1188,12 +1179,7 @@ function renderCols(skipCapture = false){
   });
   
   applyVideoBlobs(w);
-  
-  w.scrollLeft = _scrollState.mainX || 0;
-  w.scrollTop = _scrollState.mainY || 0;
-  $$('.cbod', w).forEach((b, i) => {
-      if(_scrollState.cols[COLS[i]]) b.scrollTop = _scrollState.cols[COLS[i]];
-  });
+  restoreScroll();
 }
 
 function mkCard(t){
@@ -1225,7 +1211,8 @@ function mkCard(t){
   h+=`<div class="crd-t">${esc(t.title)}</div>`;
   if(t.description){
       const plainDesc = stripHtml(t.description);
-      let dHtml = processCardLinks(esc(plainDesc));
+      let dHtml = linkify(esc(plainDesc));
+      dHtml = processCardLinks(dHtml);
       h+=`<div class="crd-d">${dHtml}</div>`;
   }
   let m="";
@@ -1269,14 +1256,13 @@ function showTaskPreview(task) {
   if(task.dueDate){const od=isOD(task.dueDate)&&task.column!=="Done";m+=`<span class="dbdg ${od?"od":""}" style="padding:6px 10px;font-size:12px;">📅 ${fmtD(task.dueDate)}</span>`;}
 
   let descHtml = task.description || "";
-  // Check if it's legacy plain text (no html tags) and format it properly
   if (!/<[a-z][\s\S]*>/i.test(descHtml)) {
       descHtml = linkify(esc(descHtml)).replace(/\n/g, '<br>');
   }
   descHtml = processCardLinks(descHtml);
 
   md.innerHTML = `
-    <div class="md-h"><h2>Task Details</h2><button class="md-x" id="cx">✕</button></div>
+    <div class="md-h"><h2>Card Details</h2><button class="md-x" id="cx">✕</button></div>
     <div class="md-b" style="padding-top:4px;">
       <h3 style="font-size:20px; font-weight:700; margin-bottom:14px; color:#fff; line-height:1.3; word-break:break-word;">${esc(task.title)}</h3>
       
@@ -1318,8 +1304,8 @@ function showTaskPreview(task) {
           const targetId = linkTid.dataset.linkTid;
           const targetTask = getAllTasks().find(x => x.id === targetId);
           if(targetTask) {
-              ov.remove(); // Close current preview
-              showTaskPreview(targetTask); // Open new preview
+              ov.remove(); 
+              showTaskPreview(targetTask);
           }
       }
   });
@@ -1411,7 +1397,7 @@ function showAppModal(){
   render();ov.appendChild(md);document.body.appendChild(ov);
 }
 
-/* ── Task Modal ── */
+/* ── Task (Card) Modal ── */
 function showTaskModal(task,col){
   const ov=el("div","mo"),md=el("div","md");
   const isE=!!task;if(task)col=task.column;
@@ -1483,7 +1469,7 @@ function showTaskModal(task,col){
       <label class="flbl">Due Date</label><input type="date" id="mdu" value="${task?.dueDate||""}">
       ${isE?`<label class="flbl">Move to</label><div class="prow" id="mm"></div>`:""}
     </div>
-    <div class="md-f">${isE?`<button class="bd" id="mdl">Delete</button>`:""}<div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${isE?"Save":"Create"}</button></div>`;
+    <div class="md-f">${isE?`<button class="bd" id="mdl">Delete Card</button>`:""}<div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${isE?"Save Card":"Create Card"}</button></div>`;
   
   // Setup Rich Text Editor
   let descHtml = task?.description || "";
@@ -1556,7 +1542,7 @@ function showTaskModal(task,col){
       for (let i = 0; i < items.length; i++) {
           if (items[i].kind === 'file') hasFile = true;
       }
-      if (hasFile) { e.preventDefault(); return; } // Handled by md paste listener
+      if (hasFile) { e.preventDefault(); return; } 
       
       e.preventDefault();
       const text = (e.originalEvent || e).clipboardData.getData('text/plain');
@@ -1581,7 +1567,7 @@ function showTaskModal(task,col){
   if(selSize) selSize.onchange = (e) => {
       document.execCommand('fontSize', false, e.target.value);
       ed.focus();
-      selSize.value = "3"; // Reset dropdown
+      selSize.value = "3"; 
   };
 
   const selCol = $("[data-cmd='foreColor']", md);
@@ -1635,15 +1621,13 @@ function showTaskModal(task,col){
       if(!mList[idx] || !mNode) return;
       const t = mList[idx];
       
-      // We need to replace the exactly typed "*term" with "*Card Title*"
       const txt = mNode.textContent;
-      const before = txt.substring(0, mOffset - mTerm.length - 1); // -1 for the asterisk
+      const before = txt.substring(0, mOffset - mTerm.length - 1);
       const after = txt.substring(mOffset);
       const insert = `*${t.title}* `;
       
       mNode.textContent = before + insert + after;
       
-      // Restore cursor position
       const sel = window.getSelection();
       const range = document.createRange();
       range.setStart(mNode, before.length + insert.length);
@@ -1680,7 +1664,6 @@ function showTaskModal(task,col){
       
       const astCount = (upToCursor.match(/\*/g) || []).length;
       
-      // If the number of asterisks is odd, we are currently inside an opening asterisk
       if(astCount > 0 && astCount % 2 !== 0) {
           const lastAstIdx = upToCursor.lastIndexOf('*');
           const afterAst = upToCursor.substring(lastAstIdx + 1);
@@ -1971,7 +1954,6 @@ function showSettings(){
 async function init(){
   $("#app").innerHTML=`<div class="loading"><div class="loading-dot"></div><p class="loading-text">Loading...</p></div>`;
   
-  // Parse hash securely
   let shareData = null;
   decodedShare = null;
   const hash = window.location.hash;
@@ -2019,6 +2001,7 @@ async function init(){
           S.activeSubId=d.activeSubId||null;
           S.sortBy=d.sortBy||"default";
           S.filterLabel=d.filterLabel||"all";
+          S.shareId=d.shareId||null;
       } else {
           if(!S.isReadOnly) save();
       }
