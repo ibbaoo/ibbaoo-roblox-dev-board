@@ -1655,14 +1655,14 @@ function showTaskModal(task,col){
       const offset = range.startOffset;
       const upToCursor = txt.substring(0, offset);
       
-      const lastAstIdx = upToCursor.lastIndexOf('*');
+      const astCount = (upToCursor.match(/\*/g) || []).length;
       
-      if(lastAstIdx !== -1) {
-          // Check if there is already a closing asterisk or a space immediately before
+      // If the number of asterisks is odd, we are currently inside an opening asterisk
+      if(astCount > 0 && astCount % 2 !== 0) {
+          const lastAstIdx = upToCursor.lastIndexOf('*');
           const afterAst = upToCursor.substring(lastAstIdx + 1);
-          // If there's another asterisk after the opening one, it's a closed pair.
-          // If there's a space right before the cursor, we probably finished typing a word.
-          if(!afterAst.includes('*') && !afterAst.endsWith(' ')) {
+          
+          if(!afterAst.endsWith(' ')) {
              mShow = true;
              mTerm = afterAst;
              mNode = range.startContainer;
