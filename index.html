@@ -275,7 +275,7 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const ts=()=>Date.now();
 const KANBAN_ICON_SVG = `<svg width="50%" height="50%" viewBox="0 0 100 100"><rect x="18" y="20" width="16" height="60" rx="6" fill="white"/><rect x="42" y="20" width="16" height="35" rx="6" fill="white"/><rect x="66" y="20" width="16" height="48" rx="6" fill="white"/></svg>`;
 
-let S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null};
+let S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
 let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null;
 let collapsedProjs=new Set();
 
@@ -312,6 +312,14 @@ function showToast(msg, isErr=false) {
     document.body.appendChild(t);
     setTimeout(() => t.classList.add("show"), 10);
     setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+/* ── Copy Share Link Helper ── */
+function copyShareLink(inputId) {
+    const el = $(inputId);
+    el.select();
+    document.execCommand('copy');
+    showToast('Link copied to clipboard!');
 }
 
 /* ── Date Helpers (Timezone Correct) ── */
@@ -669,6 +677,7 @@ class FBSync{
 
 /* ── Save/Sync ── */
 function save(){
+  if(S.isReadOnly) return;
   if(!fb)return;
   syncSt="saving";uDot();
   clearTimeout(saveT);
@@ -719,9 +728,58 @@ function onRemoteData(d){
         }
      });
   }
+  
+  if (S.isReadOnly && S.sharedProjectId) {
+      S.activeId = S.sharedProjectId;
+  }
+  
   runMigration();
   document.title=S.appName;
   renderBoard();
+}
+
+/* ── Share Modal Helper ── */
+function showShareModal() {
+    const ov = el("div", "mo"), md = el("div", "md");
+    md.style.maxWidth = "460px";
+    const p = getProj();
+    
+    const sv = JSON.parse(localStorage.getItem("kanban-fb-config") || "null");
+    if(!sv) {
+        showToast("Please connect to Firebase first.", true);
+        return;
+    }
+    
+    const baseUrl = window.location.href.split('?')[0].split('#')[0];
+    const allLink = baseUrl + '?share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl})));
+    const projLink = baseUrl + '?share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl, p: p.id})));
+
+    md.innerHTML=`
+      <div class="md-h"><h2>Share Board</h2><button class="md-x" id="cx">✕</button></div>
+      <div class="md-b">
+        <p style="font-size:13px; color:var(--t2); margin-bottom:16px;">Generate a view-only link to share your workflow with others. They won't be able to edit tasks or layout.</p>
+        
+        <label class="flbl">Share Entire Board</label>
+        <div style="display:flex; gap:8px; margin-bottom:16px;">
+            <input type="text" id="sh_all" readonly value="${allLink}" style="font-size:12px; color:var(--t2); padding:8px;">
+            <button class="bp" id="cp_all" style="padding:8px 16px;">Copy</button>
+        </div>
+        
+        <label class="flbl">Share This Project Only: ${esc(p.name)}</label>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+            <input type="text" id="sh_proj" readonly value="${projLink}" style="font-size:12px; color:var(--t2); padding:8px;">
+            <button class="bp" id="cp_proj" style="padding:8px 16px;">Copy</button>
+        </div>
+      </div>
+    `;
+    
+    $("#cx",md).onclick = () => ov.remove();
+    $("#cp_all",md).onclick = () => copyShareLink("#sh_all");
+    $("#cp_proj",md).onclick = () => copyShareLink("#sh_proj");
+    
+    ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
+    ov.onmouseup = e => { if(ov._md && e.target===ov) ov.remove(); ov._md = false; };
+    ov.appendChild(md);document.body.appendChild(ov);
 }
 
 /* ── Setup ── */
@@ -763,7 +821,7 @@ function renderSetup(error){
         const f=new FBSync(k,u);await f.connect();fb=f;
         localStorage.setItem("kanban-fb-config",JSON.stringify({apiKey:k,dbUrl:u}));
         const d=await f.get();
-        S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null};
+        S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
         if(d){
             S.appName=d.appName||S.appName;
             S.appIcon=d.appIcon!==undefined?d.appIcon:S.appIcon;
@@ -801,27 +859,30 @@ function renderBoard(){
   $("#app").innerHTML=`<div class="app">
     <div class="ov" id="ov" style="display:none"></div>
     <aside class="sb" id="sb">
-      <div class="sb-hdr" id="ahdr">
+      <div class="sb-hdr" id="ahdr" ${S.isReadOnly ? 'style="pointer-events:none"' : ''}>
         ${S.appIcon?`<img class="app-ico" src="${S.appIcon}">`:`<div class="app-ico-def">${KANBAN_ICON_SVG}</div>`}
         <span class="logo-t">${esc(S.appName)}</span>
         <span class="sdot" style="background:var(--grn)"></span>
       </div>
-      <div class="sb-lbl">PROJECTS</div>
+      <div class="sb-lbl" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>PROJECTS</span>
+          ${S.isReadOnly ? `<span style="background:var(--amb); color:#000; padding:2px 6px; border-radius:4px; font-size:9px;">VIEW ONLY</span>` : ''}
+      </div>
       <div id="pl"></div>
-      <button class="npb" id="np">+ New Project</button>
+      ${!S.isReadOnly ? `<button class="npb" id="np">+ New Project</button>` : ''}
       <div id="tma"></div>
       <div style="flex:1"></div>
-      <button class="stb" id="bst">⚙ Settings</button>
+      ${!S.isReadOnly ? `<button class="stb" id="bst">⚙ Settings</button>` : ''}
     </aside>
     <main class="mn">
       ${p.banner?`
           <div class="pban" id="pbn">
               <img src="${p.banner}">
-              <div class="pban-ov">📷 Change banner</div>
+              ${!S.isReadOnly ? `<div class="pban-ov">📷 Change banner</div>` : ''}
           </div>
       `:`
           <div class="pban" id="pbn">
-              <div class="pban-ph">📷 Click to add a banner</div>
+              ${!S.isReadOnly ? `<div class="pban-ph">📷 Click to add a banner</div>` : `<div style="width:100%;height:100%;background:var(--bg4);"></div>`}
           </div>
       `}
       <header class="tbar">
@@ -829,7 +890,11 @@ function renderBoard(){
         <div class="tc">
             ${pIcon(item,32)}
             <h1>${esc(item.name)}</h1>
-            <button class="epb" id="be" title="Edit Project Settings">✎</button>
+            ${!S.isReadOnly ? `
+                <button class="epb" id="be" title="Edit Project Settings">✎</button>
+                <button class="epb" id="bbn" title="${p.banner?'Change Banner':'Add Banner'}">🖼️</button>
+                <button class="epb" id="bsh" title="Share Link">🔗</button>
+            ` : ''}
         </div>
         <div class="tst" style="margin-left:auto; display:flex; align-items:center; gap:8px;">
             <select id="filterSel" style="background:rgba(255,255,255,0.06); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.1); color:var(--t1); font-size:12px; padding:6px 10px; border-radius:8px; cursor:pointer; width:auto;">
@@ -849,14 +914,19 @@ function renderBoard(){
     </main>
   </div>`;
   renderProjs();renderCols();uDot();
-  $("#ahdr").onclick=()=>showAppModal();
+  if(!S.isReadOnly) $("#ahdr").onclick=()=>showAppModal();
   $("#bm").onclick=()=>togSb(true);
   $("#ov").onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
   $("#ov").onmouseup = e => { if(ov._md && e.target===ov) togSb(false); ov._md = false; };
-  $("#np").onclick=()=>showProjModal(null,false);
-  $("#be").onclick=()=>{if(S.activeSubId)showSubModal(S.activeSubId);else showProjModal(p,false);};
-  $("#bst").onclick=showSettings;
-  $("#pbn").onclick=()=>pickFile("image/*",f=>showCropper(f,3.5,1400,400,d=>{getProj().banner=d;save();renderBoard();}));
+  if(!S.isReadOnly) {
+      $("#np").onclick=()=>showProjModal(null,false);
+      $("#be").onclick=()=>{if(S.activeSubId)showSubModal(S.activeSubId);else showProjModal(p,false);};
+      $("#bst").onclick=showSettings;
+      $("#bsh").onclick=showShareModal;
+      $("#pbn").onclick=()=>pickFile("image/*",f=>showCropper(f,3.5,1400,400,d=>{getProj().banner=d;save();renderBoard();}));
+  } else {
+      $("#pbn").style.cursor = "default";
+  }
   $("#sortSel").onchange=(e)=>{S.sortBy=e.target.value; save(); renderCols();};
   $("#filterSel").onchange=(e)=>{S.filterLabel=e.target.value; save(); renderCols();};
 }
@@ -889,8 +959,13 @@ function togSb(o){const s=$("#sb"),v=$("#ov");if(o){s.classList.add("open");v.st
 function renderProjs(){
   const l=$("#pl");if(!l)return;l.innerHTML="";
   
-  const actives = S.projects.filter(p => !p.archived && !p._deleted);
-  const archs = S.projects.filter(p => p.archived && !p._deleted);
+  let actives = S.projects.filter(p => !p.archived && !p._deleted);
+  let archs = S.projects.filter(p => p.archived && !p._deleted);
+
+  if (S.isReadOnly && S.sharedProjectId) {
+      actives = actives.filter(p => p.id === S.sharedProjectId);
+      archs = archs.filter(p => p.id === S.sharedProjectId);
+  }
   
   const countDue = (tasks) => (tasks||[]).filter(t => !t._deleted && t.column !== "Done" && getDaysDiff(t.dueDate) !== null && getDaysDiff(t.dueDate) <= 1).length;
 
@@ -912,7 +987,7 @@ function renderProjs(){
         }
         h += `<span class="ct">${(p.tasks||[]).filter(t=>!t._deleted).length+validSubs.reduce((a,s)=>(a+(s.tasks||[]).filter(t=>!t._deleted).length),0)}</span>`;
         
-        if(hasSubs && !isArchGroup){
+        if(hasSubs && !isArchGroup && (!S.isReadOnly || validSubs.length>0)){
             h+=`<span class="stgl" data-pid="${p.id}" style="margin-left:4px;display:flex;align-items:center">${isColl?'▶':'▼'}</span>`;
         }
         
@@ -959,7 +1034,7 @@ function renderProjs(){
               });
               l.appendChild(sw);
             }
-            if(p.id===S.activeId){
+            if(p.id===S.activeId && !S.isReadOnly){
               const ab=el("div","sb-sub");
               const asb=el("button","sb-it","<span class='pe' style='font-size:14px;width:22px;text-align:center;color:var(--t3)'>+</span><span class='nm' style='color:var(--t3);font-size:12px'>Add sub-project</span>");
               asb.onclick=()=>showSubModal(null);
@@ -1002,10 +1077,12 @@ function renderCols(){
     d.innerHTML=`<div class="ch"><span class="cdot ${dotC(col)}"></span><span class="ctt">${col}</span><span class="cct">${tasks.length}</span></div><div class="cbod"></div>`;
     const bd=$(".cbod",d);
     tasks.forEach(t=>bd.appendChild(mkCard(t)));
-    const ab=el("button","acb","+ Add card");ab.onclick=()=>showTaskModal(null,col);bd.appendChild(ab);
-    d.addEventListener("dragover",e=>{e.preventDefault();d.classList.add("dov");});
-    d.addEventListener("dragleave",()=>d.classList.remove("dov"));
-    d.addEventListener("drop",e=>{e.preventDefault();d.classList.remove("dov");if(dragId)moveTask(dragId,col);});
+    if (!S.isReadOnly) {
+        const ab=el("button","acb","+ Add card");ab.onclick=()=>showTaskModal(null,col);bd.appendChild(ab);
+        d.addEventListener("dragover",e=>{e.preventDefault();d.classList.add("dov");});
+        d.addEventListener("dragleave",()=>d.classList.remove("dov"));
+        d.addEventListener("drop",e=>{e.preventDefault();d.classList.remove("dov");if(dragId)moveTask(dragId,col);});
+    }
     w.appendChild(d);
   });
   
@@ -1013,9 +1090,11 @@ function renderCols(){
 }
 
 function mkCard(t){
-  const c=el("div","crd");c.draggable=true;
+  const c=el("div","crd");
+  if(!S.isReadOnly) c.draggable=true;
   const p=getProj();
-  let h=`<button class="crd-edit" data-edit="1" title="Edit Task">✎</button>`;
+  let h = "";
+  if(!S.isReadOnly) h += `<button class="crd-edit" data-edit="1" title="Edit Task">✎</button>`;
   
   if(t.attachments && t.attachments.length > 0) {
       const a = t.attachments[0];
@@ -1044,20 +1123,23 @@ function mkCard(t){
   let m="";
   if(t.priority){const pc=PCOLS[t.priority];m+=`<span class="pbdg" style="background:${pc.bg};color:${pc.t}">${pc.i} ${PRIS[t.priority]}</span>`;}
   if(t.dueDate){const od=isOD(t.dueDate)&&t.column!=="Done";m+=`<span class="dbdg ${od?"od":""}">📅 ${fmtD(t.dueDate)}</span>`;}
-  m+=`<button class="mmv" data-mv="1">⇄</button>`;
+  if(!S.isReadOnly) m+=`<button class="mmv" data-mv="1">⇄</button>`;
   if(m)h+=`<div class="crd-m">${m}</div>`;
   c.innerHTML=h;
   
   c.onclick=e=>{
       if(e.target.closest('[data-lb]')) { showLightbox(t.attachments, 0); return; }
-      if(e.target.closest("[data-mv]") || e.target.closest("a")) return;
-      if(e.target.closest("[data-edit]")) { showTaskModal(t); return; }
+      if(e.target.closest("a")) return;
+      if(!S.isReadOnly && e.target.closest("[data-mv]")) return;
+      if(!S.isReadOnly && e.target.closest("[data-edit]")) { showTaskModal(t); return; }
       showTaskPreview(t);
   };
   
-  const mb=$("[data-mv]",c);if(mb)mb.onclick=e=>{e.stopPropagation();showTouchMove(t);};
-  c.addEventListener("dragstart",e=>{dragId=t.id;c.classList.add("drg");e.dataTransfer.effectAllowed="move";});
-  c.addEventListener("dragend",()=>{dragId=null;c.classList.remove("drg");});
+  if(!S.isReadOnly) {
+      const mb=$("[data-mv]",c);if(mb)mb.onclick=e=>{e.stopPropagation();showTouchMove(t);};
+      c.addEventListener("dragstart",e=>{dragId=t.id;c.classList.add("drg");e.dataTransfer.effectAllowed="move";});
+      c.addEventListener("dragend",()=>{dragId=null;c.classList.remove("drg");});
+  }
   return c;
 }
 
@@ -1097,7 +1179,7 @@ function showTaskPreview(task) {
     <div class="md-f">
         <div style="flex:1"></div>
         <button class="bs" id="cc">Close</button>
-        <button class="bp" id="pe">✎ Edit Task</button>
+        ${!S.isReadOnly ? `<button class="bp" id="pe">✎ Edit Task</button>` : ''}
     </div>
   `;
 
@@ -1116,7 +1198,7 @@ function showTaskPreview(task) {
   ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
   ov.onmouseup = e => { if(ov._md && e.target===ov) close(); ov._md = false; };
   $("#cx",md).onclick=$("#cc",md).onclick=close;
-  $("#pe",md).onclick=()=>{ close(); showTaskModal(task); };
+  if(!S.isReadOnly) $("#pe",md).onclick=()=>{ close(); showTaskModal(task); };
 
   ov.appendChild(md);
   document.body.appendChild(ov);
@@ -1549,7 +1631,15 @@ function showSettings(){
     $("#sd",md).onclick=()=>{
       a.innerHTML=`<p style="font-size:12px;color:#ff6b6b;margin:0 0 8px">Data stays in Firebase. Reconnect with same DB URL to get it back.</p><div style="display:flex;gap:8px"><button class="bs" id="sn">Cancel</button><button class="bd" style="flex:1;text-align:center" id="sy">Confirm</button></div>`;
       $("#sn",md).onclick=showBtn;
-      $("#sy",md).onclick=()=>{if(fb){fb.stopListening();fb.clear();}fb=null;localStorage.removeItem("kanban-fb-config");ov.remove();renderSetup();};
+      $("#sy",md).onclick=()=>{
+          if(fb){fb.stopListening();fb.clear();}
+          fb=null;
+          localStorage.removeItem("kanban-fb-config");
+          S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
+          collapsedProjs.clear();
+          ov.remove();
+          renderSetup();
+      };
     };
   }
   showBtn();
@@ -1585,18 +1675,58 @@ function showSettings(){
 /* ── Init ── */
 async function init(){
   $("#app").innerHTML=`<div class="loading"><div class="loading-dot"></div><p class="loading-text">Loading...</p></div>`;
-  const sv=JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
+  const urlParams = new URLSearchParams(window.location.search);
+  const shareData = urlParams.get('share');
+  let sv = null;
+
+  S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
+
+  if (shareData) {
+      try {
+          const decoded = JSON.parse(atob(decodeURIComponent(shareData)));
+          sv = { apiKey: decoded.k, dbUrl: decoded.u };
+          S.isReadOnly = true;
+          if (decoded.p) S.sharedProjectId = decoded.p;
+      } catch(e) {
+          console.error("Invalid share link");
+      }
+  } else {
+      sv = JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
+  }
+
   if(sv){
     try{
       const f=new FBSync(sv.apiKey,sv.dbUrl);await f.connect();fb=f;
       const d=await f.get();
-      if(d){S.appName=d.appName||S.appName;S.appIcon=d.appIcon||null;S.projects=d.projects||S.projects;S.activeId=d.activeId||S.projects[0].id;S.activeSubId=d.activeSubId||null;S.sortBy=d.sortBy||"default";S.filterLabel=d.filterLabel||"all";}
+      if(d){
+          S.appName=d.appName||S.appName;
+          S.appIcon=d.appIcon!==undefined?d.appIcon:S.appIcon;
+          S.projects=d.projects||S.projects;
+          
+          if (S.isReadOnly && S.sharedProjectId) {
+              S.activeId = S.sharedProjectId;
+          } else {
+              S.activeId=d.activeId||S.projects[0].id;
+          }
+          
+          S.activeSubId=d.activeSubId||null;
+          S.sortBy=d.sortBy||"default";
+          S.filterLabel=d.filterLabel||"all";
+      } else {
+          if(!S.isReadOnly) save();
+      }
       S.projects.forEach(p=>{if(!p.subs)p.subs=[];});
       runMigration();
       document.title=S.appName;
       fb.listen(onRemoteData);
       renderBoard();
-    }catch(e){renderSetup(e.message);}
+    }catch(e){
+        if(S.isReadOnly){
+            $("#app").innerHTML=`<div class="setup"><div class="setup-card"><div class="errb">⚠️ Invalid or expired share link.</div></div></div>`;
+        } else {
+            renderSetup(e.message);
+        }
+    }
   }else{renderSetup();}
 }
 init();
