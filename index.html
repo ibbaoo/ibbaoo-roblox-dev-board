@@ -58,13 +58,9 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .rte-ed a, .rich-text a{color:var(--acl);text-decoration:underline;cursor:pointer}
 .rte-ed p, .rich-text p{margin-bottom:8px}
 
-/* Custom Card Links & Mentions */
+/* Custom Card Links */
 .crd-link{display:inline-flex;align-items:center;padding:1px 6px;background:var(--acg);color:var(--acl);border-radius:6px;border:1px solid var(--ac);font-size:12px;cursor:pointer;font-weight:700;text-decoration:none;margin:0 2px;transition:all 0.2s}
 .crd-link:hover{background:var(--ac);color:#fff;box-shadow:0 2px 8px var(--acg)}
-.mention-dd{position:absolute;background:var(--bg4);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 10px 30px #00000080;max-height:200px;overflow-y:auto;z-index:9999;display:none;min-width:180px;padding:4px}
-.mention-it{padding:8px 12px;font-size:13px;color:var(--t1);cursor:pointer;border-radius:4px;display:flex;align-items:center;gap:8px}
-.mention-it:hover, .mention-it.active{background:var(--acg);color:var(--acl)}
-.mention-ic{font-size:12px;opacity:0.7}
 
 /* Setup */
 .setup{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
@@ -178,9 +174,9 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .cdot.dn{background:#10b981;box-shadow:0 0 8px #10b98160}
 .ctt{font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t2)}
 .cct{font-size:11px;color:var(--t3);margin-left:auto;background:#ffffff08;padding:2px 8px;border-radius:10px}
-.ccadd{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:#ffffff0a;color:var(--t2);font-size:16px;transition:0.2s}
-.ccadd:hover{background:var(--ac);color:#fff}
 .cbod{padding:6px 10px 12px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1}
+.acb{padding:12px;border:1px dashed rgba(255,255,255,0.1);border-radius:8px;color:var(--t3);font-size:13px;text-align:center;background:transparent;transition:0.2s}
+.acb:hover{border-color:var(--ac);color:var(--acl);background:rgba(255,255,255,0.02)}
 
 /* Card & Attachments */
 .crd{position:relative;background:var(--bg4);border:1px solid #ffffff0a;border-radius:10px;padding:12px 14px;cursor:grab;user-select:none;transition:transform .15s,box-shadow .15s;animation:fadeIn .25s ease}
@@ -260,6 +256,12 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 /* Toast */
 .toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%, 20px);opacity:0;background:var(--ac);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;transition:0.3s;pointer-events:none;box-shadow:0 10px 30px #0005;text-align:center;}
 .toast.show{transform:translate(-50%, 0);opacity:1;}
+
+/* Mention Dropdown */
+.mention-dd{position:absolute;background:var(--bg4);border:1px solid var(--bd2);border-radius:8px;box-shadow:0 10px 30px #00000080;max-height:200px;overflow-y:auto;z-index:9999;display:none;min-width:180px;padding:4px}
+.mention-it{padding:8px 12px;font-size:13px;color:var(--t1);cursor:pointer;border-radius:4px;display:flex;align-items:center;gap:8px}
+.mention-it:hover, .mention-it.active{background:var(--acg);color:var(--acl)}
+.mention-ic{font-size:12px;opacity:0.7}
 </style>
 </head>
 <body>
@@ -288,7 +290,6 @@ let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null,decodedShare=null;
 let collapsedProjs=new Set();
 let _scrollState = { cols: {}, mainX: 0, mainY: 0, sb: 0 };
 
-/* ── PWA Generation ── */
 function setupPWA(){
   if(document.getElementById('pwa-manifest')) return;
   const canvas = document.createElement('canvas');
@@ -314,7 +315,6 @@ function setupPWA(){
 }
 setupPWA();
 
-/* ── Toast Notifications ── */
 function showToast(msg, isErr=false) {
     const t = el("div", "toast", msg);
     if(isErr) t.style.background = "var(--red)";
@@ -323,7 +323,6 @@ function showToast(msg, isErr=false) {
     setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-/* ── Custom Confirm Modal (Replacing default confirm) ── */
 function customConfirm(msg, onConfirm) {
     const ov = el("div", "mo"), md = el("div", "md");
     md.style.maxWidth = "400px";
@@ -340,7 +339,6 @@ function customConfirm(msg, onConfirm) {
     ov.appendChild(md); document.body.appendChild(ov);
 }
 
-/* ── Copy Share Link Helper ── */
 function copyShareLink(inputId) {
     const el = $(inputId);
     el.select();
@@ -348,7 +346,6 @@ function copyShareLink(inputId) {
     showToast('Link copied to clipboard!');
 }
 
-/* ── Date Helpers (Timezone Correct) ── */
 function parseLocal(dStr) {
     if(!dStr) return null;
     const [y, m, d] = dStr.split('-').map(Number);
@@ -375,7 +372,6 @@ function isOD(d){
     return df !== null && df < 0;
 }
 
-/* ── DOM Helpers ── */
 const $=(s,p)=>(p||document).querySelector(s);
 const $$=(s,p)=>[...(p||document).querySelectorAll(s)];
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h)e.innerHTML=h;return e;};
@@ -399,7 +395,6 @@ function linkify(text) {
     });
 }
 
-/* ── Card Word Linking Engine ── */
 function getAllTasks() {
     const all = [];
     S.projects.forEach(p => {
@@ -481,7 +476,6 @@ function pIcon(p,sz){
 }
 function pickFile(acc,cb){const i=document.createElement("input");i.type="file";i.accept=acc;i.onchange=()=>{if(i.files[0])cb(i.files[0]);};i.click();}
 
-/* ── Scroll State Memory ── */
 function saveScroll() {
   const mn = $(".mn"); if(mn) { _scrollState.mainX = mn.scrollLeft; _scrollState.mainY = mn.scrollTop; }
   const sb = $(".sb"); if(sb) { _scrollState.sb = sb.scrollTop; }
@@ -493,7 +487,6 @@ function restoreScroll() {
   $$(".cbod").forEach((c, i) => c.scrollTop = _scrollState.cols[i] || 0);
 }
 
-/* ── Async Video Blob Handling (Solves Browser Base64 Length Limits) ── */
 const b64BlobCache = new Map();
 async function applyVideoBlobs(root) {
     if (!root) return;
@@ -519,7 +512,6 @@ async function applyVideoBlobs(root) {
     }
 }
 
-/* ── Data Migrations ── */
 function runMigration(){
   const badLabels = ["Red","Orange","Gold","Green","Cyan","Blue","Purple","Pink",""];
   S.projects.forEach(p=>{
@@ -555,7 +547,6 @@ function runMigration(){
   });
 }
 
-/* ── Lightbox Viewing System ── */
 function showLightbox(atts, startIdx) {
     if (!atts || !atts.length) return;
     let cur = startIdx;
@@ -587,14 +578,12 @@ function showLightbox(atts, startIdx) {
     };
     r();
     
-    // Close on background click
     ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
     ov.onmouseup = e => { if(ov._md && e.target===ov) ov.remove(); ov._md = false; };
     
     document.body.appendChild(ov);
 }
 
-/* ── Image Cropper ── */
 function showCropper(file,aspect,outW,outH,cb){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="500px";
   const img=new Image(),reader=new FileReader();
@@ -677,7 +666,6 @@ function showCropper(file,aspect,outW,outH,cb){
   ov.appendChild(md);document.body.appendChild(ov);
 }
 
-/* ── Firebase & Realtime Deep Merge Sync ── */
 class FBSync{
   constructor(k,u){this.key=k;this.url=u.replace(/\/$/,"");this.tok=null;this.ref=null;this.sk="kanban-auth-"+this._h(u);}
   _h(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h).toString(36);}
@@ -741,20 +729,37 @@ class FBSync{
   stopListening(){if(sse){sse.close();sse=null;}}
 }
 
-/* ── Save/Sync ── */
 function save(){
   if(S.isReadOnly) return;
+  
+  // Instant synchronous local backup for zero data loss on immediate reload
+  try { localStorage.setItem("kanban-local-backup", JSON.stringify(S)); } catch(e){}
+
   if(!fb)return;
   syncSt="saving";uDot();
   clearTimeout(saveT);
   saveT=setTimeout(async()=>{
     lastSaveT=Date.now();
-    try{await fb.set({appName:S.appName,appIcon:S.appIcon,sortBy:S.sortBy,filterLabel:S.filterLabel,shareId:S.shareId,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});syncSt="synced";}
+    try{
+        await fb.set({appName:S.appName,appIcon:S.appIcon,sortBy:S.sortBy,filterLabel:S.filterLabel,shareId:S.shareId,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});
+        syncSt="synced";
+        try { localStorage.removeItem("kanban-local-backup"); } catch(e){}
+    }
     catch(e){console.error("Save:",e);syncSt="error";}
     uDot();
-  },50);
+  }, 0); // 0ms debounce = instant
 }
+
 function uDot(){const d=$(".sdot");if(d)d.style.background=syncSt==="synced"?"var(--grn)":syncSt==="saving"?"var(--amb)":"var(--red)";}
+
+// Safety net if user closes tab while network request is pending
+window.addEventListener("beforeunload", e => {
+   if (syncSt === "saving") {
+       e.preventDefault();
+       e.returnValue = "Changes are still syncing to cloud. Leave?";
+       return e.returnValue;
+   }
+});
 
 function onRemoteData(d){
   if(d.appName) S.appName=d.appName;
@@ -811,7 +816,6 @@ function onRemoteData(d){
   renderBoard();
 }
 
-/* ── Share Modal Helper ── */
 function showShareModal() {
     const ov = el("div", "mo"), md = el("div", "md");
     md.style.maxWidth = "460px";
@@ -871,7 +875,6 @@ function showShareModal() {
     ov.appendChild(md);document.body.appendChild(ov);
 }
 
-/* ── Setup ── */
 function renderSetup(error){
   const sv=JSON.parse(localStorage.getItem("kanban-fb-config")||"null");
   let step=0;
@@ -933,7 +936,6 @@ function renderSetup(error){
   draw();
 }
 
-/* ── Board ── */
 let dragId=null;
 
 function renderBoard(){
@@ -1256,6 +1258,7 @@ function showTaskPreview(task) {
   if(task.dueDate){const od=isOD(task.dueDate)&&task.column!=="Done";m+=`<span class="dbdg ${od?"od":""}" style="padding:6px 10px;font-size:12px;">📅 ${fmtD(task.dueDate)}</span>`;}
 
   let descHtml = task.description || "";
+  // Check if it's legacy plain text (no html tags) and format it properly
   if (!/<[a-z][\s\S]*>/i.test(descHtml)) {
       descHtml = linkify(esc(descHtml)).replace(/\n/g, '<br>');
   }
@@ -1304,8 +1307,8 @@ function showTaskPreview(task) {
           const targetId = linkTid.dataset.linkTid;
           const targetTask = getAllTasks().find(x => x.id === targetId);
           if(targetTask) {
-              ov.remove(); 
-              showTaskPreview(targetTask);
+              ov.remove(); // Close current preview
+              showTaskPreview(targetTask); // Open new preview
           }
       }
   });
@@ -1327,7 +1330,6 @@ function showTouchMove(t){
   $("#tc",a).onclick=()=>{a.innerHTML="";};
 }
 
-/* ── Data ops ── */
 function curTasks(){return getActiveTasks();}
 function setCurTasks(tasks){
   const p=getProj();
@@ -1368,7 +1370,6 @@ function delSub(id){
     }
 }
 
-/* ── App Modal ── */
 function showAppModal(){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="420px";
   let ico=S.appIcon;
@@ -1397,7 +1398,6 @@ function showAppModal(){
   render();ov.appendChild(md);document.body.appendChild(ov);
 }
 
-/* ── Task (Card) Modal ── */
 function showTaskModal(task,col){
   const ov=el("div","mo"),md=el("div","md");
   const isE=!!task;if(task)col=task.column;
@@ -1542,7 +1542,7 @@ function showTaskModal(task,col){
       for (let i = 0; i < items.length; i++) {
           if (items[i].kind === 'file') hasFile = true;
       }
-      if (hasFile) { e.preventDefault(); return; } 
+      if (hasFile) { e.preventDefault(); return; } // Handled by md paste listener
       
       e.preventDefault();
       const text = (e.originalEvent || e).clipboardData.getData('text/plain');
@@ -1567,7 +1567,7 @@ function showTaskModal(task,col){
   if(selSize) selSize.onchange = (e) => {
       document.execCommand('fontSize', false, e.target.value);
       ed.focus();
-      selSize.value = "3"; 
+      selSize.value = "3"; // Reset dropdown
   };
 
   const selCol = $("[data-cmd='foreColor']", md);
@@ -1621,13 +1621,15 @@ function showTaskModal(task,col){
       if(!mList[idx] || !mNode) return;
       const t = mList[idx];
       
+      // Replace exactly typed "*term" with "*Card Title*"
       const txt = mNode.textContent;
-      const before = txt.substring(0, mOffset - mTerm.length - 1);
+      const before = txt.substring(0, mOffset - mTerm.length - 1); // -1 for the asterisk
       const after = txt.substring(mOffset);
       const insert = `*${t.title}* `;
       
       mNode.textContent = before + insert + after;
       
+      // Restore cursor position
       const sel = window.getSelection();
       const range = document.createRange();
       range.setStart(mNode, before.length + insert.length);
@@ -1664,6 +1666,7 @@ function showTaskModal(task,col){
       
       const astCount = (upToCursor.match(/\*/g) || []).length;
       
+      // If odd, we are currently inside an open asterisk
       if(astCount > 0 && astCount % 2 !== 0) {
           const lastAstIdx = upToCursor.lastIndexOf('*');
           const afterAst = upToCursor.substring(lastAstIdx + 1);
@@ -1732,8 +1735,41 @@ function showTaskModal(task,col){
     $$("[data-sc]",md).forEach(b=>b.onclick=()=>{selC=b.dataset.sc;rForm();});
   }
 
-  $("#b_addi", md).onclick = () => pickFile("image/*", handleFile);
-  $("#b_addv", md).onclick = () => pickFile("video/*", handleFile);
+  $("#b_addi", md).onclick = () => {
+      pickFile("image/*", f => {
+          showCropper(f, 0, 1200, 1200, d => { atts.push({ id: uid(), type: 'image', data: d }); rA(); });
+      });
+  };
+
+  $("#b_addv", md).onclick = () => {
+      pickFile("video/*", f => {
+          if(f.size > 200 * 1024 * 1024) { showToast("Video too large! Max 200MB.", true); return; }
+          
+          const wrap = $("#v_prog_wrap", md);
+          const bar = $("#v_prog", md);
+          const txt = $("#v_prog_txt", md);
+          wrap.style.display = "block";
+          txt.style.display = "block";
+          bar.style.width = "0%";
+          txt.textContent = "Processing... 0%";
+
+          const r = new FileReader();
+          r.onprogress = (e) => {
+              if (e.lengthComputable) {
+                  const p = Math.round((e.loaded / e.total) * 100);
+                  bar.style.width = p + "%";
+                  txt.textContent = `Processing... ${p}%`;
+              }
+          };
+          r.onload = e => { 
+              wrap.style.display = "none";
+              txt.style.display = "none";
+              atts.push({ id: uid(), type: 'video', data: e.target.result }); 
+              rA(); 
+          };
+          r.readAsDataURL(f);
+      });
+  };
 
   $("#lf_sv",md).onclick=()=>{
     const n=$("#lf_n", md).value.trim();if(!n)return;
@@ -1778,7 +1814,6 @@ function showTaskModal(task,col){
   ov.appendChild(md);document.body.appendChild(ov);$("#mt",md).focus();
 }
 
-/* ── Project Modal ── */
 function showProjModal(project){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="460px";
   let emoji=project?.emoji||"📋",ico=project?.icon||null,ban=project?.banner||null;
@@ -1841,7 +1876,6 @@ function showProjModal(project){
   setTimeout(()=>{const i=$("#pn",md);if(i)i.focus();},50);
 }
 
-/* ── Sub-Project Modal ── */
 function showSubModal(subId){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="420px";
   const p=getProj();
@@ -1890,7 +1924,6 @@ function showSubModal(subId){
   setTimeout(()=>{const i=$("#sn",md);if(i)i.focus();},50);
 }
 
-/* ── Settings ── */
 function showSettings(){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="400px";
   md.innerHTML=`
@@ -1950,7 +1983,6 @@ function showSettings(){
   ov.appendChild(md);document.body.appendChild(ov);
 }
 
-/* ── Init ── */
 async function init(){
   $("#app").innerHTML=`<div class="loading"><div class="loading-dot"></div><p class="loading-text">Loading...</p></div>`;
   
@@ -1962,8 +1994,15 @@ async function init(){
   }
 
   let sv = null;
-
   S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",shareId:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
+
+  // 1. Check local backup to prevent zero-latency data loss on reload
+  if (!shareData) {
+      try {
+          const b = localStorage.getItem("kanban-local-backup");
+          if (b) { S = JSON.parse(b); }
+      } catch(e){}
+  }
 
   if (shareData) {
       try {
@@ -1981,6 +2020,15 @@ async function init(){
   if(sv){
     try{
       const f=new FBSync(sv.apiKey,sv.dbUrl);await f.connect();fb=f;
+      
+      // Render instantly from backup if we recovered from an unsynced closure
+      if (localStorage.getItem("kanban-local-backup")) {
+          runMigration();
+          document.title=S.appName;
+          renderBoard();
+          save(); // Push the backup up to the cloud
+      }
+
       const d=await f.get();
       
       if (S.isReadOnly && d && d.shareId && (!decodedShare || decodedShare.sid !== d.shareId)) {
