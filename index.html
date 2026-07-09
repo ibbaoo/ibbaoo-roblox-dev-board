@@ -287,8 +287,8 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const ts=()=>Date.now();
 const KANBAN_ICON_SVG = `<svg width="50%" height="50%" viewBox="0 0 100 100"><rect x="18" y="20" width="16" height="60" rx="6" fill="white"/><rect x="42" y="20" width="16" height="35" rx="6" fill="white"/><rect x="66" y="20" width="16" height="48" rx="6" fill="white"/></svg>`;
 
-let S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
-let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null;
+let S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",shareId:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
+let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null,decodedShare=null;
 let collapsedProjs=new Set();
 let _scrollState = { cols: {}, mainX: 0, mainY: 0, sb: 0 };
 
@@ -419,10 +419,10 @@ function getAllTasks() {
 
 function processCardLinks(html) {
     if(!html) return "";
+    let cleanHtml = html.replace(/&nbsp;/g, ' ');
     const allTasks = getAllTasks();
-    return html.replace(/\*([^*<]+)\*/g, (match, p1) => {
-        // Clean out rich-text spaces/entities that might break the exact name match
-        const title = p1.replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').trim().toLowerCase();
+    return cleanHtml.replace(/\*([^*<]+)\*/g, (match, p1) => {
+        const title = p1.trim().toLowerCase();
         const target = allTasks.find(t => t.title.toLowerCase() === title);
         if (target) {
             return `<span class="crd-link" data-link-tid="${target.id}">🔗 ${esc(target.title)}</span>`;
@@ -480,10 +480,22 @@ const tasksIn=col=>{
 
 function dotC(c){return c==="To Do"?"td":c==="In Progress"?"ip":"dn";}
 function pIcon(p,sz){
-  if(p.icon)return`<img class="pi" src="${p.icon}" stylewidth:${sz}px;height:${sz}px;border-radius:${Math.round(sz*.25)}px">`;
+  if(p.icon)return`<img class="pi" src="${p.icon}" style="width:${sz}px;height:${sz}px;border-radius:${Math.round(sz*.25)}px">`;
   return`<span class="pe" style="font-size:${Math.round(sz*.8)}px;width:${sz}px;text-align:center">${p.emoji||"📋"}</span>`;
 }
 function pickFile(acc,cb){const i=document.createElement("input");i.type="file";i.accept=acc;i.onchange=()=>{if(i.files[0])cb(i.files[0]);};i.click();}
+
+/* ── Scroll State Memory Engine ── */
+function saveScroll() {
+  const mn = $(".mn"); if(mn) { _scrollState.mainX = mn.scrollLeft; _scrollState.mainY = mn.scrollTop; }
+  const sb = $(".sb"); if(sb) { _scrollState.sb = sb.scrollTop; }
+  $$(".cbod").forEach((c, i) => _scrollState.cols[i] = c.scrollTop);
+}
+function restoreScroll() {
+  const mn = $(".mn"); if(mn) { mn.scrollLeft = _scrollState.mainX; mn.scrollTop = _scrollState.mainY; }
+  const sb = $(".sb"); if(sb) { sb.scrollTop = _scrollState.sb; }
+  $$(".cbod").forEach((c, i) => c.scrollTop = _scrollState.cols[i] || 0);
+}
 
 /* ── Async Video Blob Handling (Solves Browser Base64 Length Limits) ── */
 const b64BlobCache = new Map();
@@ -736,23 +748,48 @@ class FBSync{
 /* ── Save/Sync ── */
 function save(){
   if(S.isReadOnly) return;
+  
+  // Instant synchronous local backup for zero data loss on immediate reload
+  try { localStorage.setItem("kanban-local-backup", JSON.stringify(S)); } catch(e){}
+
   if(!fb)return;
   syncSt="saving";uDot();
   clearTimeout(saveT);
   saveT=setTimeout(async()=>{
     lastSaveT=Date.now();
-    try{await fb.set({appName:S.appName,appIcon:S.appIcon,sortBy:S.sortBy,filterLabel:S.filterLabel,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});syncSt="synced";}
+    try{
+        await fb.set({appName:S.appName,appIcon:S.appIcon,sortBy:S.sortBy,filterLabel:S.filterLabel,shareId:S.shareId,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});
+        syncSt="synced";
+        try { localStorage.removeItem("kanban-local-backup"); } catch(e){}
+    }
     catch(e){console.error("Save:",e);syncSt="error";}
     uDot();
-  },600);
+  }, 0); // 0ms debounce = instant
 }
+
 function uDot(){const d=$(".sdot");if(d)d.style.background=syncSt==="synced"?"var(--grn)":syncSt==="saving"?"var(--amb)":"var(--red)";}
+
+// Safety net if user closes tab while network request is pending
+window.addEventListener("beforeunload", e => {
+   if (syncSt === "saving") {
+       e.preventDefault();
+       e.returnValue = "Changes are still syncing to cloud. Leave?";
+       return e.returnValue;
+   }
+});
 
 function onRemoteData(d){
   if(d.appName) S.appName=d.appName;
   if(d.appIcon!==undefined) S.appIcon=d.appIcon;
   if(d.sortBy) S.sortBy=d.sortBy;
   if(d.filterLabel) S.filterLabel=d.filterLabel;
+  if(d.shareId) S.shareId=d.shareId;
+  
+  if (S.isReadOnly && d.shareId && (!decodedShare || decodedShare.sid !== d.shareId)) {
+      if(fb) fb.stopListening();
+      $("#app").innerHTML=`<div class="setup"><div class="setup-card"><div class="errb">⚠️ The owner has revoked this share link. Access ended.</div></div></div>`;
+      return;
+  }
   
   if(d.projects){
      const lpm=new Map(S.projects.map(p=>[p.id,p]));
@@ -808,14 +845,19 @@ function showShareModal() {
         return;
     }
     
+    if (!S.shareId) {
+        S.shareId = uid();
+        save();
+    }
+    
     const baseUrl = window.location.origin + window.location.pathname;
-    const allLink = baseUrl + '#share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl})));
-    const projLink = baseUrl + '#share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl, p: p.id})));
+    const allLink = baseUrl + '#share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl, sid: S.shareId})));
+    const projLink = baseUrl + '#share=' + encodeURIComponent(btoa(JSON.stringify({k: sv.apiKey, u: sv.dbUrl, p: p.id, sid: S.shareId})));
 
     md.innerHTML=`
       <div class="md-h"><h2>Share Board</h2><button class="md-x" id="cx">✕</button></div>
       <div class="md-b">
-        <p style="font-size:13px; color:var(--t2); margin-bottom:16px;">Generate a view-only link to share your workflow with others. They won't be able to edit tasks or layout.</p>
+        <p style="font-size:13px; color:var(--t2); margin-bottom:16px;">Generate a view-only link to share your workflow with others. They won't be able to edit cards or layout.</p>
         
         <label class="flbl">Share Entire Board</label>
         <div style="display:flex; gap:8px; margin-bottom:16px;">
@@ -828,12 +870,23 @@ function showShareModal() {
             <input type="text" id="sh_proj" readonly value="${projLink}" style="font-size:12px; color:var(--t2); padding:8px;">
             <button class="bp" id="cp_proj" style="padding:8px 16px;">Copy</button>
         </div>
+        
+        <div style="border-top:1px solid var(--bd); margin:16px 0 8px;"></div>
+        <button class="bs" id="b_revoke" style="width:100%; color:#ff6b6b; border-color:#ff4d4f30; background:#ff4d4f10;">🔄 Generate New Links (Expires Old Ones)</button>
       </div>
     `;
     
     $("#cx",md).onclick = () => ov.remove();
     $("#cp_all",md).onclick = () => copyShareLink("#sh_all");
     $("#cp_proj",md).onclick = () => copyShareLink("#sh_proj");
+    $("#b_revoke",md).onclick = () => {
+        customConfirm("Are you sure? Anyone currently using an old share link will instantly lose access.", () => {
+            S.shareId = uid();
+            save();
+            ov.remove();
+            showShareModal(); // Re-open with new links generated
+        });
+    };
     
     ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
     ov.onmouseup = e => { if(ov._md && e.target===ov) ov.remove(); ov._md = false; };
@@ -879,7 +932,7 @@ function renderSetup(error){
         const f=new FBSync(k,u);await f.connect();fb=f;
         localStorage.setItem("kanban-fb-config",JSON.stringify({apiKey:k,dbUrl:u}));
         const d=await f.get();
-        S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
+        S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",shareId:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
         if(d){
             S.appName=d.appName||S.appName;
             S.appIcon=d.appIcon!==undefined?d.appIcon:S.appIcon;
@@ -888,6 +941,7 @@ function renderSetup(error){
             S.activeSubId=d.activeSubId||null;
             S.sortBy=d.sortBy||"default";
             S.filterLabel=d.filterLabel||"all";
+            S.shareId=d.shareId||null;
         } else {
             save();
         }
@@ -905,6 +959,7 @@ function renderSetup(error){
 let dragId=null;
 
 function renderBoard(){
+  saveScroll();
   S.sortBy = S.sortBy || "default";
   S.filterLabel = S.filterLabel || "all";
   const p=getProj(),item=getActiveItem();
@@ -912,15 +967,6 @@ function renderBoard(){
   if (S.filterLabel !== "all" && !(p.labels||[]).some(l => l.id === S.filterLabel)) {
       S.filterLabel = "all";
   }
-
-  const cls = $("#cls");
-  if (cls) {
-      _scrollState.mainX = cls.scrollLeft;
-      _scrollState.mainY = cls.scrollTop;
-      $$('.cbod', cls).forEach((b, i) => _scrollState.cols[COLS[i]] = b.scrollTop);
-  }
-  const sbEl = $("#sb");
-  if (sbEl) _scrollState.sb = sbEl.scrollTop;
 
   document.title=S.appName;
   $("#app").innerHTML=`<div class="app">
@@ -979,11 +1025,7 @@ function renderBoard(){
       <div class="cols" id="cls"></div>
     </main>
   </div>`;
-  renderProjs();renderCols(true);uDot();
-  
-  const nSb = $("#sb");
-  if(nSb && _scrollState.sb) nSb.scrollTop = _scrollState.sb;
-
+  renderProjs();renderCols();uDot();
   if(!S.isReadOnly) $("#ahdr").onclick=()=>showAppModal();
   $("#bm").onclick=()=>togSb(true);
   $("#ov").onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
@@ -999,6 +1041,7 @@ function renderBoard(){
   }
   $("#sortSel").onchange=(e)=>{S.sortBy=e.target.value; save(); renderCols();};
   $("#filterSel").onchange=(e)=>{S.filterLabel=e.target.value; save(); renderCols();};
+  restoreScroll();
 }
 
 function renderIPTasks(container, tasks, pid, spid, isSub) {
@@ -1133,16 +1176,9 @@ function renderProjs(){
   }
 }
 
-function renderCols(skipCapture = false){
-  const w=$("#cls");if(!w)return;
-  
-  if(skipCapture !== true) {
-      _scrollState.mainX = w.scrollLeft;
-      _scrollState.mainY = w.scrollTop;
-      $$('.cbod', w).forEach((b, i) => _scrollState.cols[COLS[i]] = b.scrollTop);
-  }
-  
-  w.innerHTML="";
+function renderCols(){
+  saveScroll();
+  const w=$("#cls");if(!w)return;w.innerHTML="";
   
   const hFilter = $("#filterSel");
   if(hFilter && S.filterLabel){ hFilter.value = S.filterLabel; }
@@ -1156,7 +1192,7 @@ function renderCols(skipCapture = false){
     const bd=$(".cbod",d);
     tasks.forEach(t=>bd.appendChild(mkCard(t)));
     if (!S.isReadOnly) {
-        const addBtn=$(".ccadd",d);if(addBtn)addBtn.onclick=()=>showTaskModal(null,col);
+        const ab=$(".ccadd",d);if(ab)ab.onclick=()=>showTaskModal(null,col);
         d.addEventListener("dragover",e=>{e.preventDefault();d.classList.add("dov");});
         d.addEventListener("dragleave",()=>d.classList.remove("dov"));
         d.addEventListener("drop",e=>{e.preventDefault();d.classList.remove("dov");if(dragId)moveTask(dragId,col);});
@@ -1165,12 +1201,7 @@ function renderCols(skipCapture = false){
   });
   
   applyVideoBlobs(w);
-  
-  w.scrollLeft = _scrollState.mainX || 0;
-  w.scrollTop = _scrollState.mainY || 0;
-  $$('.cbod', w).forEach((b, i) => {
-      if(_scrollState.cols[COLS[i]]) b.scrollTop = _scrollState.cols[COLS[i]];
-  });
+  restoreScroll();
 }
 
 function mkCard(t){
@@ -1202,7 +1233,8 @@ function mkCard(t){
   h+=`<div class="crd-t">${esc(t.title)}</div>`;
   if(t.description){
       const plainDesc = stripHtml(t.description);
-      let dHtml = processCardLinks(esc(plainDesc));
+      let dHtml = linkify(esc(plainDesc));
+      dHtml = processCardLinks(dHtml);
       h+=`<div class="crd-d">${dHtml}</div>`;
   }
   let m="";
@@ -1253,7 +1285,7 @@ function showTaskPreview(task) {
   descHtml = processCardLinks(descHtml);
 
   md.innerHTML = `
-    <div class="md-h"><h2>Task Details</h2><button class="md-x" id="cx">✕</button></div>
+    <div class="md-h"><h2>Card Details</h2><button class="md-x" id="cx">✕</button></div>
     <div class="md-b" style="padding-top:4px;">
       <h3 style="font-size:20px; font-weight:700; margin-bottom:14px; color:#fff; line-height:1.3; word-break:break-word;">${esc(task.title)}</h3>
       
@@ -1318,7 +1350,6 @@ function showTouchMove(t){
   $("#tc",a).onclick=()=>{a.innerHTML="";};
 }
 
-/* ── Data ops ── */
 function curTasks(){return getActiveTasks();}
 function setCurTasks(tasks){
   const p=getProj();
@@ -1359,7 +1390,6 @@ function delSub(id){
     }
 }
 
-/* ── App Modal ── */
 function showAppModal(){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="420px";
   let ico=S.appIcon;
@@ -1388,7 +1418,6 @@ function showAppModal(){
   render();ov.appendChild(md);document.body.appendChild(ov);
 }
 
-/* ── Task Modal ── */
 function showTaskModal(task,col){
   const ov=el("div","mo"),md=el("div","md");
   const isE=!!task;if(task)col=task.column;
@@ -1460,7 +1489,7 @@ function showTaskModal(task,col){
       <label class="flbl">Due Date</label><input type="date" id="mdu" value="${task?.dueDate||""}">
       ${isE?`<label class="flbl">Move to</label><div class="prow" id="mm"></div>`:""}
     </div>
-    <div class="md-f">${isE?`<button class="bd" id="mdl">Delete</button>`:""}<div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${isE?"Save":"Create"}</button></div>`;
+    <div class="md-f">${isE?`<button class="bd" id="mdl">Delete Card</button>`:""}<div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${isE?"Save Card":"Create Card"}</button></div>`;
   
   // Setup Rich Text Editor
   let descHtml = task?.description || "";
@@ -1612,7 +1641,7 @@ function showTaskModal(task,col){
       if(!mList[idx] || !mNode) return;
       const t = mList[idx];
       
-      // We need to replace the exactly typed "*term" with "*Card Title*"
+      // Replace exactly typed "*term" with "*Card Title*"
       const txt = mNode.textContent;
       const before = txt.substring(0, mOffset - mTerm.length - 1); // -1 for the asterisk
       const after = txt.substring(mOffset);
@@ -1726,8 +1755,41 @@ function showTaskModal(task,col){
     $$("[data-sc]",md).forEach(b=>b.onclick=()=>{selC=b.dataset.sc;rForm();});
   }
 
-  $("#b_addi", md).onclick = () => pickFile("image/*", handleFile);
-  $("#b_addv", md).onclick = () => pickFile("video/*", handleFile);
+  $("#b_addi", md).onclick = () => {
+      pickFile("image/*", f => {
+          showCropper(f, 0, 1200, 1200, d => { atts.push({ id: uid(), type: 'image', data: d }); rA(); });
+      });
+  };
+
+  $("#b_addv", md).onclick = () => {
+      pickFile("video/*", f => {
+          if(f.size > 200 * 1024 * 1024) { showToast("Video too large! Max 200MB.", true); return; }
+          
+          const wrap = $("#v_prog_wrap", md);
+          const bar = $("#v_prog", md);
+          const txt = $("#v_prog_txt", md);
+          wrap.style.display = "block";
+          txt.style.display = "block";
+          bar.style.width = "0%";
+          txt.textContent = "Processing... 0%";
+
+          const r = new FileReader();
+          r.onprogress = (e) => {
+              if (e.lengthComputable) {
+                  const p = Math.round((e.loaded / e.total) * 100);
+                  bar.style.width = p + "%";
+                  txt.textContent = `Processing... ${p}%`;
+              }
+          };
+          r.onload = e => { 
+              wrap.style.display = "none";
+              txt.style.display = "none";
+              atts.push({ id: uid(), type: 'video', data: e.target.result }); 
+              rA(); 
+          };
+          r.readAsDataURL(f);
+      });
+  };
 
   $("#lf_sv",md).onclick=()=>{
     const n=$("#lf_n", md).value.trim();if(!n)return;
@@ -1772,7 +1834,6 @@ function showTaskModal(task,col){
   ov.appendChild(md);document.body.appendChild(ov);$("#mt",md).focus();
 }
 
-/* ── Project Modal ── */
 function showProjModal(project){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="460px";
   let emoji=project?.emoji||"📋",ico=project?.icon||null,ban=project?.banner||null;
@@ -1835,7 +1896,6 @@ function showProjModal(project){
   setTimeout(()=>{const i=$("#pn",md);if(i)i.focus();},50);
 }
 
-/* ── Sub-Project Modal ── */
 function showSubModal(subId){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="420px";
   const p=getProj();
@@ -1884,7 +1944,6 @@ function showSubModal(subId){
   setTimeout(()=>{const i=$("#sn",md);if(i)i.focus();},50);
 }
 
-/* ── Settings ── */
 function showSettings(){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="400px";
   md.innerHTML=`
@@ -1944,27 +2003,39 @@ function showSettings(){
   ov.appendChild(md);document.body.appendChild(ov);
 }
 
-/* ── Init ── */
 async function init(){
   $("#app").innerHTML=`<div class="loading"><div class="loading-dot"></div><p class="loading-text">Loading...</p></div>`;
   
-  // Parse hash securely
   let shareData = null;
+  decodedShare = null;
+  
+  // Support both hash and query param links to ensure legacy links still correctly trigger view-only
   const hash = window.location.hash;
+  const search = window.location.search;
+  
   if (hash.startsWith('#share=')) {
       shareData = decodeURIComponent(hash.substring(7));
+  } else if (search.startsWith('?share=')) {
+      shareData = decodeURIComponent(search.substring(7));
   }
 
   let sv = null;
+  S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",shareId:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
 
-  S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
+  // 1. Check local backup to prevent zero-latency data loss on reload
+  if (!shareData) {
+      try {
+          const b = localStorage.getItem("kanban-local-backup");
+          if (b) { S = JSON.parse(b); }
+      } catch(e){}
+  }
 
   if (shareData) {
       try {
-          const decoded = JSON.parse(atob(shareData));
-          sv = { apiKey: decoded.k, dbUrl: decoded.u };
+          decodedShare = JSON.parse(atob(shareData));
+          sv = { apiKey: decodedShare.k, dbUrl: decodedShare.u };
           S.isReadOnly = true;
-          if (decoded.p) S.sharedProjectId = decoded.p;
+          if (decodedShare.p) S.sharedProjectId = decodedShare.p;
       } catch(e) {
           console.error("Invalid share link");
       }
@@ -1975,7 +2046,21 @@ async function init(){
   if(sv){
     try{
       const f=new FBSync(sv.apiKey,sv.dbUrl);await f.connect();fb=f;
+      
+      // Render instantly from backup if we recovered from an unsynced closure
+      if (localStorage.getItem("kanban-local-backup") && !S.isReadOnly) {
+          runMigration();
+          document.title=S.appName;
+          renderBoard();
+          save(); // Push the backup up to the cloud
+      }
+
       const d=await f.get();
+      
+      if (S.isReadOnly && d && d.shareId && (!decodedShare || decodedShare.sid !== d.shareId)) {
+          throw new Error("This share link has expired or been revoked by the owner.");
+      }
+
       if(d){
           S.appName=d.appName||S.appName;
           S.appIcon=d.appIcon!==undefined?d.appIcon:S.appIcon;
@@ -1990,6 +2075,7 @@ async function init(){
           S.activeSubId=d.activeSubId||null;
           S.sortBy=d.sortBy||"default";
           S.filterLabel=d.filterLabel||"all";
+          S.shareId=d.shareId||null;
       } else {
           if(!S.isReadOnly) save();
       }
