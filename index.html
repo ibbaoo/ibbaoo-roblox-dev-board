@@ -357,6 +357,8 @@ input:focus,textarea:focus,select:focus{border-color:#9b7aff;box-shadow:0 0 0 3p
 
 .tbar{background:linear-gradient(180deg,#070a11e8,#050810d9);border-bottom-color:#ffffff0d;box-shadow:0 14px 30px #0003;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
 .tc h1{font-size:20px;letter-spacing:-.45px;text-shadow:0 2px 20px #000}
+.ptype-badge{flex-shrink:0;padding:3px 7px;border-radius:999px;border:1px solid #8b5cf642;background:#8b5cf617;color:#c9bcff;font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase}
+.ptype-badge.storage{border-color:#38bdf847;background:#38bdf812;color:#8bdcff}
 .tc .pi,.tc .pe{filter:drop-shadow(0 5px 10px #0008)}
 .epb{background:#090d16b8;border-color:#ffffff14;color:#80899f;box-shadow:inset 0 1px #ffffff09;transition:transform .2s ease,background .2s ease,border-color .2s ease,color .2s ease,box-shadow .2s ease}
 .epb:hover{background:#111728;color:#e9e5ff;border-color:#8b5cf65c;box-shadow:0 8px 20px #0006,0 0 18px #8b5cf620;transform:translateY(-2px)}
@@ -381,6 +383,10 @@ input:focus,textarea:focus,select:focus{border-color:#9b7aff;box-shadow:0 0 0 3p
 .cdot.td{color:#8b5cf6;background:#9b7aff}.cdot.ip{color:#ffb547;background:#ffb547}.cdot.dn{color:#25d99a;background:#25d99a}
 .ctt{font-size:12px;letter-spacing:1.2px;color:#c2c8d7}
 .cct{background:#ffffff0a;border:1px solid #ffffff0b;color:#8c95aa;padding:3px 8px}
+.col-sort{position:relative;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:0 0 28px;border:1px solid #ffffff0d;border-radius:8px;background:#ffffff07;color:#858fa5;transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease}
+.col-sort:hover{background:#8b5cf617;border-color:#8b5cf65e;color:#d8ceff;transform:translateY(-1px)}
+.col-sort select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;padding:0;border:0}
+.col-sort span{font-size:13px;line-height:1;pointer-events:none;transform:translateY(-1px)}
 .ccadd{background:#ffffff08;border:1px solid #ffffff0d;transition:transform .2s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease}
 .ccadd:hover{background:#8b5cf6;border-color:#b9a2ff;box-shadow:0 0 18px #8b5cf654;transform:rotate(90deg) scale(1.06)}
 .cbod{gap:10px;padding:7px 10px 14px}
@@ -428,6 +434,19 @@ button:active{transform:translateY(0) scale(.97)!important}
 .search-best{background:linear-gradient(90deg,#8b5cf62e,#38bdf81c);border:1px solid #a78bfa30;color:#d9d0ff}
 .search-context{border-top-color:#ffffff0d}
 
+.cols.storage-mode{display:block;overflow:auto;padding:20px 22px 26px}
+.storage-board{width:100%;min-height:100%;border:1px solid #ffffff0f;border-radius:18px;background:linear-gradient(160deg,#090d16de,#050810d4);box-shadow:0 22px 54px #0007,inset 0 1px #ffffff09;backdrop-filter:blur(18px);animation:panelEnter .4s cubic-bezier(.2,.8,.2,1) both;overflow:hidden}
+.storage-head{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:9px;padding:15px 17px;border-bottom:1px solid #ffffff0c;background:#080c14ed;backdrop-filter:blur(16px)}
+.storage-title{display:flex;align-items:center;gap:10px;min-width:0;margin-right:auto}
+.storage-title>div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.storage-title strong{font-size:13px;letter-spacing:.8px;text-transform:uppercase;color:#d8dce8}
+.storage-title small{font-size:10px;color:#687287}
+.storage-mark{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:9px;background:linear-gradient(145deg,#8b5cf629,#38bdf817);border:1px solid #a78bfa35;color:#c4b5fd;font-size:18px;box-shadow:0 0 18px #8b5cf622}
+.storage-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:13px;padding:16px;align-items:start}
+.storage-grid .crd{min-width:0;height:100%}
+.storage-empty{grid-column:1/-1;min-height:180px;border:1px dashed #ffffff16;border-radius:14px;background:#ffffff02;color:#727c92;font-size:13px;transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease}
+.storage-empty:not(:disabled):hover{background:#8b5cf60d;border-color:#8b5cf65c;color:#cfc5ff;transform:translateY(-1px)}
+
 /* Keep dense game boards readable: cards scroll instead of collapsing. */
 .cbod{min-height:0}
 .crd{flex:0 0 auto;min-height:max-content;overflow:visible}
@@ -445,6 +464,9 @@ button:active{transform:translateY(0) scale(.97)!important}
   .cols{padding:14px!important}
   .col{border-radius:14px;box-shadow:0 14px 34px #0006}
   .crd:hover{transform:translateY(-1px)}
+  .cols.storage-mode{padding:12px!important}
+  .storage-grid{grid-template-columns:1fr;padding:12px}
+  .storage-title small{display:none}
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -755,12 +777,18 @@ function getActiveItem(){
   return p;
 }
 
-const tasksIn=col=>{
-  let tasks=getActiveTasks().filter(t=>t.column===col && !t._deleted);
+function sortTaskList(tasks,sortKey){
   const p=getProj();
-  
-  if (S.filterLabel && S.filterLabel !== 'all') {
-      tasks = tasks.filter(t => t.labelIds && t.labelIds.includes(S.filterLabel));
+  const item=getActiveItem();
+  const columnMode=item.columnSorts?.[sortKey]||"board";
+
+  if(columnMode==="recent"){
+      tasks.sort((a,b)=>(b.createdAt||b._ts||0)-(a.createdAt||a._ts||0)||((a.order??0)-(b.order??0)));
+      return tasks;
+  }
+  if(columnMode==="modified"){
+      tasks.sort((a,b)=>(b._ts||0)-(a._ts||0)||((a.order??0)-(b.order??0)));
+      return tasks;
   }
 
   if (S.sortBy === 'label') {
@@ -784,7 +812,34 @@ const tasksIn=col=>{
       tasks.sort((a,b) => (a.order??0)-(b.order??0));
   }
   return tasks;
-};
+}
+
+function filteredActiveTasks(){
+  let tasks=getActiveTasks().filter(t=>!t._deleted);
+  if (S.filterLabel && S.filterLabel !== 'all') {
+      tasks = tasks.filter(t => t.labelIds && t.labelIds.includes(S.filterLabel));
+  }
+  return tasks;
+}
+
+const tasksIn=col=>sortTaskList(filteredActiveTasks().filter(t=>t.column===col),col);
+const storageTasks=()=>sortTaskList(filteredActiveTasks(),"Storage");
+
+function columnSortControl(sortKey){
+  const mode=getActiveItem().columnSorts?.[sortKey]||"board";
+  return `<label class="col-sort" title="Sort cards"><select data-col-sort="${esc(sortKey)}" aria-label="Sort ${esc(sortKey)} cards"><option value="board" ${mode==="board"?'selected':''}>Board order</option><option value="recent" ${mode==="recent"?'selected':''}>Recently added</option><option value="modified" ${mode==="modified"?'selected':''}>Last modified</option></select><span aria-hidden="true">▾</span></label>`;
+}
+
+function setColumnSort(sortKey,mode){
+  const item=getActiveItem();
+  item.columnSorts=item.columnSorts||{};
+  item.columnSorts[sortKey]=mode;
+  if(!S.isReadOnly){
+      item._ts=ts();
+      if(S.activeSubId)saveSubProjectFast(getProj(),item);else saveProjectFast(item);
+  }
+  renderCols();
+}
 
 function dotC(c){return c==="To Do"?"td":c==="In Progress"?"ip":"dn";}
 function pIcon(p,sz){
@@ -838,17 +893,22 @@ function runMigration(){
     if(!p._ts) p._ts=ts();
     if(!p.labels) p.labels=[];
     if(p.archived===undefined) p.archived=false;
+    if(!["task","storage"].includes(p.type))p.type="task";
+    if(!p.columnSorts||typeof p.columnSorts!=="object")p.columnSorts={};
     
     p.labels = p.labels.filter(l => l.n && !badLabels.includes(l.n.trim()));
     
     const allTasks=[...(p.tasks||[])];
     (p.subs||[]).forEach(s=>{
         if(!s._ts) s._ts=ts();
+        if(!["task","storage"].includes(s.type))s.type="task";
+        if(!s.columnSorts||typeof s.columnSorts!=="object")s.columnSorts={};
         allTasks.push(...(s.tasks||[]))
     });
     
     allTasks.forEach(t=>{
       if(!t._ts) t._ts=ts();
+      if(!t.createdAt)t.createdAt=t._ts;
       if(!t.attachments) t.attachments=[];
       if(t.labels){
         t.labelIds=t.labelIds||[];
@@ -1101,7 +1161,7 @@ function save(){
   }, 0); // 0ms debounce = instant
 }
 
-function canMoveCards(){return !S.isReadOnly || Boolean(fb);}
+function canMoveCards(){return (getActiveItem().type||"task")==="task"&&(!S.isReadOnly||Boolean(fb));}
 
 function getActiveTaskFirebasePath(taskId){
   const projectIndex=S.projects.findIndex(p=>p.id===S.activeId);
@@ -1163,7 +1223,7 @@ async function saveProjectFast(project){
   const projectIndex=S.projects.findIndex(item=>item.id===project.id);
   if(!fb||projectIndex<0){save();return;}
   syncSt="saving";uDot();lastSaveT=Date.now();
-  const metadata={name:project.name,emoji:project.emoji,icon:project.icon,banner:project.banner,archived:project.archived,_ts:project._ts,_deleted:project._deleted,labels:project.labels||[]};
+  const metadata={name:project.name,emoji:project.emoji,icon:project.icon,banner:project.banner,archived:project.archived,type:project.type||"task",columnSorts:project.columnSorts||{},_ts:project._ts,_deleted:project._deleted,labels:project.labels||[]};
   try{
       await fb.patch(`kanban/projects/${projectIndex}`,metadata);
       syncSt="synced";lastRemoteRevision=getRemoteRevision(S);
@@ -1179,7 +1239,7 @@ async function saveSubProjectFast(project,sub){
   if(!fb||projectIndex<0||subIndex<0){save();return;}
   syncSt="saving";uDot();lastSaveT=Date.now();
   try{
-      await fb.patch(`kanban/projects/${projectIndex}/subs/${subIndex}`,{name:sub.name,emoji:sub.emoji,icon:sub.icon,_ts:sub._ts,_deleted:sub._deleted});
+      await fb.patch(`kanban/projects/${projectIndex}/subs/${subIndex}`,{name:sub.name,emoji:sub.emoji,icon:sub.icon,type:sub.type||"task",columnSorts:sub.columnSorts||{},_ts:sub._ts,_deleted:sub._deleted});
       syncSt="synced";lastRemoteRevision=getRemoteRevision(S);
   }catch(error){console.error("Sub-project save:",error);syncSt="error";showToast("Sub-project save failed. Please try again.",true);}
   uDot();
@@ -1261,7 +1321,7 @@ function onRemoteData(d){
         if(!lp){ S.projects.push(rp); }
         else{
            if((rp._ts||0)>(lp._ts||0)){
-              lp.name=rp.name; lp.emoji=rp.emoji; lp.icon=rp.icon; lp.banner=rp.banner; lp.archived=rp.archived; lp._ts=rp._ts; lp._deleted=rp._deleted; lp.labels=rp.labels;
+              lp.name=rp.name; lp.emoji=rp.emoji; lp.icon=rp.icon; lp.banner=rp.banner; lp.archived=rp.archived; lp.type=rp.type||"task"; lp.columnSorts=rp.columnSorts||{}; lp._ts=rp._ts; lp._deleted=rp._deleted; lp.labels=rp.labels;
            }
            const ltm=new Map((lp.tasks||[]).map(t=>[t.id,t]));
            (rp.tasks||[]).forEach(rt=>{
@@ -1274,7 +1334,7 @@ function onRemoteData(d){
               const ls=lsm.get(rs.id);
               if(!ls){ if(!lp.subs)lp.subs=[]; lp.subs.push(rs); }
               else{
-                 if((rs._ts||0)>(ls._ts||0)){ ls.name=rs.name; ls.emoji=rs.emoji; ls.icon=rs.icon; ls._ts=rs._ts; ls._deleted=rs._deleted; }
+                 if((rs._ts||0)>(ls._ts||0)){ ls.name=rs.name; ls.emoji=rs.emoji; ls.icon=rs.icon; ls.type=rs.type||"task"; ls.columnSorts=rs.columnSorts||{}; ls._ts=rs._ts; ls._deleted=rs._deleted; }
                  const lstm=new Map((ls.tasks||[]).map(t=>[t.id,t]));
                  (rs.tasks||[]).forEach(rst=>{
                     const lst=lstm.get(rst.id);
@@ -1426,7 +1486,7 @@ function renderBoard(){
   saveScroll();
   S.sortBy = S.sortBy || "default";
   S.filterLabel = S.filterLabel || "all";
-  const p=getProj(),item=getActiveItem();
+  const p=getProj(),item=getActiveItem(),itemType=item.type||"task";
   
   if (S.filterLabel !== "all" && !(p.labels||[]).some(l => l.id === S.filterLabel)) {
       S.filterLabel = "all";
@@ -1468,6 +1528,7 @@ function renderBoard(){
           <div class="tc">
               ${pIcon(item,32)}
               <h1>${esc(item.name)}</h1>
+              <span class="ptype-badge ${itemType}">${itemType==="storage"?"Storage":"Task"}</span>
               ${!S.isReadOnly ? `
                   <button class="epb" id="be" title="Edit Project Settings">✎</button>
                   <button class="epb" id="bsh" title="Share Link">🔗</button>
@@ -1490,7 +1551,7 @@ function renderBoard(){
                   <option value="priority" style="background:var(--bg2); color:var(--t1);" ${S.sortBy==='priority'?'selected':''}>Sort: Priority</option>
                   <option value="due" style="background:var(--bg2); color:var(--t1);" ${S.sortBy==='due'?'selected':''}>Sort: Due Date</option>
               </select>
-              ${COLS.map(c=>`<span class="stb2">${tasksIn(c).length} ${c==="To Do"?"📝":c==="In Progress"?"⚡":"✅"}</span>`).join("")}
+              ${itemType==="storage"?`<span class="stb2">${storageTasks().length} ◇ Assets</span>`:COLS.map(c=>`<span class="stb2">${tasksIn(c).length} ${c==="To Do"?"📝":c==="In Progress"?"⚡":"✅"}</span>`).join("")}
           </div>
         </div>
       </header>
@@ -1548,6 +1609,9 @@ function renderBoard(){
 }
 
 function renderIPTasks(container, tasks, pid, spid, isSub) {
+  const project=S.projects.find(item=>item.id===pid);
+  const boardItem=spid?(project?.subs||[]).find(item=>item.id===spid):project;
+  if((boardItem?.type||"task")==="storage")return;
   const inProg = (tasks||[]).filter(t => t.column === 'In Progress' && !t._deleted);
   inProg.forEach(t => {
       const df = getDaysDiff(t.dueDate);
@@ -1748,6 +1812,22 @@ function renderSearchResults(w) {
   applyVideoBlobs(w);
 }
 
+function renderStorageBoard(w){
+  const tasks=storageTasks();
+  w.className="cols storage-mode";
+  const board=el("section","storage-board");
+  board.innerHTML=`<div class="storage-head"><div class="storage-title"><span class="storage-mark">◇</span><div><strong>Asset Storage</strong><small>Cards flow from left to right</small></div></div><span class="cct">${tasks.length}</span>${columnSortControl("Storage")}${!S.isReadOnly?`<button class="ccadd" title="Add Asset" aria-label="Add asset">+</button>`:''}</div><div class="storage-grid"></div>`;
+  const grid=$(".storage-grid",board);
+  if(tasks.length)tasks.forEach(task=>grid.appendChild(mkCard(task)));
+  else grid.innerHTML=`<button class="storage-empty" ${S.isReadOnly?'disabled':''}>${S.isReadOnly?'No assets stored yet':'＋ Add your first asset card'}</button>`;
+  const sorter=$("[data-col-sort]",board);if(sorter)sorter.onchange=e=>setColumnSort("Storage",e.target.value);
+  const add=$(".ccadd",board);if(add)add.onclick=()=>showTaskModal(null,"To Do");
+  const empty=$(".storage-empty",board);if(empty&&!S.isReadOnly)empty.onclick=()=>showTaskModal(null,"To Do");
+  w.appendChild(board);
+  applyVideoBlobs(w);
+  restoreScroll();
+}
+
 function renderCols(){
   saveScroll();
   const w=$("#cls");if(!w)return;w.innerHTML="";
@@ -1763,12 +1843,18 @@ function renderCols(){
   const hSort = $("#sortSel");
   if(hSort && S.sortBy){ hSort.value = S.sortBy; }
 
+  if((getActiveItem().type||"task")==="storage"){
+      renderStorageBoard(w);
+      return;
+  }
+
   COLS.forEach(col=>{
     const tasks=tasksIn(col);
     const d=el("div","col");
-    d.innerHTML=`<div class="ch"><span class="cdot ${dotC(col)}"></span><span class="ctt">${col}</span><span class="cct">${tasks.length}</span>${!S.isReadOnly?`<button class="ccadd" title="Add Card">+</button>`:''}</div><div class="cbod"></div>`;
+    d.innerHTML=`<div class="ch"><span class="cdot ${dotC(col)}"></span><span class="ctt">${col}</span><span class="cct">${tasks.length}</span>${columnSortControl(col)}${!S.isReadOnly?`<button class="ccadd" title="Add Card">+</button>`:''}</div><div class="cbod"></div>`;
     const bd=$(".cbod",d);
     tasks.forEach(t=>bd.appendChild(mkCard(t)));
+    const sorter=$("[data-col-sort]",d);if(sorter)sorter.onchange=e=>setColumnSort(col,e.target.value);
     if (!S.isReadOnly) {
         const ab=$(".ccadd",d);if(ab)ab.onclick=()=>showTaskModal(null,col);
     }
@@ -1853,6 +1939,7 @@ function mkCard(t){
 function showTaskPreview(task) {
   const ov = el("div", "mo"), md = el("div", "md");
   const p = getProj();
+  const isStorage=(getActiveItem().type||"task")==="storage";
   let selLids = task.labelIds || [];
   let m = "";
   if(task.priority){const pc=PCOLS[task.priority];m+=`<span class="pbdg" style="background:${pc.bg};color:${pc.t};padding:6px 10px;font-size:12px;">${pc.i} ${PRIS[task.priority]}</span>`;}
@@ -1866,7 +1953,7 @@ function showTaskPreview(task) {
   descHtml = processCardLinks(descHtml);
 
   md.innerHTML = `
-    <div class="md-h"><h2>Card Details</h2><button class="md-x" id="cx">✕</button></div>
+    <div class="md-h"><h2>${isStorage?"Asset Details":"Card Details"}</h2><button class="md-x" id="cx">✕</button></div>
     <div class="md-b" style="padding-top:4px;">
       <h3 style="font-size:20px; font-weight:700; margin-bottom:14px; color:#fff; line-height:1.3; word-break:break-word;">${esc(task.title)}</h3>
       
@@ -1887,7 +1974,7 @@ function showTaskPreview(task) {
     <div class="md-f">
         <div style="flex:1"></div>
         <button class="bs" id="cc">Close</button>
-        ${!S.isReadOnly ? `<button class="bp" id="pe">✎ Edit Card</button>` : ''}
+        ${!S.isReadOnly ? `<button class="bp" id="pe">✎ Edit ${isStorage?"Asset":"Card"}</button>` : ''}
     </div>
   `;
 
@@ -1968,7 +2055,7 @@ async function moveTask(id,to){
   renderBoard();saveTaskFast(t,false);
 }
 
-function addProj(n,e,ico,ban){S.projects.push({id:uid(),name:n,emoji:e||"📋",icon:ico||null,banner:ban||null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]});S.activeId=S.projects[S.projects.length-1].id;S.activeSubId=null;save();renderBoard();}
+function addProj(n,e,ico,ban,type="task"){S.projects.push({id:uid(),name:n,emoji:e||"📋",icon:ico||null,banner:ban||null,type,columnSorts:{},archived:false,_ts:ts(),labels:[],tasks:[],subs:[]});S.activeId=S.projects[S.projects.length-1].id;S.activeSubId=null;save();renderBoard();}
 function updProj(id,d){const p=S.projects.find(p=>p.id===id);if(p){Object.assign(p,d);p._ts=ts();renderBoard();saveProjectFast(p);}}
 function delProj(id){
     if(S.projects.filter(x=>!x._deleted).length<=1)return; 
@@ -1984,7 +2071,7 @@ function delProj(id){
     }
 }
 
-function addSub(n,e,ico){const p=getProj();if(!p.subs)p.subs=[];const sp={id:uid(),name:n,emoji:e||"📋",icon:ico||null,tasks:[],_ts:ts()};p.subs.push(sp);S.activeSubId=sp.id;save();renderBoard();}
+function addSub(n,e,ico,type="task"){const p=getProj();if(!p.subs)p.subs=[];const sp={id:uid(),name:n,emoji:e||"📋",icon:ico||null,type,columnSorts:{},tasks:[],_ts:ts()};p.subs.push(sp);S.activeSubId=sp.id;save();renderBoard();}
 function updSub(id,d){const p=getProj();const sp=(p.subs||[]).find(s=>s.id===id);if(sp){Object.assign(sp,d);sp._ts=ts();renderBoard();saveSubProjectFast(p,sp);}}
 function delSub(id){
     const p=getProj();const s=(p.subs||[]).find(x=>x.id===id); 
@@ -2028,6 +2115,7 @@ function showAppModal(){
 function showTaskModal(task,col){
   const ov=el("div","mo"),md=el("div","md");
   const isE=!!task;if(task)col=task.column;
+  const isStorage=(getActiveItem().type||"task")==="storage";
   let selLids=[...(task?.labelIds||[])], priority=task?.priority||null;
   let pLabels=JSON.parse(JSON.stringify(getProj().labels||[])); 
   let atts=[...(task?.attachments||[])];
@@ -2037,7 +2125,7 @@ function showTaskModal(task,col){
   let mShow = false, mTerm = "", mIdx = 0, mNode = null, mOffset = 0, mList = [];
 
   md.innerHTML=`
-    <div class="md-h"><h2>${isE?"Edit Card":`New Card — ${col}`}</h2><button class="md-x" id="cx">✕</button></div>
+    <div class="md-h"><h2>${isE?(isStorage?"Edit Asset":"Edit Card"):(isStorage?"New Asset":`New Card — ${col}`)}</h2><button class="md-x" id="cx">✕</button></div>
     <div class="md-b">
       <label class="flbl">Title *</label><input id="mt" placeholder="What needs to be done?" value="${esc(task?.title||"")}">
       <label class="flbl">Description</label>
@@ -2094,9 +2182,9 @@ function showTaskModal(task,col){
 
       <label class="flbl" style="margin-top:16px">Priority</label><div class="prow" id="mp"></div>
       <label class="flbl">Due Date</label><input type="date" id="mdu" value="${task?.dueDate||""}">
-      ${isE?`<label class="flbl">Move to</label><div class="prow" id="mm"></div>`:""}
+      ${isE&&!isStorage?`<label class="flbl">Move to</label><div class="prow" id="mm"></div>`:""}
     </div>
-    <div class="md-f">${isE?`<button class="bd" id="mdl">Delete Card</button>`:""}<div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${isE?"Save Card":"Create Card"}</button></div>`;
+    <div class="md-f">${isE?`<button class="bd" id="mdl">Delete ${isStorage?"Asset":"Card"}</button>`:""}<div style="flex:1"></div><button class="bs" id="cc">Cancel</button><button class="bp" id="sv">${isE?(isStorage?"Save Asset":"Save Card"):(isStorage?"Create Asset":"Create Card")}</button></div>`;
   
   // Setup Rich Text Editor
   let descHtml = task?.description || "";
@@ -2420,7 +2508,7 @@ function showTaskModal(task,col){
   function rP(){const g=$("#mp",md);g.innerHTML=Object.entries(PRIS).map(([k,v])=>{const pc=PCOLS[k],on=priority===k;return`<button class="popt" data-p="${k}" style="background:${on?pc.bg:"transparent"};border-color:${on?pc.t:"#ffffff18"};color:${on?pc.t:"#888"}">${pc.i} ${v}</button>`;}).join("");$$("[data-p]",g).forEach(b=>b.onclick=()=>{priority=priority===b.dataset.p?null:b.dataset.p;rP();});}
   rA();rL();rP();
   
-  if(isE){const mv=$("#mm",md);mv.innerHTML=COLS.filter(c=>c!==task.column).map(c=>`<button class="mvb" data-mc="${c}">→ ${c}</button>`).join("");$$("[data-mc]",mv).forEach(b=>b.onclick=()=>{moveTask(task.id,b.dataset.mc);ov.remove();});}
+  if(isE&&!isStorage){const mv=$("#mm",md);mv.innerHTML=COLS.filter(c=>c!==task.column).map(c=>`<button class="mvb" data-mc="${c}">→ ${c}</button>`).join("");$$("[data-mc]",mv).forEach(b=>b.onclick=()=>{moveTask(task.id,b.dataset.mc);ov.remove();});}
   const close=()=>ov.remove();
   ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
   ov.onmouseup = e => { if(ov._md && e.target===ov) close(); ov._md = false; };
@@ -2443,7 +2531,7 @@ function showTaskModal(task,col){
 
 function showProjModal(project){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="460px";
-  let emoji=project?.emoji||"📋",ico=project?.icon||null,ban=project?.banner||null;
+  let emoji=project?.emoji||"📋",ico=project?.icon||null,ban=project?.banner||null,projectType=project?.type||"task";
   function render(){
     md.innerHTML=`
       <div class="md-h"><h2>${project?"Edit Project":"New Project"}</h2><button class="md-x" id="cx">✕</button></div>
@@ -2457,6 +2545,9 @@ function showProjModal(project){
         ${!ico?`<label class="flbl">Or pick an emoji</label><div class="egrid" id="eg"></div>`:""}
         <label class="flbl">Project Name</label>
         <input id="pn" placeholder="e.g. Website Redesign" value="${esc(project?.name||"")}">
+        <label class="flbl">Project Type</label>
+        <select id="ptype"><option value="task" ${projectType==="task"?'selected':''}>Task — To Do, In Progress, Done</option><option value="storage" ${projectType==="storage"?'selected':''}>Storage — Left-to-right asset cards</option></select>
+        <p class="shint">Changing type only changes the layout. Existing cards and attachments stay saved.</p>
         <label class="flbl">Banner Image</label>
         <div class="bua ${ban?"hi":""}" id="ba">
           ${ban?`<img src="${ban}">`:""}
@@ -2483,6 +2574,7 @@ function showProjModal(project){
         }
         close(); renderBoard(); saveProjectFast(project); savePreferencesFast();
     };
+    $("#ptype",md).onchange=e=>{projectType=e.target.value;};
     const eg=$("#eg",md);
     if(eg){eg.innerHTML=EMOJIS.map(e=>`<button class="eb ${emoji===e?"on":""}" data-e="${e}">${e}</button>`).join("");$$("[data-e]",eg).forEach(b=>b.onclick=()=>{emoji=b.dataset.e;render();});}
     $("#ui",md).onclick=()=>pickFile("image/*",f=>showCropper(f,1,192,192,d=>{ico=d;render();}));
@@ -2491,8 +2583,8 @@ function showProjModal(project){
     if($("#rb",md))$("#rb",md).onclick=()=>{ban=null;render();};
     $("#sv",md).onclick=()=>{
       const n=$("#pn",md).value.trim();if(!n)return;
-      if(project){updProj(project.id,{name:n,emoji,icon:ico,banner:ban});}
-      else{addProj(n,emoji,ico,ban);}
+      if(project){updProj(project.id,{name:n,emoji,icon:ico,banner:ban,type:projectType});}
+      else{addProj(n,emoji,ico,ban,projectType);}
       close();
     };
   }
@@ -2507,7 +2599,7 @@ function showSubModal(subId){
   const ov=el("div","mo"),md=el("div","md");md.style.maxWidth="420px";
   const p=getProj();
   const sub=subId?(p.subs||[]).find(s=>s.id===subId):null;
-  let emoji=sub?.emoji||"📋",ico=sub?.icon||null;
+  let emoji=sub?.emoji||"📋",ico=sub?.icon||null,subType=sub?.type||"task";
   function render(){
     md.innerHTML=`
       <div class="md-h"><h2>${sub?"Edit Sub-project":"New Sub-project"}</h2><button class="md-x" id="cx">✕</button></div>
@@ -2521,6 +2613,9 @@ function showSubModal(subId){
         ${!ico?`<label class="flbl">Emoji</label><div class="egrid" id="eg"></div>`:""}
         <label class="flbl">Name</label>
         <input id="sn" placeholder="e.g. Frontend" value="${esc(sub?.name||"")}">
+        <label class="flbl">Project Type</label>
+        <select id="stype"><option value="task" ${subType==="task"?'selected':''}>Task — To Do, In Progress, Done</option><option value="storage" ${subType==="storage"?'selected':''}>Storage — Left-to-right asset cards</option></select>
+        <p class="shint">Changing type only changes the layout. Existing cards stay saved.</p>
       </div>
       <div class="md-f">
         ${sub?`<button class="bd" id="dl">Delete</button>`:""}
@@ -2533,14 +2628,15 @@ function showSubModal(subId){
             close();
         });
     };
+    $("#stype",md).onchange=e=>{subType=e.target.value;};
     const eg=$("#eg",md);
     if(eg){eg.innerHTML=EMOJIS.map(e=>`<button class="eb ${emoji===e?"on":""}" data-e="${e}">${e}</button>`).join("");$$("[data-e]",eg).forEach(b=>b.onclick=()=>{emoji=b.dataset.e;render();});}
     $("#ui",md).onclick=()=>pickFile("image/*",f=>showCropper(f,1,128,128,d=>{ico=d;render();}));
     if($("#ri",md))$("#ri",md).onclick=()=>{ico=null;render();};
     $("#sv",md).onclick=()=>{
       const n=$("#sn",md).value.trim();if(!n)return;
-      if(sub)updSub(sub.id,{name:n,emoji,icon:ico});
-      else addSub(n,emoji,ico);
+      if(sub)updSub(sub.id,{name:n,emoji,icon:ico,type:subType});
+      else addSub(n,emoji,ico,subType);
       close();
     };
   }
