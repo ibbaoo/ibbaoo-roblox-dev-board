@@ -428,6 +428,16 @@ button:active{transform:translateY(0) scale(.97)!important}
 .search-best{background:linear-gradient(90deg,#8b5cf62e,#38bdf81c);border:1px solid #a78bfa30;color:#d9d0ff}
 .search-context{border-top-color:#ffffff0d}
 
+/* Keep dense game boards readable: cards scroll instead of collapsing. */
+.cbod{min-height:0}
+.crd{flex:0 0 auto;min-height:max-content;overflow:visible}
+.crd-cover-wrap{flex:0 0 140px}
+.crd-d{white-space:pre-line}
+.rich-text{white-space:normal}
+.rich-text br{display:block;content:"";margin-top:8px}
+.rich-text>div+div,.rich-text>p+p,.rich-text>blockquote+blockquote{margin-top:8px}
+.rich-text p:last-child,.rich-text div:last-child{margin-bottom:0}
+
 @media(max-width:768px){
   .sb{box-shadow:24px 0 70px #000c}
   .pban{height:112px!important}
@@ -566,7 +576,17 @@ const esc=s=>{const d=document.createElement("div");d.textContent=s;return d.inn
 
 function stripHtml(html) {
     if(!html) return "";
-    return new DOMParser().parseFromString(html, 'text/html').body.textContent || "";
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.body.querySelectorAll('br').forEach(br => br.replaceWith('\n'));
+    doc.body.querySelectorAll('p,div,li,blockquote,h1,h2,h3,h4,h5,h6').forEach(block => {
+        block.before(doc.createTextNode('\n'));
+        block.appendChild(doc.createTextNode('\n'));
+    });
+    return (doc.body.textContent || "")
+        .replace(/\u00a0/g, ' ')
+        .replace(/[ \t]+\n/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
 }
 
 function linkify(text) {
