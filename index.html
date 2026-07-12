@@ -137,7 +137,8 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
   .col{min-width:unset!important;max-width:unset!important;margin-bottom:12px}
   .pban{height:120px!important}
   .tbar{padding:10px 14px!important}
-  .board-search-wrap{margin-left:0!important}
+  .board-title-row{flex-wrap:wrap}
+  .board-search-wrap{order:3;flex-basis:calc(100% - 44px);max-width:360px!important;margin-left:44px!important}
   .search-results-grid{grid-template-columns:1fr!important}
 }
 
@@ -157,7 +158,7 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .tbar{display:flex;flex-direction:column;align-items:stretch;padding:14px 20px;gap:10px;border-bottom:1px solid var(--bd);flex-shrink:0;position:relative;z-index:10;}
 .board-title-row{display:flex;align-items:center;gap:12px;width:100%;min-width:0}
 .mb{display:none;align-items:center;justify-content:center;color:var(--t2);font-size:22px;padding:4px}
-.tc{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.tc{display:flex;align-items:center;gap:8px;flex:0 1 auto;min-width:0}
 .tc .pi{width:32px;height:32px;border-radius:8px;object-fit:cover}
 .tc .pe{font-size:24px}
 .tc h1{font-size:18px;font-weight:700;letter-spacing:-.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -165,14 +166,14 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;hei
 .epb:hover{background:rgba(0,0,0,0.6);color:var(--t1)}
 .tst{display:flex;gap:8px}
 .stb2{font-size:12px;color:var(--t2);background:rgba(255,255,255,0.05);padding:4px 10px;border-radius:8px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.05)}
-.board-search-wrap{position:relative;display:flex;align-items:center;gap:8px;width:100%;max-width:680px;margin-left:44px;background:rgba(10,12,19,.72);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:0 10px;transition:border-color .18s,box-shadow .18s,background .18s}
+.board-search-wrap{position:relative;display:flex;align-items:center;gap:7px;width:clamp(190px,22vw,300px);min-width:190px;max-width:300px;background:rgba(10,12,19,.72);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:0 8px;transition:border-color .18s,box-shadow .18s,background .18s}
 .board-search-wrap:hover{border-color:rgba(255,255,255,.18)}
 .board-search-wrap.active,.board-search-wrap:focus-within{border-color:var(--ac);box-shadow:0 0 0 3px var(--acg);background:var(--bg5)}
 .board-search-ico{color:var(--t3);font-size:16px;line-height:1;flex-shrink:0}
-.board-search{border:0!important;box-shadow:none!important;background:transparent!important;padding:9px 0!important;height:38px;font-size:14px}
+.board-search{border:0!important;box-shadow:none!important;background:transparent!important;padding:6px 0!important;height:32px;font-size:13px}
 .board-search::placeholder{color:var(--t3)}
-.search-shortcut{font-size:10px;color:var(--t3);border:1px solid var(--bd2);border-radius:5px;padding:2px 6px;white-space:nowrap}
-.search-exit{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:6px;color:var(--t3);font-size:16px;flex-shrink:0}
+.search-shortcut{font-size:9px;color:var(--t3);border:1px solid var(--bd2);border-radius:5px;padding:2px 5px;white-space:nowrap}
+.search-exit{width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:5px;color:var(--t3);font-size:14px;flex-shrink:0}
 .search-exit:hover{background:var(--bd2);color:var(--t1)}
 .tbar.search-active .tst{opacity:.35;pointer-events:none}
 
@@ -312,10 +313,11 @@ const ts=()=>Date.now();
 const KANBAN_ICON_SVG = `<svg width="50%" height="50%" viewBox="0 0 100 100"><rect x="18" y="20" width="16" height="60" rx="6" fill="white"/><rect x="42" y="20" width="16" height="35" rx="6" fill="white"/><rect x="66" y="20" width="16" height="48" rx="6" fill="white"/></svg>`;
 
 let S={appName:"Kanban Flow",appIcon:null,sortBy:"default",filterLabel:"all",shareId:null,projects:[{id:"default",name:"My Project",emoji:"🚀",icon:null,banner:null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]}],activeId:"default",activeSubId:null, isReadOnly:false, sharedProjectId:null};
-let fb=null,syncSt="synced",saveT=null,lastSaveT=0,sse=null,decodedShare=null;
+let fb=null,syncSt="synced",saveT=null,prefSaveT=null,lastSaveT=0,sse=null,decodedShare=null;
 let collapsedProjs=new Set();
 let _scrollState = { cols: {}, mainX: 0, mainY: 0, sb: 0 };
 let boardSearch = { active:false, query:"" };
+let lastRemoteRevision="";
 
 /* ── PWA Generation ── */
 function setupPWA(){
@@ -802,7 +804,9 @@ function showCropper(file,aspect,outW,outH,cb){
         if (!aspect && finalH > 1600) { finalH = 1600; finalW = Math.round(1600 * actualAspect); }
         cv.width=finalW; cv.height=finalH;
         cv.getContext("2d").drawImage(img,-ox/sc,-oy/sc,vpW/sc,vpH/sc,0,0,finalW,finalH);
-        cb(cv.toDataURL("image/jpeg",.85));ov.remove();
+        let optimized=cv.toDataURL("image/webp",.78);
+        if(!optimized.startsWith("data:image/webp"))optimized=cv.toDataURL("image/jpeg",.8);
+        cb(optimized);ov.remove();
       };
       
       ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
@@ -867,7 +871,14 @@ class FBSync{
       }catch(err){}
     });
     sse.addEventListener("patch",e=>{
-      try{ this.get().then(d=>{if(d)onData(d);}); }catch(err){}
+      try{
+        if(Date.now()-lastSaveT<2000)return;
+        const msg=JSON.parse(e.data);
+        const keys=Object.keys(msg.data||{});
+        const uiOnly=msg.path==="/"&&keys.length>0&&keys.every(key=>["sortBy","filterLabel","activeId","activeSubId"].includes(key));
+        if(uiOnly)return;
+        this.get().then(d=>{if(d)onData(d);});
+      }catch(err){}
     });
     sse.onerror=()=>{
       sse.close();sse=null;
@@ -881,11 +892,26 @@ class FBSync{
 }
 
 /* ── Save/Sync ── */
+function storeLocalBackup(){
+  let mediaChars=0;
+  const countTaskMedia=tasks=>(tasks||[]).forEach(task=>(task.attachments||[]).forEach(att=>{mediaChars+=att.data?.length||0;}));
+  (S.projects||[]).forEach(project=>{
+      mediaChars+=(project.icon?.length||0)+(project.banner?.length||0);
+      countTaskMedia(project.tasks);
+      (project.subs||[]).forEach(sub=>{mediaChars+=sub.icon?.length||0;countTaskMedia(sub.tasks);});
+  });
+  mediaChars+=S.appIcon?.length||0;
+  try{
+      if(mediaChars<2500000)localStorage.setItem("kanban-local-backup",JSON.stringify(S));
+      else localStorage.removeItem("kanban-local-backup");
+  }catch(e){}
+}
+
 function save(){
   if(S.isReadOnly) return;
   
   // Instant synchronous local backup for zero data loss on immediate reload
-  try { localStorage.setItem("kanban-local-backup", JSON.stringify(S)); } catch(e){}
+  storeLocalBackup();
 
   if(!fb)return;
   syncSt="saving";uDot();
@@ -895,6 +921,7 @@ function save(){
     try{
         await fb.set({appName:S.appName,appIcon:S.appIcon,sortBy:S.sortBy,filterLabel:S.filterLabel,shareId:S.shareId,projects:S.projects,activeId:S.activeId,activeSubId:S.activeSubId});
         syncSt="synced";
+        lastRemoteRevision=getRemoteRevision(S);
         try { localStorage.removeItem("kanban-local-backup"); } catch(e){}
     }
     catch(e){console.error("Save:",e);syncSt="error";}
@@ -918,13 +945,91 @@ function getActiveTaskFirebasePath(taskId){
   return taskIndex<0?null:`kanban/projects/${projectIndex}/tasks/${taskIndex}`;
 }
 
+async function saveTaskFast(task,includeProjectMeta=false){
+  if(S.isReadOnly)return;
+  storeLocalBackup();
+  if(!fb)return;
+  const fullPath=getActiveTaskFirebasePath(task.id);
+  if(!fullPath){save();return;}
+  const relativePath=fullPath.replace(/^kanban\//,"");
+  const updates={[relativePath]:task};
+  if(includeProjectMeta){
+      const projectIndex=S.projects.findIndex(project=>project.id===S.activeId);
+      if(projectIndex>=0){
+          updates[`projects/${projectIndex}/labels`]=S.projects[projectIndex].labels||[];
+          updates[`projects/${projectIndex}/_ts`]=S.projects[projectIndex]._ts;
+      }
+  }
+  syncSt="saving";uDot();lastSaveT=Date.now();
+  try{
+      await fb.patch("kanban",updates);
+      syncSt="synced";lastRemoteRevision=getRemoteRevision(S);
+      try{localStorage.removeItem("kanban-local-backup");}catch(e){}
+  }catch(error){
+      console.error("Fast save:",error);syncSt="error";
+      showToast("Save failed. Your card is kept on this device so you can retry.",true);
+  }
+  uDot();
+}
+
+function savePreferencesFast(){
+  if(S.isReadOnly||!fb)return;
+  clearTimeout(prefSaveT);
+  prefSaveT=setTimeout(async()=>{
+      syncSt="saving";uDot();lastSaveT=Date.now();
+      try{
+          await fb.patch("kanban",{sortBy:S.sortBy,filterLabel:S.filterLabel,activeId:S.activeId,activeSubId:S.activeSubId});
+          syncSt="synced";lastRemoteRevision=getRemoteRevision(S);
+      }catch(error){console.error("Preference save:",error);syncSt="error";}
+      uDot();
+  },75);
+}
+
+async function saveProjectFast(project){
+  if(S.isReadOnly)return;
+  storeLocalBackup();
+  const projectIndex=S.projects.findIndex(item=>item.id===project.id);
+  if(!fb||projectIndex<0){save();return;}
+  syncSt="saving";uDot();lastSaveT=Date.now();
+  const metadata={name:project.name,emoji:project.emoji,icon:project.icon,banner:project.banner,archived:project.archived,_ts:project._ts,_deleted:project._deleted,labels:project.labels||[]};
+  try{
+      await fb.patch(`kanban/projects/${projectIndex}`,metadata);
+      syncSt="synced";lastRemoteRevision=getRemoteRevision(S);
+      try{localStorage.removeItem("kanban-local-backup");}catch(e){}
+  }catch(error){console.error("Project save:",error);syncSt="error";showToast("Project save failed. Please try again.",true);}
+  uDot();
+}
+
+async function saveSubProjectFast(project,sub){
+  if(S.isReadOnly)return;
+  const projectIndex=S.projects.findIndex(item=>item.id===project.id);
+  const subIndex=(project.subs||[]).findIndex(item=>item.id===sub.id);
+  if(!fb||projectIndex<0||subIndex<0){save();return;}
+  syncSt="saving";uDot();lastSaveT=Date.now();
+  try{
+      await fb.patch(`kanban/projects/${projectIndex}/subs/${subIndex}`,{name:sub.name,emoji:sub.emoji,icon:sub.icon,_ts:sub._ts,_deleted:sub._deleted});
+      syncSt="synced";lastRemoteRevision=getRemoteRevision(S);
+  }catch(error){console.error("Sub-project save:",error);syncSt="error";showToast("Sub-project save failed. Please try again.",true);}
+  uDot();
+}
+
+async function saveAppAppearanceFast(){
+  if(S.isReadOnly||!fb)return;
+  syncSt="saving";uDot();lastSaveT=Date.now();
+  try{
+      await fb.patch("kanban",{appName:S.appName,appIcon:S.appIcon});
+      syncSt="synced";lastRemoteRevision=getRemoteRevision(S);
+  }catch(error){console.error("App save:",error);syncSt="error";showToast("App settings save failed. Please try again.",true);}
+  uDot();
+}
+
 async function saveViewerStatusChange(task){
   const path=getActiveTaskFirebasePath(task.id);
   if(!fb||!path)throw new Error("Card could not be located");
   syncSt="saving";uDot();lastSaveT=Date.now();
   try{
       await fb.patch(path,{column:task.column,order:task.order,_ts:task._ts});
-      syncSt="synced";uDot();
+      syncSt="synced";lastRemoteRevision=getRemoteRevision(S);uDot();
   }catch(error){
       syncSt="error";uDot();
       throw error;
@@ -932,6 +1037,25 @@ async function saveViewerStatusChange(task){
 }
 
 function uDot(){const d=$(".sdot");if(d)d.style.background=syncSt==="synced"?"var(--grn)":syncSt==="saving"?"var(--amb)":"var(--red)";}
+
+function getRemoteRevision(data){
+  let hash=2166136261;
+  const add=value=>{
+      const str=String(value??"");
+      for(let i=0;i<str.length;i++){hash^=str.charCodeAt(i);hash=Math.imul(hash,16777619);}
+  };
+  add(data.appName);add(data.shareId);add(data.appIcon?.length||0);add(data.appIcon?.slice(0,64));add(data.appIcon?.slice(-64));
+  (data.projects||[]).forEach(project=>{
+      add(project.id);add(project._ts);add(project._deleted);add(project.archived);
+      (project.labels||[]).forEach(label=>{add(label.id);add(label.n);add(label.c);});
+      (project.tasks||[]).forEach(task=>{add(task.id);add(task._ts);add(task.column);add(task.order);add(task._deleted);});
+      (project.subs||[]).forEach(sub=>{
+          add(sub.id);add(sub._ts);add(sub._deleted);
+          (sub.tasks||[]).forEach(task=>{add(task.id);add(task._ts);add(task.column);add(task.order);add(task._deleted);});
+      });
+  });
+  return (hash>>>0).toString(36);
+}
 
 // Safety net if user closes tab while network request is pending
 window.addEventListener("beforeunload", e => {
@@ -943,6 +1067,9 @@ window.addEventListener("beforeunload", e => {
 });
 
 function onRemoteData(d){
+  const revision=getRemoteRevision(d);
+  if(revision===lastRemoteRevision)return;
+  lastRemoteRevision=revision;
   if(d.appName) S.appName=d.appName;
   if(d.appIcon!==undefined) S.appIcon=d.appIcon;
   if(d.sortBy) S.sortBy=d.sortBy;
@@ -1110,6 +1237,7 @@ function renderSetup(error){
             save();
         }
         runMigration();
+        if(d)lastRemoteRevision=getRemoteRevision(d);
         document.title=S.appName;
         fb.listen(onRemoteData);
         renderBoard();
@@ -1173,6 +1301,12 @@ function renderBoard(){
                   <button class="epb" id="bsh" title="Share Link">🔗</button>
               ` : ''}
           </div>
+          <div class="board-search-wrap ${boardSearch.active?'active':''}" id="boardSearchWrap">
+            <span class="board-search-ico" aria-hidden="true">⌕</span>
+            <input class="board-search" id="boardSearch" type="search" autocomplete="off" spellcheck="false" aria-label="Search every card on the board" placeholder="Search cards…" value="${esc(boardSearch.query)}">
+            <span class="search-shortcut" id="searchShortcut" ${boardSearch.active?'hidden':''}>⌘ K</span>
+            <button class="search-exit" id="searchExit" aria-label="Exit search" title="Exit search" ${boardSearch.active?'':'hidden'}>✕</button>
+          </div>
           <div class="tst" style="margin-left:auto; display:flex; align-items:center; gap:8px;">
               <select id="filterSel" aria-label="Filter cards" style="background:rgba(255,255,255,0.06); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,0.1); color:var(--t1); font-size:12px; padding:6px 10px; border-radius:8px; cursor:pointer; width:auto;">
                   <option value="all" style="background:var(--bg2); color:var(--t1);">Filter: All Labels</option>
@@ -1186,12 +1320,6 @@ function renderBoard(){
               </select>
               ${COLS.map(c=>`<span class="stb2">${tasksIn(c).length} ${c==="To Do"?"📝":c==="In Progress"?"⚡":"✅"}</span>`).join("")}
           </div>
-        </div>
-        <div class="board-search-wrap ${boardSearch.active?'active':''}" id="boardSearchWrap">
-          <span class="board-search-ico" aria-hidden="true">⌕</span>
-          <input class="board-search" id="boardSearch" type="search" autocomplete="off" spellcheck="false" aria-label="Search every card on the board" placeholder="Search every card…" value="${esc(boardSearch.query)}">
-          <span class="search-shortcut" id="searchShortcut" ${boardSearch.active?'hidden':''}>⌘ K</span>
-          <button class="search-exit" id="searchExit" aria-label="Exit search" title="Exit search" ${boardSearch.active?'':'hidden'}>✕</button>
         </div>
       </header>
       <div class="cols" id="cls"></div>
@@ -1238,12 +1366,12 @@ function renderBoard(){
       $("#be").onclick=()=>{if(S.activeSubId)showSubModal(S.activeSubId);else showProjModal(p,false);};
       $("#bst").onclick=showSettings;
       $("#bsh").onclick=showShareModal;
-      $("#pbn").onclick=()=>pickFile("image/*",f=>showCropper(f,3.5,1400,400,d=>{getProj().banner=d;save();renderBoard();}));
+      $("#pbn").onclick=()=>pickFile("image/*",f=>showCropper(f,3.5,1400,400,d=>{const project=getProj();project.banner=d;project._ts=ts();renderBoard();saveProjectFast(project);}));
   } else {
       $("#pbn").style.cursor = "default";
   }
-  $("#sortSel").onchange=(e)=>{S.sortBy=e.target.value; save(); renderCols();};
-  $("#filterSel").onchange=(e)=>{S.filterLabel=e.target.value; save(); renderCols();};
+  $("#sortSel").onchange=(e)=>{S.sortBy=e.target.value; savePreferencesFast(); renderCols();};
+  $("#filterSel").onchange=(e)=>{S.filterLabel=e.target.value; savePreferencesFast(); renderCols();};
   restoreScroll();
 }
 
@@ -1264,7 +1392,7 @@ function renderIPTasks(container, tasks, pid, spid, isSub) {
       td.onclick = (e) => {
           e.stopPropagation(); 
           if(S.activeId !== pid || S.activeSubId !== spid) S.filterLabel = "all";
-          S.activeId = pid; S.activeSubId = spid; save(); renderBoard();
+          S.activeId = pid; S.activeSubId = spid; savePreferencesFast(); renderBoard();
       };
       container.appendChild(td);
   });
@@ -1319,7 +1447,7 @@ function renderProjs(){
           if(S.activeId !== p.id || S.activeSubId !== null) S.filterLabel = "all";
           S.activeId=p.id;S.activeSubId=null;
           collapsedProjs.delete(p.id);
-          save();renderBoard();
+          savePreferencesFast();renderBoard();
         };
         l.appendChild(d);
         
@@ -1343,7 +1471,7 @@ function renderProjs(){
                 sd.onclick=()=>{
                     if(S.activeId !== p.id || S.activeSubId !== sp.id) S.filterLabel = "all";
                     S.activeId=p.id;S.activeSubId=sp.id;
-                    save();renderBoard();
+                    savePreferencesFast();renderBoard();
                 };
                 sw.appendChild(sd);
                 renderIPTasks(sw, sp.tasks, p.id, sp.id, true); 
@@ -1383,7 +1511,7 @@ function openSearchResult(entry) {
   S.activeId = entry.project.id;
   S.activeSubId = entry.subProject ? entry.subProject.id : null;
   boardSearch = {active:false, query:""};
-  if (!S.isReadOnly) save();
+  if (!S.isReadOnly) savePreferencesFast();
   renderBoard();
   showTaskPreview(entry.task);
 }
@@ -1637,9 +1765,19 @@ function setCurTasks(tasks){
   if(S.activeSubId){const sp=(p.subs||[]).find(s=>s.id===S.activeSubId);if(sp){sp.tasks=tasks;sp._ts=ts();}}
   else {p.tasks=tasks;p._ts=ts();}
 }
-function addTask(col,d){const tasks=curTasks();tasks.push({id:uid(),column:col,order:tasksIn(col).length,title:d.title,description:d.description||"",labelIds:d.labelIds||[],attachments:d.attachments||[],priority:d.priority||null,dueDate:d.dueDate||null,createdAt:Date.now(),_ts:ts()});save();renderBoard();}
-function updTask(id,d){const t=curTasks().find(t=>t.id===id);if(t){Object.assign(t,d); t._ts=ts();}save();renderBoard();}
-function delTask(id){const t=curTasks().find(t=>t.id===id); if(t){ t._deleted=true; t._ts=ts(); t.attachments=[]; save(); renderBoard(); }}
+function addTask(col,d){
+  const tasks=curTasks();
+  const task={id:uid(),column:col,order:tasksIn(col).length,title:d.title,description:d.description||"",labelIds:d.labelIds||[],attachments:d.attachments||[],priority:d.priority||null,dueDate:d.dueDate||null,createdAt:Date.now(),_ts:ts()};
+  tasks.push(task);renderBoard();saveTaskFast(task,true);
+}
+function updTask(id,d){
+  const t=curTasks().find(task=>task.id===id);
+  if(t){Object.assign(t,d);t._ts=ts();renderBoard();saveTaskFast(t,true);}
+}
+function delTask(id){
+  const t=curTasks().find(task=>task.id===id);
+  if(t){t._deleted=true;t._ts=ts();t.attachments=[];renderBoard();saveTaskFast(t,false);}
+}
 async function moveTask(id,to){
   const t=curTasks().find(task=>task.id===id);
   if(!t||t.column===to){dragId=null;return;}
@@ -1655,11 +1793,11 @@ async function moveTask(id,to){
       }
       return;
   }
-  save();renderBoard();
+  renderBoard();saveTaskFast(t,false);
 }
 
 function addProj(n,e,ico,ban){S.projects.push({id:uid(),name:n,emoji:e||"📋",icon:ico||null,banner:ban||null,archived:false,_ts:ts(),labels:[],tasks:[],subs:[]});S.activeId=S.projects[S.projects.length-1].id;S.activeSubId=null;save();renderBoard();}
-function updProj(id,d){const p=S.projects.find(p=>p.id===id);if(p){Object.assign(p,d); p._ts=ts();}save();renderBoard();}
+function updProj(id,d){const p=S.projects.find(p=>p.id===id);if(p){Object.assign(p,d);p._ts=ts();renderBoard();saveProjectFast(p);}}
 function delProj(id){
     if(S.projects.filter(x=>!x._deleted).length<=1)return; 
     const p=S.projects.find(p=>p.id===id); 
@@ -1675,7 +1813,7 @@ function delProj(id){
 }
 
 function addSub(n,e,ico){const p=getProj();if(!p.subs)p.subs=[];const sp={id:uid(),name:n,emoji:e||"📋",icon:ico||null,tasks:[],_ts:ts()};p.subs.push(sp);S.activeSubId=sp.id;save();renderBoard();}
-function updSub(id,d){const p=getProj();const sp=(p.subs||[]).find(s=>s.id===id);if(sp){Object.assign(sp,d); sp._ts=ts();}save();renderBoard();}
+function updSub(id,d){const p=getProj();const sp=(p.subs||[]).find(s=>s.id===id);if(sp){Object.assign(sp,d);sp._ts=ts();renderBoard();saveSubProjectFast(p,sp);}}
 function delSub(id){
     const p=getProj();const s=(p.subs||[]).find(x=>x.id===id); 
     if(s){ 
@@ -1707,7 +1845,7 @@ function showAppModal(){
     $("#cx",md).onclick=$("#cc",md).onclick=close;
     $("#ui",md).onclick=()=>pickFile("image/*",f=>showCropper(f,1,256,256,d=>{ico=d;render();}));
     if($("#ri",md))$("#ri",md).onclick=()=>{ico=null;render();};
-    $("#sv",md).onclick=()=>{const n=$("#an",md).value.trim();if(!n)return;S.appName=n;S.appIcon=ico;save();close();renderBoard();};
+    $("#sv",md).onclick=()=>{const n=$("#an",md).value.trim();if(!n)return;S.appName=n;S.appIcon=ico;close();renderBoard();saveAppAppearanceFast();};
   }
   const close=()=>ov.remove();
   ov.onmousedown = e => { if(e.target===ov) ov._md = true; else ov._md = false; };
@@ -1799,7 +1937,7 @@ function showTaskModal(task,col){
   function handleFile(f) {
       if (!f) return;
       if (f.type.startsWith('image/')) {
-          showCropper(f, 0, 1200, 1200, d => { atts.push({ id: uid(), type: 'image', data: d }); rA(); });
+          showCropper(f, 0, 1000, 1000, d => { atts.push({ id: uid(), type: 'image', data: d }); rA(); });
       } else if (f.type.startsWith('video/')) {
           if(f.size > 200 * 1024 * 1024) { showToast("Video too large! Max 200MB.", true); return; }
           const wrap = $("#v_prog_wrap", md);
@@ -2054,7 +2192,7 @@ function showTaskModal(task,col){
 
   $("#b_addi", md).onclick = () => {
       pickFile("image/*", f => {
-          showCropper(f, 0, 1200, 1200, d => { atts.push({ id: uid(), type: 'image', data: d }); rA(); });
+          showCropper(f, 0, 1000, 1000, d => { atts.push({ id: uid(), type: 'image', data: d }); rA(); });
       });
   };
 
@@ -2171,7 +2309,7 @@ function showProjModal(project){
         if(project.archived && project.id === S.activeId){
             S.activeId = S.projects.find(p=>!p.archived && !p._deleted)?.id || S.projects.find(p=>!p._deleted)?.id;
         }
-        save(); close(); renderBoard();
+        close(); renderBoard(); saveProjectFast(project); savePreferencesFast();
     };
     const eg=$("#eg",md);
     if(eg){eg.innerHTML=EMOJIS.map(e=>`<button class="eb ${emoji===e?"on":""}" data-e="${e}">${e}</button>`).join("");$$("[data-e]",eg).forEach(b=>b.onclick=()=>{emoji=b.dataset.e;render();});}
@@ -2380,6 +2518,7 @@ async function init(){
       }
       S.projects.forEach(p=>{if(!p.subs)p.subs=[];});
       runMigration();
+      if(d)lastRemoteRevision=getRemoteRevision(d);
       document.title=S.appName;
       fb.listen(onRemoteData);
       renderBoard();
